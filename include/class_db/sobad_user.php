@@ -19,7 +19,7 @@ class sobad_user extends _class{
 		);
 	}
 
-	public function blueprint($type='employee'){
+	public static function blueprint($type='employee'){
 		$args = array(
 			'type'		=> 'employee',
 			'table'		=> self::$table,
@@ -60,7 +60,7 @@ class sobad_user extends _class{
 		return $args;
 	}
 
-	public function check_login($user='',$pass=''){
+	public static function check_login($user='',$pass=''){
 		$conn = conn::connect();
 		$args = array('`abs-user`.ID','`abs-user`.name','`abs-module`.meta_note AS dept');
 
@@ -73,7 +73,7 @@ class sobad_user extends _class{
 		return parent::_get_data($where,$args);
 	}
 	
-	public function get_divisi($id=0,$args=array(),$limit=''){
+	public static function get_divisi($id=0,$args=array(),$limit=''){
 		$where = "WHERE divisi='$id' $limit";
 		return parent::_check_join($where,$args);
 	}
@@ -82,7 +82,7 @@ class sobad_user extends _class{
 // --- Function User-log -------------------------------------------
 // -----------------------------------------------------------------
 
-	public function get_maxNIK(){
+	public static function get_maxNIK(){
 		$args = array('MAX(no_induk) as nik');
 		$where = "WHERE divisi != '0' AND status IN ('0','1','2','3','4','5')";
 		
@@ -95,50 +95,50 @@ class sobad_user extends _class{
 		return $data[0]['nik'];
 	}
 
-	public function not_work($args=array(),$limit=''){
+	public static function not_work($args=array(),$limit=''){
 		$where = "WHERE `".self::$tbl_join."`.type='0' $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function go_work($args=array(),$limit=''){
+	public static function go_work($args=array(),$limit=''){
 		$where = "WHERE `".self::$tbl_join."`.type='1' $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function go_home($args=array(),$limit=''){
+	public static function go_home($args=array(),$limit=''){
 		$where = "WHERE `".self::$tbl_join."`.type='2' $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function go_holiday($args=array(),$limit=''){
+	public static function go_holiday($args=array(),$limit=''){
 		$where = "WHERE `".self::$tbl_join."`.type='3' $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function go_permit($args=array(),$limit=''){
+	public static function go_permit($args=array(),$limit=''){
 		$where = "WHERE `".self::$tbl_join."`.type='4' $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function go_outCity($args=array(),$limit=''){
+	public static function go_outCity($args=array(),$limit=''){
 		$where = "WHERE `".self::$tbl_join."`.type='5' $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function get_absen($args=array(),$date='',$limit=''){
+	public static function get_absen($args=array(),$date='',$limit=''){
 		$date = empty($date)?date('Y-m-d'):$date;
 
 		$where = "WHERE `".self::$tbl_join."`.inserted='$date' $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function get_employees($args=array(),$limit=''){
+	public static function get_employees($args=array(),$limit=''){
 		$whr = "(`abs-user`.status!='6' AND `abs-user`.end_status='0' OR `abs-user`.status='0' AND `abs-user`.end_status!='6')";
 		$where = "WHERE $whr $limit";
 		return parent::_check_join($where,$args);
 	}
 
-	public function get_internships($args=array(),$limit=''){
+	public static function get_internships($args=array(),$limit=''){
 		$whr = "(`abs-user`.status='6' AND `abs-user`.end_status='0' OR `abs-user`.status='0' AND `abs-user`.end_status='6')";
 		$where = "WHERE $whr $limit";
 		return parent::_check_join($where,$args,'internship');

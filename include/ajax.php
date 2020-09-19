@@ -60,7 +60,7 @@ if(!isset($_POST['ajax'])){
 }
 
 class sobad_ajax{
-	public function _get($args=array()){
+	public static function _get($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			$ajax = array(

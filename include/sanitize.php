@@ -2,7 +2,7 @@
 
 class formatting extends _error{
 
-	public function sanitize($string='',$type='text'){
+	public static function sanitize($string='',$type='text'){
 		$func = '_'.$type;
 
 		if(is_callable(array(new self(), $func))){

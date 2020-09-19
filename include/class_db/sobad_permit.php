@@ -3,7 +3,7 @@
 class sobad_permit extends _class{
 	public static $table = 'abs-permit';
 
-	public function blueprint(){
+	public static function blueprint(){
 		$args = array(
 			'type'	=> 'permit',
 			'table'	=> self::$table,

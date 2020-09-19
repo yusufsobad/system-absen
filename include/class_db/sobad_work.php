@@ -7,7 +7,7 @@ class sobad_work extends _class{
 
 	protected static $join = 'joined.reff ';
 
-	public function blueprint(){
+	public static function blueprint(){
 		$args = array(
 			'type'		=> 'work',
 			'table'		=> self::$table,
@@ -20,7 +20,7 @@ class sobad_work extends _class{
 		return $args;
 	}
 
-	public function get_workTime($id=0){
+	public static function get_workTime($id=0){
 		$args =	array('name','days','time_in','time_out','note','status');
 		if($id){
 			return parent::get_id($id,$args);
@@ -29,7 +29,7 @@ class sobad_work extends _class{
 		return parent::get_all($args);
 	}
 
-	public function get_works(){
+	public static function get_works(){
 		$args =	array('ID','name');
 
 		$where = "WHERE 1=1";

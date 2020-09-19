@@ -15,7 +15,7 @@ class sobad_internship extends _class{
 		);
 	}
 
-	public function blueprint(){
+	public static function blueprint(){
 		$args = array(
 			'type'		=> 'user',
 			'table'		=> self::$table,

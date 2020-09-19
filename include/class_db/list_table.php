@@ -1,9 +1,9 @@
 <?php
 (!defined('AUTHPATH'))?exit:'';
 
-class sobad_table{
+class sobad_table{
 
-	public function _get_table($func){
+	public static function _get_table($func){
 		$func = str_replace('-','_',$func);
 				
 		$obj = new self();
@@ -15,7 +15,7 @@
 		return false;
 	}
 		
-	public function _get_list($func=''){
+	public static function _get_list($func=''){
 		$list = array();
 		$lists = self::_get_table($func);
 		if($lists){
@@ -28,7 +28,7 @@
 	}
 		
 
-	private function _list_table(){
+	private static function _list_table(){
 		// Information data table
 		
 		$table = array(
@@ -50,7 +50,7 @@
 	}
 		
 
-	private function abs_about(){
+	private static function abs_about(){
 		$list = array(
 			'config_name'	=> '',
 			'config_value'	=> '',
@@ -59,8 +59,8 @@
 		
 		return $list;
 	}
-
-	private function abs_holiday(){
+
+	private static function abs_holiday(){
 		$list = array(
 			'title'	=> '',
 			'holiday'	=> date('Y-m-d'),
@@ -69,8 +69,8 @@
 		
 		return $list;
 	}
-
-	private function abs_module(){
+
+	private static function abs_module(){
 		$list = array(
 			'meta_key'	=> '',
 			'meta_value'	=> '',
@@ -80,8 +80,8 @@
 		
 		return $list;
 	}
-
-	private function abs_permit(){
+
+	private static function abs_permit(){
 		$list = array(
 			'ID'	=> 0,
 			'user'	=> 0,
@@ -93,8 +93,8 @@
 		
 		return $list;
 	}
-
-	private function abs_post(){
+
+	private static function abs_post(){
 		$list = array(
 			'title'	=> 0,
 			'company'	=> 0,
@@ -113,8 +113,8 @@
 		
 		return $list;
 	}
-
-	private function abs_university(){
+
+	private static function abs_university(){
 		$list = array(
 			'name'	=> '',
 			'phone_no'	=> '',
@@ -128,8 +128,8 @@
 		
 		return $list;
 	}
-
-	private function abs_user(){
+
+	private static function abs_user(){
 		$list = array(
 			'username'	=> '',
 			'password'	=> '',
@@ -146,8 +146,8 @@
 		
 		return $list;
 	}
-
-	private function abs_user_log(){
+
+	private static function abs_user_log(){
 		$list = array(
 			'user'	=> 0,
 			'shift'	=> 0,
@@ -160,8 +160,8 @@
 		
 		return $list;
 	}
-
-	private function abs_user_meta(){
+
+	private static function abs_user_meta(){
 		$list = array(
 			'meta_id'	=> 0,
 			'meta_key'	=> '',
@@ -170,8 +170,8 @@
 		
 		return $list;
 	}
-
-	private function abs_work(){
+
+	private static function abs_work(){
 		$list = array(
 			'name'	=> '',
 			'type'	=> 0,	
@@ -179,8 +179,8 @@
 		
 		return $list;
 	}
-
-	private function abs_work_normal(){
+
+	private static function abs_work_normal(){
 		$list = array(
 			'reff'	=> 0,
 			'days'	=> 0,
@@ -192,8 +192,8 @@
 		
 		return $list;
 	}
-
-	private function tbl_wilayah(){
+
+	private static function tbl_wilayah(){
 		$list = array(
 			'id_prov'	=> 0,
 			'id_kab'	=> 0,

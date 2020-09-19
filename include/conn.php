@@ -2,7 +2,7 @@
 (!defined('AUTHPATH'))?exit:'';
 
 class conn extends _error{
-	public function connect(){
+	public static function connect(){
 		$server = constant("SERVER");
 		$user = constant("USERNAME");
 		$pass = constant("PASSWORD");

@@ -10,7 +10,7 @@ abstract class _class{
 
 	protected static $_type = '';
 
-	private function schema($key=''){
+	private static function schema($key=''){
 		$args = static::blueprint(self::$_type);
 
 		if(!empty($key)){
@@ -20,14 +20,14 @@ abstract class _class{
 		return $args;
 	}
 
-	public function list(){
+	public static function _list(){
 		$list = sobad_table::_get_list(static::$table);
 		$list[] = 'ID';
 
 		return $list;
 	}
 
-	private function list_join(){
+	private static function list_join(){
 		$list = array();
 		if(!empty(static::$tbl_join)){
 			$list = sobad_table::_get_list(static::$tbl_join);
@@ -37,12 +37,12 @@ abstract class _class{
 		return $list;
 	}
 
-	public function list_meta(){
+	public static function list_meta(){
 		$list = property_exists(new static,'list_meta')?static::$list_meta:array();
 		return $list;
 	}
 
-	protected function _check_array($args=array(),$func='list'){
+	protected static function _check_array($args=array(),$func='list'){
 		$check = array_filter($args);
 		if(empty($check)){
 			$args = self::{$func}();
@@ -51,7 +51,7 @@ abstract class _class{
 		return $args;
 	}
 
-	public function count($limit='1=1 '){
+	public static function count($limit='1=1 '){
 		$inner = '';$meta = false;
 		$limit = empty($limit)?"1=1 ":$limit;
 
@@ -71,17 +71,17 @@ abstract class _class{
 		return $count[0]['count'];
 	}
 	
-	public function get_id($id,$args=array(),$type=''){
+	public static function get_id($id,$args=array(),$type=''){
 		$where = "WHERE `".static::$table."`.ID='$id'";
 		return self::_check_join($where,$args,$type);
 	}
 
-	public function get_all($args=array(),$limit='',$type=''){
+	public static function get_all($args=array(),$limit='',$type=''){
 		$where = "WHERE 1=1 $limit";
 		return self::_check_join($where,$args,$type);
 	}
 
-	public function check_meta($id=0,$key=''){
+	public static function check_meta($id=0,$key=''){
 		$inner = "LEFT JOIN `".static::$tbl_meta."` ON `".static::$table."`.ID = `".static::$tbl_meta."`.meta_id ";;
 		$where = $inner."WHERE meta_id='$id' AND meta_key='$key'";
 
@@ -92,8 +92,8 @@ abstract class _class{
 	// --- Function Check Join -----------------------------------------
 	// -----------------------------------------------------------------	
 
-	protected function _check_join($where='',$args=array(),$type=''){
-		$user = self::list();
+	protected static function _check_join($where='',$args=array(),$type=''){
+		$user = self::_list();
 		
 		self::$_type = $type;
 		self::$_join = array();
@@ -144,7 +144,7 @@ abstract class _class{
 		return self::_get_data($where,$args);
 	}
 
-	private function _detail($args=array(),$table='',$detail=''){
+	private static function _detail($args=array(),$table='',$detail=''){
 
 		foreach($detail as $_key => $val){
 			if($args==='*' || in_array($_key,$args)){
@@ -173,7 +173,7 @@ abstract class _class{
 		}
 	}
 	
-	private function _joined($args=array(),$table='',$joined=''){
+	private static function _joined($args=array(),$table='',$joined=''){
 
 		$lst = isset($joined['column'])?$joined['column']:self::list_join();
 		$tbl = $joined['table'];
@@ -201,7 +201,7 @@ abstract class _class{
 
 	}
 
-	private function _meta($args=array()){
+	private static function _meta($args=array()){
 		$where = self::$_where;
 		$inner = '';$group = $where;
 		$meta = self::list_meta();
@@ -229,7 +229,7 @@ abstract class _class{
 		return $args;
 	}
 
-	protected function _get_data($where='',$args=array()){
+	protected static function _get_data($where='',$args=array()){
 		$data = array();
 		
 		$q = sobad_db::_select_table($where,static::$table,$args);

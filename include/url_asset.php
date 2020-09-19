@@ -91,7 +91,7 @@ class sobad_asset{
 		}
 	}
 
-	public function _pages($dir = "pages/"){
+	public static function _pages($dir = "pages/"){
 		$pages = self::_name_file($dir);
 		if(count($pages)>0){
 			for($i=0;$i<count($pages);$i++){
@@ -106,7 +106,7 @@ class sobad_asset{
 		}
 	}
 
-	public function ajax_conv_json($args){
+	public static function ajax_conv_json($args){
 		$args = json_decode($args,true);
 		$data = array();
 
@@ -134,7 +134,7 @@ class sobad_asset{
 		return array();
 	}
 
-	public function ajax_conv_array_json($args){
+	public static function ajax_conv_array_json($args){
 		$args = json_decode($args,true);
 		$data = array();
 
@@ -166,7 +166,7 @@ class sobad_asset{
 		return array();
 	}
 
-	public function handling_upload_file($name='',$target_dir='upload'){
+	public static function handling_upload_file($name='',$target_dir='upload'){
 		$err = new _error();
 
 		if(empty($name))die($err->_alert_db("index FILE not found!!!"));
@@ -200,7 +200,7 @@ class sobad_asset{
 		}
 	}
 
-	private function _check_filename($target_dir='',$name='',$extend=0){
+	private static function _check_filename($target_dir='',$name='',$extend=0){
 		$_info = pathinfo($name);
 		$_basename = $_info['basename'];
 		$_name = $_info['filename'];

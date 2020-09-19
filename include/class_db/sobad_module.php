@@ -3,7 +3,7 @@
 class sobad_module extends _class{
 	public static $table = 'abs-module';
 
-	public function blueprint(){
+	public static function blueprint(){
 		$args = array(
 			'type'		=> 'module',
 			'table'		=> self::$table
@@ -12,7 +12,7 @@ class sobad_module extends _class{
 		return $args;
 	}
 
-	private function _check_type($type=''){
+	private static function _check_type($type=''){
 		if(!empty($type)){
 			$args = array(
 				'department',
@@ -29,7 +29,7 @@ class sobad_module extends _class{
 		return false;
 	}
 	
-	public function _gets($type='',$args=array(),$limit=''){
+	public static function _gets($type='',$args=array(),$limit=''){
 		if(self::_check_type($type)){
 			$where = "WHERE meta_key='$type' $limit";
 			return self::_check_join($where,$args,$type);

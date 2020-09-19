@@ -5,7 +5,7 @@ include 'list_table.php';
 
 class sobad_db extends conn{
 
-	public function _create_file_list(){
+	public static function _create_file_list(){
 		//Check file
 		if(!file_exists(dirname(__FILE__).'/list_table.php')){
 			$file = fopen(dirname(__FILE__)."/list_table.php", "w");
@@ -18,12 +18,12 @@ class sobad_db extends conn{
 		}
 	}
 
-	public function _update_file_list(){
+	public static function _update_file_list(){
 		self::_create_list_table('sobad_table');
 		include 'list_table.php';
 	}
 	
-	public function _table_db($table){
+	public static function _table_db($table){
 		$list = sobad_table::_get_table($table);
 		
 		if($list == 0){
@@ -34,7 +34,7 @@ class sobad_db extends conn{
 		return $list;
 	}
 	
-	private function _def_table($table){
+	private static function _def_table($table){
 		$table = parent::_table_db($table);
 		self::_check_array($table);
 		
@@ -46,7 +46,7 @@ class sobad_db extends conn{
 		return implode(",",$data);
 	}
 	
-	private function _check_array($args = array()){
+	private static function _check_array($args = array()){
 		$alert = parent::_alert_db("Permintaan kosong!!!");
 		$check = array_filter($args);
 		
@@ -55,7 +55,7 @@ class sobad_db extends conn{
 		}
 	}
 	
-	public function _select_table($where,$table,$args = array()){
+	public static function _select_table($where,$table,$args = array()){
 		$conn = parent::connect();
 		$alert = parent::_alert_db("pengambilan data gagal!!!");
 	
@@ -73,7 +73,7 @@ class sobad_db extends conn{
 		return $q;
 	}
 	
-	public function _insert_table($table,$args = array()){
+	public static function _insert_table($table,$args = array()){
 		$conn = parent::connect();
 		$alert = parent::_alert_db("Gagal membuat data baru!!!");
 		
@@ -98,7 +98,7 @@ class sobad_db extends conn{
 		return self::_max_table($table);
 	}
 	
-	public function _max_table($table){
+	public static function _max_table($table){
 		$conn = parent::connect();
 		$alert = parent::_alert_db("Gagal menghitung table!!!");
 		if(empty($table)){die("");}
@@ -111,18 +111,18 @@ class sobad_db extends conn{
 		}
 	}
 	
-	public function _update_single($id,$table,$args = array()){
+	public static function _update_single($id,$table,$args = array()){
 		$where = "ID='$id'";
 		$q = self::_update_table($where,$table,$args);	
 		return $q;
 	}
 	
-	public function _update_multiple($where,$table,$args = array()){
+	public static function _update_multiple($where,$table,$args = array()){
 		$q = self::_update_table($where,$table,$args);		
 		return $q;
 	}
 	
-	public function _delete_single($id,$table){
+	public static function _delete_single($id,$table){
 		$alert = parent::_alert_db("index table undefined!!!");
 		if(empty($id)){die($alert);}
 		
@@ -132,7 +132,7 @@ class sobad_db extends conn{
 		return $q;
 	}
 	
-	public function _delete_multiple($where,$table){
+	public static function _delete_multiple($where,$table){
 		$alert = parent::_alert_db("index table undefined!!!");
 		if(empty($where)){die($alert);}
 		
@@ -142,7 +142,7 @@ class sobad_db extends conn{
 		return $q;
 	}
 	
-	public function _drop_table_tmp(){
+	public static function _drop_table_tmp(){
 		$conn = parent::connect();
 		$alert = parent::_alert_db("Gagal mengkosongkan data!!!");
 		
@@ -154,7 +154,7 @@ class sobad_db extends conn{
 		return 1;
 	}
 	
-	public function _copy_data_table($kepada=array(),$dari=array()){
+	public static function _copy_data_table($kepada=array(),$dari=array()){
 		$conn = parent::connect();
 		$alert = parent::_alert_db("Gagal meng-copy data baru!!!");
 		
@@ -184,7 +184,7 @@ class sobad_db extends conn{
 		return self::_max_table($to);
 	}
 	
-	private function _delete_table($query,$table){
+	private static function _delete_table($query,$table){
 		$conn = parent::connect();
 		$alert = parent::_alert_db("Gagal menghapus data!!!");
 		
@@ -197,7 +197,7 @@ class sobad_db extends conn{
 		return 1;
 	}
 	
-	private function _update_table($where,$table,$args = array()){
+	private static function _update_table($where,$table,$args = array()){
 		$conn = parent::connect();
 		$alert = parent::_alert_db("Gagal memperbarui data");
 		
@@ -223,7 +223,7 @@ class sobad_db extends conn{
 	// ---- Table Query -----------------------------------------------------
 	// ----------------------------------------------------------------------
 
-	private function _get_table_name(){
+	private static function _get_table_name(){
 		$conn = parent::connect();
 		$db = constant('DB_NAME');
 		
@@ -241,7 +241,7 @@ class sobad_db extends conn{
 		return $table;
 	}
 
-	private function _get_column_table($table=''){
+	private static function _get_column_table($table=''){
 		$conn = parent::connect();
 		$db = constant('DB_NAME');
 		
@@ -262,12 +262,12 @@ class sobad_db extends conn{
 		return $table;
 	}
 
-	private function _create_list_table($class=''){
+	private static function _create_list_table($class=''){
 		$table = self::_get_table_name();	
 		self::_list_table_schema($class,$table);
 	}
 
-	private function _list_table_schema($class='',$table=array()){
+	private static function _list_table_schema($class='',$table=array()){
 		$php = "<?php
 (!defined('AUTHPATH'))?exit:'';\n\r";
 
@@ -279,7 +279,7 @@ class sobad_db extends conn{
 			'$val'		=> self::".$nm_tbl.",";
 
 			$_column .= "
-	private function ".$nm_tbl."{
+	private static function ".$nm_tbl."{
 		\$list = array(";
 
 			$columns = self::_get_column_table($val);
@@ -299,7 +299,7 @@ class sobad_db extends conn{
 		}
 
 		$func = "
-	public function _get_table(\$func){
+	public static function _get_table(\$func){
 		\$func = str_replace('-','_',\$func);
 				
 		\$obj = new self();
@@ -313,7 +313,7 @@ class sobad_db extends conn{
 		";
 
 		$func .="
-	public function _get_list(\$func=''){
+	public static function _get_list(\$func=''){
 		\$list = array();
 		\$lists = self::_get_table(\$func);
 		if(\$lists){
@@ -327,7 +327,7 @@ class sobad_db extends conn{
 		";
 
 		$schema = "
-	private function _list_table(){
+	private static function _list_table(){
 		// Information data table
 		
 		\$table = array(".$list_tbl."
@@ -345,7 +345,7 @@ class sobad_db extends conn{
 		fclose($myfile);
 	}
 
-	private function _convert_default_dataType($dataType=''){
+	private static function _convert_default_dataType($dataType=''){
 
 		if(in_array($dataType, array('tinyint','smallint','mediumint','int','bigint')))return '0';
 		

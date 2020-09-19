@@ -295,7 +295,7 @@ abstract class _page{
 		$schema = $object::blueprint($post);
 
 		$data = array();
-		$list = $object::list();
+		$list = $object::_list();
 		foreach ($list as $key => $val) {
 			if(isset($args[$val])){
 				$data[$val] = $args[$val];
@@ -378,7 +378,7 @@ abstract class _page{
 		$schema = $object::blueprint($post);
 
 		$data = array();
-		$list = $object::list();
+		$list = $object::_list();
 		foreach ($list as $key => $val) {
 			if(isset($args[$val])){
 				$data[$val] = $args[$val];
