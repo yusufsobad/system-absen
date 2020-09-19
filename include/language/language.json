@@ -1,0 +1,13 @@
+{	
+	"default":"id_ID",
+	"language":{
+		"id_ID":{
+			"name":"Indonesia",
+			"flag":"flags/id.png"
+		},
+		"en_US":{
+			"name":"English (US)",
+			"flag":"flags/en.png"
+		}
+	}
+}

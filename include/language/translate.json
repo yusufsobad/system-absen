@@ -1,0 +1,32 @@
+{
+    "default": "id_ID",
+    "language": [
+        "id_ID",
+        "en_US"
+    ],
+    "translate": {
+        "login_comment": {
+            "id_ID": "Masuk ke Akunmu",
+            "en_US": "Login to your account"
+        },
+        "username": {
+            "id_ID": "Nama User",
+            "en_US": "Username"
+        },
+        "password": {
+            "id_ID": "Kata Sandi",
+            "en_US": "Password"
+        },
+        "remember me": {
+            "id_ID": "Ingat Saya",
+            "en_US": "Remember Me"
+        },
+        "login_button": {
+            "id_ID": "Masuk",
+            "en_US": "Login"
+        },
+        "tinggi tubuh": {
+            "id_ID": "Tinggi Tubuh"
+        }
+    }
+}
