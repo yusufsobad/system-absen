@@ -24,6 +24,6 @@ function sobad_themes(){
 		define('THEMEPATH',dirname(__FILE__));
 	}
 
-	require constant('THEMEPATH').'/'.$reg_theme.'/template.php';
-	require constant('THEMEPATH').'/'.$reg_theme.'/view.php';
+	require THEMEPATH.'/'.$reg_theme.'/template.php';
+	require THEMEPATH.'/'.$reg_theme.'/view.php';
 }

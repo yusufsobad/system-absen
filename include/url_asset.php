@@ -5,7 +5,7 @@ Version 1.1.2
 (!defined('DEFPATH'))?exit:'';
 
 class sobad_asset{
-	private function _name_file($dir){
+	private static function _name_file($dir){
 		if(is_dir($dir)){
 			if($handle = opendir($dir)){
 				$i = 0;

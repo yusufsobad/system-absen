@@ -1,5 +1,5 @@
 <?php
-include 'pages/index.php';
+include 'pages/function.php';
 
 abstract class _page{
 

@@ -1,3 +1,3 @@
 <?php
 
-include 'function.php';
+// Silent is Gold

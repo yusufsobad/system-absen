@@ -3,7 +3,7 @@
 class sobad_wilayah{
 	private static $table = 'tbl_wilayah';
 	
-	private static function list(){
+	private static function _list(){
 		$list = sobad_table::_get_list(parent::$table);
 		$list[] = 'no';
 
@@ -13,7 +13,7 @@ class sobad_wilayah{
 	public static function get_all($args=array(),$limit="1=1"){
 		$check = array_filter($args);
 		if(empty($check)){
-			$args = self::list();
+			$args = self::_list();
 		}
 		
 		$where = "WHERE $limit";

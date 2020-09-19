@@ -2,19 +2,19 @@
 
 (!defined('THEMEPATH'))?exit:'';
 
-require 'scripts.php';
+require dirname(__FILE__).'/scripts.php';
 
 class sobad_absen extends absen_control{
 	protected static $data = '';
 
-	public function load_here($args=array()){
+	public static function load_here($args=array()){
 		self::$data = $args;
 		self::_html();
 		parent::_control();
 		self::_script();
 	}
 
-	private function _html(){
+	private static function _html(){
 		$args = self::$data;
 
 		?>
@@ -55,7 +55,7 @@ class sobad_absen extends absen_control{
 		<?php
 	}
 
-	private function _employee_excity(){
+	private static function _employee_excity(){
 		?>
 			<div id="employee-excity" class="row absen-exwork">
         		
@@ -84,7 +84,7 @@ class sobad_absen extends absen_control{
 		<?php
 	}
 
-	private function _employee_notwork(){
+	private static function _employee_notwork(){
 		?>
 			<div class="layout-notwork">
 				<div id="multiSlider" class="carousel slide" data-ride="carousel">
@@ -132,7 +132,7 @@ class sobad_absen extends absen_control{
 	}
 */
 
-	private function absen_box_right($args=array()){
+	private static function absen_box_right($args=array()){
 		$total = !isset($args['total'])?0:$args['total'];
 
 		$masuk = !isset($args['masuk'])?0:$args['masuk'];
@@ -210,7 +210,7 @@ class sobad_absen extends absen_control{
 		<?php
 	}
 
-	private function _script(){
+	private static function _script(){
 		?>
 			<script type="text/javascript">
 				setInterval(time_absen,1000);

@@ -1,10 +1,12 @@
 <?php
 
+(!defined('THEMEPATH'))?exit:'';
+
 abstract class absen_control{
 
 	private static $_group = array();
 
-	private function _get_group($divisi=0){
+	private static function _get_group($divisi=0){
 		$group = self::$_group;
 
 		foreach ($group as $key => $val) {
@@ -16,7 +18,7 @@ abstract class absen_control{
 		return 0;
 	}
 
-	protected function _control($args=array()){
+	protected static function _control($args=array()){
 		$args = static::$data;
 		$args = $args['data'];
 
@@ -101,7 +103,7 @@ abstract class absen_control{
 		self::_layout();
 	}
 
-	private function _json(){
+	private static function _json(){
 		?>
 			<script type="text/javascript">
 				var group = [%group%];
@@ -115,7 +117,7 @@ abstract class absen_control{
 		<?php
 	}
 
-	protected function _layout(){
+	protected static function _layout(){
 		?>
 			<script type="text/javascript">
 				function layout_user(id,arr){
@@ -247,7 +249,7 @@ abstract class absen_control{
 		<?php
 	}
 
-	private function _animation(){
+	private static function _animation(){
 		?>
 			<script type="text/javascript">
 				

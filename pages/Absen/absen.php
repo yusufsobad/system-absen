@@ -119,7 +119,7 @@ class absensi{
 		return array('id' => $id,'data' => NULL, 'status' => 0);
 	}
 
-	public function _set_logs(){
+	public static function _set_logs(){
 		$log = sobad_user::get_log(array('id_log'),date('Y-m-d'));
 		if(count($log)>0){
 			return '&nbsp;';
@@ -136,7 +136,7 @@ class absensi{
 		}
 	}
 
-	public function _data_employee(){
+	public static function _data_employee(){
 		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','type','status','time_in','time_out'),"AND `abs-user`.status!=0");
 
 		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
@@ -144,7 +144,7 @@ class absensi{
 		return array('user' => $user, 'group' => $group);
 	}
 
-	public function _status(){
+	public static function _status(){
 		$args = array(
 			'total'		=> self::_employees(),
 			'masuk'		=> self::_inWork(),
@@ -156,30 +156,30 @@ class absensi{
 		return $args;
 	}
 
-	public function _employees(){
+	public static function _employees(){
 		$work = sobad_user::count("status!=0");
 		return $work;
 	}
 
-	public function _inWork(){
+	public static function _inWork(){
 		$date = date('Y-m-d');
 		$work = sobad_user::go_work(array('id_join'),"AND `abs-user-log`.inserted='$date'");
 		return count($work);
 	}
 
-	public function _permitWork(){
+	public static function _permitWork(){
 		$date = date('Y-m-d');
 		$work = sobad_user::go_permit(array('id_join'),"AND `abs-user-log`.inserted='$date'");
 		return count($work);
 	}
 
-	public function _holidayWork(){
+	public static function _holidayWork(){
 		$date = date('Y-m-d');
 		$work = sobad_user::go_holiday(array('id_join'),"AND `abs-user-log`.inserted='$date'");
 		return count($work);
 	}
 
-	public function _outCity(){
+	public static function _outCity(){
 		$date = date('Y-m-d');
 		$work = sobad_user::go_outCity(array('id_join'),"AND `abs-user-log`.inserted='$date'");
 		return count($work);
