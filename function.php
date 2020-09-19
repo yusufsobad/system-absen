@@ -1,7 +1,7 @@
 <?php
 (!defined('AUTHPATH'))?exit:'';
 
-if(class_exists('_component')){
+if(!class_exists('_component')){
 
 	class _component {	
 		public function __construct(){
@@ -30,7 +30,7 @@ if(class_exists('_component')){
 
 }
 
-if(class_exists('_libs_')){
+if(!class_exists('_libs_')){
 
 	// get library php
 	class _libs_ extends option_library{
