@@ -38,7 +38,7 @@ class sobad_module extends _class{
 		return array();
 	}
 
-	public function _conv_absensi($args=array()){
+	public static function _conv_absensi($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return array();
@@ -87,7 +87,7 @@ class sobad_module extends _class{
 		return $data;
 	}
 
-	public function _conv_divisi($data=''){
+	public static function _conv_divisi($data=''){
 		$data = unserialize($data);
 		if(isset($data['data'])){
 			$idx = implode(',', $data['data']);

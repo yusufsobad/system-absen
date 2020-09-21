@@ -2,16 +2,16 @@
 
 (!defined('THEMEPATH'))?exit:'';
 
-require 'scripts.php';
-require 'view_header.php';
-require 'quick_sidebar.php';
+require dirname(__FILE__).'/scripts.php';
+require dirname(__FILE__).'/view_header.php';
+require dirname(__FILE__).'/quick_sidebar.php';
 
 class metronic_layout extends metronic_template{
 	private static $page = array();
 
 	private static $sidemenu = array();
 
-	private function _search(){
+	private static function _search(){
 		?>
 		<form class="sidebar-search " action="javascript:;" method="POST">
 			<a href="javascript:;" class="remove">
@@ -27,14 +27,14 @@ class metronic_layout extends metronic_template{
 		<?php
 	}
 
-	public function load_here(){
+	public static function load_here(){
 		self::_header();
 		self::_clearfix();
 		self::_container();
 		self::_footer();
 	}
 
-	private function _header(){
+	private static function _header(){
 		$lang = array();
 		if(constant('language')){
 			global $reg_language;
@@ -73,13 +73,13 @@ class metronic_layout extends metronic_template{
 		<?php
 	}
 
-	private function _clearfix(){
+	private static function _clearfix(){
 		?>
 			<div class="clearfix"></div>
 		<?php
 	}
 
-	private function _container(){
+	private static function _container(){
 		?>
 		<div class="page-container">
 			<?php
@@ -112,7 +112,7 @@ class metronic_layout extends metronic_template{
 		<?php
 	}
 
-	private function _footer(){
+	private static function _footer(){
 		?>
 		<div class="page-footer">
 			<div class="page-footer-inner">
@@ -125,7 +125,7 @@ class metronic_layout extends metronic_template{
 		<?php
 	}
 
-	private function _sidebar(){
+	private static function _sidebar(){
 		global $reg_sidebar;
 		
 		?>
@@ -151,7 +151,7 @@ class metronic_layout extends metronic_template{
 		<?php
 	}
 
-	private function _quick_side(){
+	private static function _quick_side(){
 		?>
 			<a href="javascript:;" class="page-quick-sidebar-toggler">
 				<i class="icon-close"></i>
@@ -160,7 +160,7 @@ class metronic_layout extends metronic_template{
 			metronic_quick_sidebar::_create();
 	}
 
-	private function _sidemenu_active($args=array(),$idx=0){
+	private static function _sidemenu_active($args=array(),$idx=0){
 		$page = get_page_url();
 
 		foreach ($args as $key => $val) {
@@ -198,7 +198,7 @@ class metronic_layout extends metronic_template{
 		return false;
 	}
 
-	private function _side_multiple($args=array()){
+	private static function _side_multiple($args=array()){
 		$req = array();
 		$check = array_filter($args);
 		if(!empty($check)){
@@ -248,7 +248,7 @@ class metronic_layout extends metronic_template{
 		}
 	}
 
-	public function _head_content($args=array()){
+	public static function _head_content($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return 'Not Available';
@@ -256,20 +256,20 @@ class metronic_layout extends metronic_template{
 
 		$qty = isset($args['modal'])?$args['modal']:2;
 
-		$this->_modal_form($qty);
-		$this->_theme_option();
+		parent::_modal_form($qty);
+		parent::_theme_option();
 		?>
 			<h3 class="page-title">
 				<?php print($args['title']) ;?>
 			</h3>
 		<?php
-		$this->_head_pagebar($args['link'],$args['date']);
+		parent::_head_pagebar($args['link'],$args['date']);
 	}
 
-	public function _content($func,$args = array()){
-		if(is_callable(array($this,$func))){	
+	public static function _content($func,$args = array()){
+		if(method_exists('metronic_template',$func)){	
 			// get content
-			$this->{$func}($args);
+			parent::{$func}($args);
 			
 		}else{
 			?><div style="text-align:center;"> Tidak ada data yang di Load </div><?php

@@ -1,7 +1,7 @@
 <?php
 
 class metronic_header{
-	public function _create($args=array(),$menu=''){
+	public static function _create($args=array(),$menu=''){
 		global $reg_sidebar;
 		?>
 			<!-- BEGIN HEADER INNER -->
@@ -22,7 +22,7 @@ class metronic_header{
 		<?php
 	}
 	
-	public function _logo(){
+	public static function _logo(){
 		?>
 			<!-- BEGIN LOGO -->
 			<div class="page-logo">
@@ -37,7 +37,7 @@ class metronic_header{
 		<?php
 	}
 	
-	public function _menu_toggle(){
+	public static function _menu_toggle(){
 		?>
 			<!-- BEGIN RESPONSIVE MENU TOGGLER -->
 			<a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse"></a>
@@ -45,7 +45,7 @@ class metronic_header{
 		<?php
 	}
 	
-	public function _top_menu($args=array()){
+	public static function _top_menu($args=array()){
 		?>
 			<!-- BEGIN TOP NAVIGATION MENU -->
 			<div class="top-menu">
@@ -67,7 +67,7 @@ class metronic_header{
 		<?php
 	}
 
-	public function _hor_menu($args=array()){
+	public static function _hor_menu($args=array()){
 		?>
 			<!-- BEGIN TOP NAVIGATION MENU -->
 			<div class="hor-menu hidden-sm hidden-xs">
@@ -84,7 +84,7 @@ class metronic_header{
 		<?php
 	}
 	
-	public function menu_notif($args=array()){
+	public static function menu_notif($args=array()){
 		?>
 			<li class="dropdown dropdown-extended dropdown-notification" id="header_notification_bar">
 				<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" aria-expanded="false">
@@ -118,7 +118,7 @@ class metronic_header{
 		<?php
 	}
 
-	public function sidemenu_horizontal($args=array(),$class=''){
+	public static function sidemenu_horizontal($args=array(),$class=''){
 		$req = '';
 		$check = array_filter($args);
 		if(!empty($check)){
@@ -171,7 +171,7 @@ class metronic_header{
 		}
 	}
 	
-	public function menu_inbox($args=array()){
+	public static function menu_inbox($args=array()){
 		?>
 			<li class="dropdown dropdown-extended dropdown-inbox" id="header_inbox_bar">
 					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
@@ -210,7 +210,7 @@ class metronic_header{
 		<?php
 	}
 	
-	public function menu_task($args=array()){
+	public static function menu_task($args=array()){
 		?>
 			<li class="dropdown dropdown-extended dropdown-tasks" id="header_task_bar">
 					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
@@ -248,7 +248,7 @@ class metronic_header{
 		<?php
 	}
 
-	private function menu_language($args=array()){
+	private static function menu_language($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -293,7 +293,7 @@ class metronic_header{
 		<?php
 	}
 	
-	public function menu_user($args=''){
+	public static function menu_user($args=''){
 		$name = get_name_user();
 		$id = get_id_user();
 
@@ -331,7 +331,7 @@ class metronic_header{
 		<?php
 	}
 	
-	public function side_toggle($args=''){
+	public static function side_toggle($args=''){
 		?>
 			<li class="dropdown dropdown-quick-sidebar-toggler">
 				<a href="javascript:;" class="dropdown-toggle">
@@ -341,7 +341,7 @@ class metronic_header{
 		<?php
 	}
 	
-	private function _scroll_bar(){
+	private static function _scroll_bar(){
 		?>
 			<div class="slimScrollBar" style="background: rgb(99, 114, 131); width: 7px; position: absolute; top: 0px; opacity: 0.4; display: none; border-radius: 7px; z-index: 99; right: 1px; height: 147.994px;"></div>
 			<div class="slimScrollRail" style="width: 7px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; background: rgb(234, 234, 234); opacity: 0.2; z-index: 90; right: 1px;"></div>

@@ -2,37 +2,36 @@
 
 (!defined('THEMEPATH'))?exit:'';
 
-require 'template/chart.php';
-require 'template/coming_soon.php';
-require 'template/file_manager.php';
-require 'template/dashboard.php';
-require 'template/form.php';
-require 'template/login.php';
-require 'template/table.php';
+require dirname(__FILE__).'/template/chart.php';
+require dirname(__FILE__).'/template/coming_soon.php';
+require dirname(__FILE__).'/template/file_manager.php';
+require dirname(__FILE__).'/template/dashboard.php';
+require dirname(__FILE__).'/template/form.php';
+require dirname(__FILE__).'/template/login.php';
+require dirname(__FILE__).'/template/table.php';
 
 abstract class metronic_template{
 
 	// ---------------------------------------------
 	// Create Panel --------------------------------
 	// ---------------------------------------------
-	protected function _panel($args=array()){
+	protected static function _panel($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
 		}
-		
+
 		foreach($args as $key => $val){
 			$func = $val['func'];
 
+			$object = 'metronic_template';
 			if(isset($val['object'])){
 				if(class_exists($object)){
-					$object = new $object();
+					$object = $object;
 				}
-			}else{
-				$object = $this;
 			}
 
-			if(is_callable(array($object,$func))){
+			if(method_exists($object,$func)){
 				// add style
 				$css = array_filter($val['style']);
 				if(!empty($css)){
@@ -44,7 +43,7 @@ abstract class metronic_template{
 				}
 			
 				echo '<div class="row">';
-					$object->{$func}($val['data']);
+					$object::{$func}($val['data']);
 				echo '</div>';
 					self::_clearfix();
 					
@@ -61,7 +60,7 @@ abstract class metronic_template{
 		}
 	}
 
-	private function _clearfix(){
+	private static function _clearfix(){
 		?>
 			<div class="clearfix"></div>
 		<?php
@@ -71,12 +70,12 @@ abstract class metronic_template{
 	// Header Content ------------------------------
 	// ---------------------------------------------
 
-	public function _modal_form($qty=0){
+	public static function _modal_form($qty=0){
 		?>
 			<div class="modal fade bs-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 				<div id="here_modal" class="modal-dialog modal-full-custom">
 				<!-- /.modal-dialog -->
-					<?php $this->_modal_loading() ;?>
+					<?php self::_modal_loading() ;?>
 					<!-- /.modal-content -->
 				</div>
 			</div>
@@ -94,7 +93,7 @@ abstract class metronic_template{
 				endif;
 	}
 
-	private function _modal_loading(){
+	private static function _modal_loading(){
 		?>
 			<div class="modal-content">
 				<div class="modal-body">
@@ -105,7 +104,7 @@ abstract class metronic_template{
 		<?php
 	}
 
-	public function _modal_content($args=array()){
+	public static function _modal_content($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -125,9 +124,9 @@ abstract class metronic_template{
 					<div class="modal-body">
 						<div <?php print($id) ;?> class="row">
 							<?php
-								if(is_callable(array($this,$func))){
-									$this->{$func}($args['data'][$key]);
-								}else if(is_callable(array(new $obj,$func))){
+								if(method_exists('metronic_template', $func)){
+									self::{$func}($args['data'][$key]);
+								}else if(method_exists($obj, $func)){
 									$obj::{$func}($args['data'][$key]);
 								}
 							?>
@@ -138,8 +137,8 @@ abstract class metronic_template{
 				<div class="modal-footer">
 					<?php
 						$button = $args['button'];
-						if(is_callable(array($this,$button))){
-							$this->{$button}($args['status']);
+						if(method_exists('metronic_template', $button)){
+							self::{$button}($args['status']);
 						}
 					?>
 				</div>
@@ -147,7 +146,7 @@ abstract class metronic_template{
 		<?php
 	}
 
-	private function _btn_modal_save($args=array()){
+	private static function _btn_modal_save($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -169,7 +168,7 @@ abstract class metronic_template{
 		<?php
 	}
 
-	private function _btn_modal_import($args=array()){
+	private static function _btn_modal_import($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -201,7 +200,7 @@ abstract class metronic_template{
 		<?php
 	}
 
-	private function _btn_modal_yes($args=array()){
+	private static function _btn_modal_yes($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -213,11 +212,11 @@ abstract class metronic_template{
 		<?php
 	}
 
-	protected function _theme_option(){
+	protected static function _theme_option(){
 		include 'theme_option.php';
 	}
 
-	function _head_pagebar($link=array(),$date=false){	
+	protected static function _head_pagebar($link=array(),$date=false){	
 		$check = array_filter($link);
 		?>
 				<div class="page-bar">
@@ -263,7 +262,7 @@ abstract class metronic_template{
 	// ---------------------------------------------
 	// Create Portlet Box --------------------------
 	// ---------------------------------------------
-	public function _portlet($args = array()){	
+	public static function _portlet($args = array()){	
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -276,12 +275,12 @@ abstract class metronic_template{
 
 		if(isset($args['object'])){
 			if(class_exists($args['object'])){
-				$object = new $args['object']();
+				$object = $args['object'];
 			}else{
 				return '';
 			}
 		}else{
-			$object = $this;
+			$object = 'metronic_template';
 		}
 		
 		?>
@@ -304,8 +303,8 @@ abstract class metronic_template{
 					<div id="<?php print($_id) ;?>" class="dataTables_wrapper no-footer">
 						<?php
 							$func = $args['func'];
-							if(is_callable(array($object,$func))){
-								$object->{$func}($args['data']);
+							if(method_exists($object, $func)){
+								$object::{$func}($args['data']);
 							}
 						?>
 					</div>
@@ -318,7 +317,7 @@ abstract class metronic_template{
 	// ---------------------------------------------
 	// Create Tabs ---------------------------------
 	// ---------------------------------------------
-	public function _tabs($args = array()){
+	public static function _tabs($args = array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -326,12 +325,12 @@ abstract class metronic_template{
 
 		if(isset($args['object'])){
 			if(class_exists($args['object'])){
-				$object = new $args['object']();
+				$object = $args['object'];
 			}else{
 				return '';
 			}
 		}else{
-			$object = $this;
+			$object = 'metronic_template';
 		}
 
 		?>
@@ -376,8 +375,8 @@ abstract class metronic_template{
 							<?php
 								if($no_tab < 1){
 									$func = $args['func'];
-									if(is_callable(array($object,$func))){
-										$object->{$func}($args['data']);
+									if(method_exists($object, $func)){
+										$object::{$func}($args['data']);
 									}
 								}
 							?>
@@ -396,7 +395,7 @@ abstract class metronic_template{
 	// Create Inline Menu --------------------------
 	// ---------------------------------------------
 
-	public function _inline_menu($args=array()){
+	public static function _inline_menu($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -427,11 +426,11 @@ abstract class metronic_template{
 					<?php
 						$active = 'active';
 						foreach($args['content'] as $key => $val){
-							$object = isset($val['object'])?new $val['object']():$this;
+							$object = isset($val['object'])?$val['object']:'metronic_template';
 							$func = $val['func'];
-							if(is_callable(array($object,$func))){
+							if(method_exists($object, $func)){
 								echo '<div id="inline_malika'.$key.'" class="tab-pane '.$active.'">';
-								$object->{$func}($val['data']);
+								$object::{$func}($val['data']);
 								echo '</div>';
 								
 								$active = '';
@@ -446,35 +445,35 @@ abstract class metronic_template{
 	// ---------------------------------------------
 	// Create option dashboard ---------------------
 	// ---------------------------------------------
-	public function sobad_dashboard($args = array()){
+	public static function sobad_dashboard($args = array()){
 		$dash = admin_dashboard::_dashboard($args);
 	}
 
 	// ---------------------------------------------
 	// Create Table --------------------------------
 	// ---------------------------------------------
-	public function sobad_table($args = array()){
+	public static function sobad_table($args = array()){
 		$table = create_table::_table($args);
 	}
 
 	// ---------------------------------------------
 	// Create option File manager ------------------
 	// ---------------------------------------------
-	public function sobad_file_manager($args = array()){
+	public static function sobad_file_manager($args = array()){
 		$manager = create_file_manager::_layout($args);
 	}
 
 	// ---------------------------------------------
 	// Create Form ---------------------------------
 	// ---------------------------------------------
-	public function sobad_form($args = array()){
+	public static function sobad_form($args = array()){
 		$form = create_form::get_form($args);
 	}
 
 	// ---------------------------------------------
 	// Create Chart ---------------------------------
 	// ---------------------------------------------
-	public function sobad_chart($args = array()){
+	public static function sobad_chart($args = array()){
 		$chart = create_chart::_layout($args);
 	}
 }

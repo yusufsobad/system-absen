@@ -137,7 +137,8 @@ class absensi{
 	}
 
 	public static function _data_employee(){
-		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','type','status','time_in','time_out'),"AND `abs-user`.status!=0");
+		$whr = "AND `abs-user`.status!=0";
+		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','type','status','time_in','time_out'),$whr);
 
 		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
 

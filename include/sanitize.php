@@ -12,17 +12,17 @@ class formatting extends _error{
 		}
 	}
 
-	private function _text($string=''){
+	private static function _text($string=''){
 		$string = self::wp_sanitize_text_field($string);
 		return self::php_sanitize_string($string);
 	}
 
-	private function _email($email=''){
+	private static function _email($email=''){
 		$email = self::wp_sanitize_email($email);
 		return self::php_sanitize_email($email);
 	}
 
-	private function _select($string=''){
+	private static function _select($string=''){
 		switch (gettype($string)) {
 			case 'integer':
 				return self::_number($string);
@@ -42,32 +42,32 @@ class formatting extends _error{
 		}
 	}
 
-	private function _number($number=0){
+	private static function _number($number=0){
 		return self::_decimal($number);
 	}
 
-	private function _decimal($number=0){
+	private static function _decimal($number=0){
 		$number = clear_format($number);
 		return floatval($number);
 	}
 
-	private function _textarea($string=''){
+	private static function _textarea($string=''){
 		$string = self::wp_sanitize_text_field($string);
 		return self::php_sanitize_string($string);
 	}
 
-	private function _html($string=''){
+	private static function _html($string=''){
 		return self::_textarea($string);
 	}
 
-	public function _date($date='',$format='Y-m-d'){
+	public static function _date($date='',$format='Y-m-d'){
 		$date = date($date);
 		$date = strtotime($date);
 
 		return date($format,$date);
 	}
 
-	private function _price($price=0){	
+	private static function _price($price=0){	
 		$number = clear_format($price);
 		return intval($number);
 	}
@@ -76,11 +76,11 @@ class formatting extends _error{
 	// PHP Sanitize ------------------------------------------------
 	// -------------------------------------------------------------
 
-	private function php_sanitize_string($string=''){
+	private static function php_sanitize_string($string=''){
 		return filter_var($string, FILTER_SANITIZE_STRING);
 	}
 
-	private function php_sanitize_email($string=''){
+	private static function php_sanitize_email($string=''){
 		$email = filter_var($string, FILTER_SANITIZE_EMAIL);
 
 		if(filter_var($email, FILTER_VALIDATE_EMAIL)){
@@ -90,7 +90,7 @@ class formatting extends _error{
 		die(parent::_alert_db('Email Not Valid'));
 	}
 
-	private function php_sanitize_url($string=''){
+	private static function php_sanitize_url($string=''){
 		$url = filter_var($string, FILTER_SANITIZE_URL);
 
 		if(filter_var($url, FILTER_VALIDATE_URL)){
@@ -104,7 +104,7 @@ class formatting extends _error{
 	// WP Reference ------------------------------------------------
 	// -------------------------------------------------------------
 	
-	private function wp_sanitize_user( $username, $strict = false ) {
+	private static function wp_sanitize_user( $username, $strict = false ) {
 		$raw_username = $username;
 		$username     = self::_strip_all_tags( $username );
 		$username     = self::remove_accents( $username );
@@ -132,7 +132,7 @@ class formatting extends _error{
 		 */
 	}
 
-	private function wp_sanitize_email( $email ) {
+	private static function wp_sanitize_email( $email ) {
 		// Test for the minimum length the email can be
 		if ( strlen( $email ) < 6 ) {
 			/**
@@ -244,7 +244,7 @@ class formatting extends _error{
 	 * @param string $str String to sanitize.
 	 * @return string Sanitized string.
 	 */
-	private function wp_sanitize_text_field( $str ) {
+	private static function wp_sanitize_text_field( $str ) {
 		$filtered = self::_sanitize_text_fields( $str, false );
 
 		/**
@@ -258,7 +258,7 @@ class formatting extends _error{
 		return $filtered;
 	}
 
-	private function wp_sanitize_textarea_field( $str ) {
+	private static function wp_sanitize_textarea_field( $str ) {
 		$filtered = self::_sanitize_text_fields( $str, true );
 
 		/**
@@ -283,7 +283,7 @@ class formatting extends _error{
 	 * @return string Sanitized string.
 	 */
 	
-	private function _sanitize_text_fields( $str, $keep_newlines = false ) {
+	private static function _sanitize_text_fields( $str, $keep_newlines = false ) {
 		if ( is_object( $str ) || is_array( $str ) ) {
 			return '';
 		}
@@ -321,7 +321,7 @@ class formatting extends _error{
 		return $filtered;
 	}
 	
-	public function _strip_all_tags( $string, $remove_breaks = false ) {
+	public static function _strip_all_tags( $string, $remove_breaks = false ) {
 		$string = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $string );
 		$string = strip_tags( $string );
 	 
@@ -332,7 +332,7 @@ class formatting extends _error{
 		return trim( $string );
 	}
 	
-	private function remove_accents( $string ) {
+	private static function remove_accents( $string ) {
 		if ( ! preg_match( '/[\x80-\xff]/', $string ) ) {
 			return $string;
 		}
@@ -731,7 +731,7 @@ class formatting extends _error{
 	 * @param bool    $strip Optional. Whether to attempt to strip out invalid UTF8. Default is false.
 	 * @return string The checked text.
 	 */
-	private function wp_check_invalid_utf8( $string, $strip = false ) {
+	private static function wp_check_invalid_utf8( $string, $strip = false ) {
 		$string = (string) $string;
 
 		if ( 0 === strlen( $string ) ) {
@@ -778,7 +778,7 @@ class formatting extends _error{
 	 * @param bool   $remove_breaks Optional. Whether to remove left over line breaks and white space chars
 	 * @return string The processed string.
 	 */
-	private function wp_strip_all_tags( $string, $remove_breaks = false ) {
+	private static function wp_strip_all_tags( $string, $remove_breaks = false ) {
 		$string = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $string );
 		$string = strip_tags( $string );
 
@@ -799,7 +799,7 @@ class formatting extends _error{
 	 * @param string $text Text to be converted.
 	 * @return string Converted text.
 	 */
-	private function wp_pre_kses_less_than( $text ) {
+	private static function wp_pre_kses_less_than( $text ) {
 		return preg_replace_callback( '%<[^>]*?((?=<)|>|$)%', array($this,'wp_pre_kses_less_than_callback'), $text );
 	}
 
@@ -811,7 +811,7 @@ class formatting extends _error{
 	 * @param array $matches Populated by matches to preg_replace.
 	 * @return string The text returned after esc_html if needed.
 	 */
-	private function wp_pre_kses_less_than_callback( $matches ) {
+	private static function wp_pre_kses_less_than_callback( $matches ) {
 		if ( false === strpos( $matches[0], '>' ) ) {
 			return esc_html( $matches[0] );
 		}

@@ -37,8 +37,9 @@ function get_home_func($key=''){
 	$prefix = constant("_prefix");
 	$page = $_SESSION[$prefix."page"];
 
-	$object = $reg_page[$page]['page'];
-	$object::_reg();
+	$func = $reg_page[$page]['page'];
+	$object = new $func();
+	$object->_reg();
 
 	global $reg_sidebar;
 

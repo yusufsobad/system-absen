@@ -2,7 +2,7 @@
 (!defined('THEMEPATH'))?exit:'';
 
 class user_login extends create_form{
-	public function login($func,$args=array()){
+	public static function login($func,$args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			$data = 'placeholder="username" autofocus required';

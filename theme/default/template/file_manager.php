@@ -2,7 +2,7 @@
 (!defined('THEMEPATH'))?exit:'';
 
 class create_file_manager{
-	public function _layout($args=array()){
+	public static function _layout($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -14,7 +14,7 @@ class create_file_manager{
 		}
 	}
 	
-	private function _upload_file($args=array()){
+	private static function _upload_file($args=array()){
 		?>
 			<div class="col-md-12">
 				<p>
@@ -35,7 +35,7 @@ class create_file_manager{
 		self::_script_upload($args);
 	}
 
-	private function _list_file($args=array()){
+	private static function _list_file($args=array()){
 		if(isset($args['search'])){
 			create_table::_search($args['search'],$args['data']);
 		}
@@ -55,7 +55,7 @@ class create_file_manager{
 		}
 	}
 
-	private function _layout_list_file($args=array()){
+	private static function _layout_list_file($args=array()){
 		$count = count($args);
 		$ceil = ceil($count/6);
 
@@ -99,7 +99,7 @@ class create_file_manager{
 		}
 	}
 
-	private function _filter_image_file($type='',$url=''){
+	private static function _filter_image_file($type='',$url=''){
 		$asset = 'asset/img/';
 		$list = array(
 			'text'			=> 'icon/icon-text.jpg',
@@ -120,7 +120,7 @@ class create_file_manager{
 		return $asset.$list[$type];
 	}
 
-	private function _script_upload($args=array()){
+	private static function _script_upload($args=array()){
 		?>
 			<script type="text/javascript">
 				var myDropzone = new Dropzone("#<?php print($args['id']) ;?>",{ 
@@ -164,7 +164,7 @@ class create_file_manager{
 		<?php
 	}
 
-	private function _style_list(){
+	private static function _style_list(){
 		?>
 			<style>
 				.imgList .row {
@@ -242,7 +242,7 @@ class create_file_manager{
 		<?php
 	}
 
-	private function _script_list($args=array()){
+	private static function _script_list($args=array()){
 		?>
 			<script type="text/javascript">
 				var _select_file_list = [];

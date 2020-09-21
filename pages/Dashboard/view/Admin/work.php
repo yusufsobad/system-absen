@@ -198,7 +198,7 @@ class worktime_absen extends _page{
 		return portlet_admin($opt,$box);
 	}
 
-	public function _get_days(){
+	public static function _get_days(){
 		$days = array(
 			'Minggu',
 			'Senin',
@@ -283,7 +283,7 @@ class worktime_absen extends _page{
 		return modal_admin($args);
 	}
 
-	public function form_worktime($data=0){
+	public static function form_worktime($data=0){
 		$args = array();
 		if($data!=0){
 			$args = sobad_work::get_id($data,array('days','time_in','time_out','note','status'));

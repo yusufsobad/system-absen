@@ -100,6 +100,9 @@ abstract class _class{
 		self::$_inner = '';
 		self::$_where = $where;
 
+		$blueprint = self::schema();
+		$table = $blueprint['table'];
+
 		$check = array_filter($args);
 		if(empty($args)){
 			$joins = self::list_join();
@@ -107,9 +110,6 @@ abstract class _class{
 
 			$args = array_merge($user,$logs,$metas);
 		}
-
-		$blueprint = self::schema();
-		$table = $blueprint['table'];
 	
 		if(isset($blueprint['detail'])){
 			$check = array_filter($blueprint['detail']);

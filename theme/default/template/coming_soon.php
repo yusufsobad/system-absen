@@ -3,7 +3,7 @@
 
 class sobad_coming_soon{
 	
-	public function get_soon($args=array()){
+	public static function get_soon($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -13,7 +13,7 @@ class sobad_coming_soon{
 		$this->script_countdown($args['countdown'],$args['date']);
 	}
 
-	private function get_header($href='#',$logo=''){
+	private static function get_header($href='#',$logo=''){
 		?>
 			<div class="row">
 				<div class="col-md-12 coming-soon-header">
@@ -25,7 +25,7 @@ class sobad_coming_soon{
 		<?php
 	}
 
-	private function get_layout($args=array()){
+	private static function get_layout($args=array()){
 		?>
 			<div class="container">
 				<?php $this->get_header($args['head_link'],$args['head_logo']) ;?>
@@ -64,7 +64,7 @@ class sobad_coming_soon{
 		<?php
 	}
 
-	private function get_subscribe($args=array()){
+	private static function get_subscribe($args=array()){
 		$check = array_filter($args);
 		if(!empty($check)){
 			?>
@@ -83,7 +83,7 @@ class sobad_coming_soon{
 		}
 	}
 
-	private function script_countdown($load='',$until=''){
+	private static function script_countdown($load='',$until=''){
 		if(empty($until)){
 			$until = date('Y-m-d');
 			$until = strtotime($until);

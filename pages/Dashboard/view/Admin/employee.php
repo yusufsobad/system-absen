@@ -592,7 +592,7 @@ class employee_absen extends _file_manager{
 		return modal_admin($args);
 	}
 
-	public function _layout_form($args=array()){
+	public static function _layout_form($args=array()){
 		$picture = $args[1];
 		$args = $args[0];
 

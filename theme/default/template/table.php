@@ -3,7 +3,7 @@
 
 class create_table{
 	
-	public function _table ($args=array()){
+	public static function _table ($args=array()){
 		
 		$class = "table table-striped table-bordered table-hover dataTable no-footer";
 		if(isset($args['class'])){
@@ -51,7 +51,7 @@ class create_table{
 		}
 	}
 	
-	public function _search($args = array(),$data=array()){
+	public static function _search($args = array(),$data=array()){
 		$search = '';
 		$check = array_filter($args);
 	
@@ -96,7 +96,7 @@ class create_table{
 		<?php
 	}
 	
-	private function _dropdown($args = array(),$search=''){
+	private static function _dropdown($args = array(),$search=''){
 		$check = 'checked';
 		?>
 			<div class="btn-group">
@@ -133,7 +133,7 @@ class create_table{
 		<?php
 	}
 	
-	private function thead($args=array()){
+	private static function thead($args=array()){
 		?>
 			<thead>
 				<tr role="row">
@@ -153,7 +153,7 @@ class create_table{
 		<?php
 	}
 	
-private function tbody($args=array()){
+private static function tbody($args=array()){
 		$len = count($args);
 	?>
 		<tbody>
@@ -186,7 +186,7 @@ private function tbody($args=array()){
 	<?php
 	}
 	
-	public function _pagination($args=array()){
+	public static function _pagination($args=array()){
 		$prev = '';$next = '';$page=0;
 		$number = intval($args['start']);
 		$load = isset($args['load'])?$args['load']:'sobad_portlet';
@@ -258,7 +258,7 @@ private function tbody($args=array()){
 		<?php
 	}
 	
-	private function _scrolldown(){
+	private static function _scrolldown(){
 		?>
 			
 		<?php

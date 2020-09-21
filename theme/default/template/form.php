@@ -6,9 +6,10 @@ class create_form{
 	private static $_types = array();
 
 	public static $col_label = 4;
+
 	public static $col_input = 7;
 	
-	private function option_form($args=array()){
+	private static function option_form($args=array()){
 		$inp = '';
 		foreach($args as $key => $val){
 			if($key === 'cols'){
@@ -34,7 +35,7 @@ class create_form{
 		}
 	}
 	
-	public function get_option($opt,$args=array(),$label=4,$input=7){
+	public static function get_option($opt,$args=array(),$label=4,$input=7){
 		$func = 'opt_'.$opt;
 
 		if(!is_callable(array(new self(),$func))){
@@ -46,7 +47,7 @@ class create_form{
 		return self::$func($args);
 	}
 	
-	public function get_form($args){
+	public static function get_form($args){
 		$check = array_filter($args);
 		if(empty($check)){
 			$args = array(
@@ -113,12 +114,12 @@ class create_form{
 		<?php
 	}
 	
-	private function opt_label($val){
+	private static function opt_label($val){
 		// label
 		return '<label class="col-md-'. self::$col_label .' control-label">'.$val.'</label>';
 	}
 	
-	private function opt_hidden($val=array()){
+	private static function opt_hidden($val=array()){
 		$id = '';
 		if(isset($val['id'])){
 			$id = 'id="'.$val['id'].'"';
@@ -128,7 +129,7 @@ class create_form{
 		return $inp;
 	}
 	
-	private function opt_input($val=array()){	
+	private static function opt_input($val=array()){	
 		// id, type , class , key , value , *data
 		// *data = placeholder , status , max , min , dll
 		// label (optional)
@@ -182,7 +183,7 @@ class create_form{
 		return $inp.$btn;
 	}
 
-	private function opt_box($val=array()){	
+	private static function opt_box($val=array()){	
 		// id, type , class , key , value , *data
 		// *data = placeholder , status , max , min , dll
 		// label (optional)
@@ -243,7 +244,7 @@ class create_form{
 		return $inp.$btn;
 	}
 	
-	private function opt_file($val=array()){	
+	private static function opt_file($val=array()){	
 		// id , class , key , value , *data
 		// *data = placeholder , status , max , min , dll
 		// label (optional)
@@ -276,7 +277,7 @@ class create_form{
 		return $inp;
 	}
 	
-	private function opt_textarea($val=array()){
+	private static function opt_textarea($val=array()){
 		// id, key , class , rows , value
 		// label (optional)
 		$id = '';
@@ -300,7 +301,7 @@ class create_form{
 		return $inp;
 	}
 	
-	private function opt_wysihtml5($val=array()){
+	private static function opt_wysihtml5($val=array()){
 		
 		$inp = '';
 		if(isset($val['label'])){
@@ -319,7 +320,7 @@ class create_form{
 		return $inp;
 	}
 	
-	private function opt_button($val=array()){
+	private static function opt_button($val=array()){
 		// id, key , class , label, text, click, data
 		$inp = '';
 		if(isset($val['label'])){
@@ -339,7 +340,7 @@ class create_form{
 		return $inp;
 	}
 	
-	private function opt_select($val=array()){
+	private static function opt_select($val=array()){
 		// id, key , class , data , select
 		// label (optional)
 		
@@ -432,12 +433,12 @@ class create_form{
 		return $inp.$btn;
 	}
 	
-	private function opt_value_select($key,$select,$opt){
+	private static function opt_value_select($key,$select,$opt){
 		$func = '<option value="'.$key.'" '.$select.'>'.$opt.' </option>';
 		return $func;
 	}
 
-	private function opt_datepicker($val=array()){
+	private static function opt_datepicker($val=array()){
 		// key , class , value , date
 		// id, to, data, label (optional)
 		

@@ -1,7 +1,7 @@
 <?php
 
 class create_chart{
-	public function _layout($args=array()){
+	public static function _layout($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -15,7 +15,7 @@ class create_chart{
 		}
 	}
 	
-	private function _site_load($args=array()){
+	private static function _site_load($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';

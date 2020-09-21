@@ -2,7 +2,7 @@
 require 'Admin/include.php';
 
 class dash_absensi{
-	private function head_title(){
+	private static function head_title(){
 		$args = array(
 			'title'	=> 'Dashboard <small>reports & statistics</small>',
 			'link'	=> array(
@@ -17,10 +17,9 @@ class dash_absensi{
 		return $args;
 	}
 
-	public function _sidemenu(){
+	public static function _sidemenu(){
 		$label = array();
 		$data = array();
-		$metronic = new metronic_layout();
 		
 		$data[] = array(
 			'style'		=> array(),
@@ -32,12 +31,12 @@ class dash_absensi{
 		$title = self::head_title();
 		
 		ob_start();
-		$metronic->_head_content($title);
-		$metronic->_content('_panel',$data);
+		metronic_layout::_head_content($title);
+		metronic_layout::_content('_panel',$data);
 		return ob_get_clean();
 	}
 
-	private function _data(){
+	private static function _data(){
 		$dash[] = array(
 			'func'	=> '_block_info',
 			'data'	=> array(

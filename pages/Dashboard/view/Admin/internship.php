@@ -35,7 +35,8 @@ class internship_absen extends _page{
 			'_semester',
 			'_classes',
 			'status',
-			'work_time'
+			'work_time',
+			'inserted'
 		);
 
 		return $args;
@@ -43,7 +44,7 @@ class internship_absen extends _page{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','name','no_induk','_address','phone_no','status');
+		$args = array('ID','name','no_induk','_address','phone_no','status','inserted');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -114,6 +115,7 @@ class internship_absen extends _page{
 			);
 
 			$status = "Non Aktif";
+			$no_induk = self::_conv_no_induk($val['no_induk'],$val['inserted']);
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -126,7 +128,7 @@ class internship_absen extends _page{
 				'NIK'		=> array(
 					'left',
 					'5%',
-					$val['_reff_no_induk'],
+					$no_induk,
 					true
 				),
 				'Nama'		=> array(
@@ -138,7 +140,7 @@ class internship_absen extends _page{
 				'Alamat'	=> array(
 					'left',
 					'30%',
-					$val['address'],
+					$val['_address'],
 					true
 				),
 				'No HP'		=> array(
@@ -231,18 +233,24 @@ class internship_absen extends _page{
 		return tabs_admin($opt,$tabs);
 	}
 
+	private function _conv_no_induk($no=0,$date=''){
+		$date = date($date);
+		$date = strtotime($date);
+		$date = date('y',$date);
+
+		return 'M'.$date.sprintf("%02d",$no);
+	}
+
 	// ----------------------------------------------------------
 	// Form data category -----------------------------------
 	// ----------------------------------------------------------
 	public function add_form($func='',$load='sobad_portlet'){
-		$vals = array(0,'',1,'male','','',0,0,0,0,'',0,0,0,0,0,0,6,0);
+		$vals = array(0,'',1,'male','','',0,0,0,0,'',0,0,0,0,0,0,6,0,date('Y-m-d'));
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
 			$func = '_add_db';
 		}
-
-		$vals['nim'] = 'M'.date('y').sprintf('%02d',1);
 		
 		$args = array(
 			'title'		=> 'Tambah data internship',
@@ -256,13 +264,11 @@ class internship_absen extends _page{
 		return self::_data_form($args,$vals);
 	}
 
-	private function edit_form($vals=array()){
+	protected function edit_form($vals=array()){
 		$check = array_filter($vals);
 		if(empty($check)){
 			return '';
 		}
-		
-		$vals['nim'] = 'M'.date('y').sprintf('%02d',0);
 
 		$args = array(
 			'title'		=> 'Edit data internship',
@@ -322,7 +328,7 @@ class internship_absen extends _page{
 				'key'			=> 'nim',
 				'label'			=> 'No Induk',
 				'class'			=> 'input-circle',
-				'value'			=> $vals['nim'],
+				'value'			=> self::_conv_no_induk($vals['no_induk'],$vals['inserted']),
 				'data'			=> 'placeholder="No Induk Magang" disabled',
 			),
 			array(

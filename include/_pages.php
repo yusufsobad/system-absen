@@ -253,8 +253,13 @@ abstract class _page{
 		$args = static::_array();
 		self::$type = isset($_POST['type'])?$_POST['type']:'';
 
+		$post = '';
+		if(property_exists(new static, 'post')){
+			$post = static::$post;
+		}
+
 		$object = static::$table;
-		$q = $object::get_id($id,$args,true);
+		$q = $object::get_id($id,$args,$post);
 		
 		if($q===0){
 			return '';

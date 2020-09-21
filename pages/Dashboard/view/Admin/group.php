@@ -195,7 +195,7 @@ class group_absen extends _page{
 		}
 
 		$data = array();
-		$_dt = json_decode($vals['meta_note'],true);
+		$_dt = unserialize($vals['meta_note']);
 		if(isset($_dt['data'])){
 			$data = $_dt['data'];
 		}

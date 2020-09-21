@@ -14,9 +14,18 @@ class sobad_user extends _class{
 	protected static $list_meta = '';
 
 	public function __construct(){
-		self::$list_meta = array(
-			'_address','_email','_sex','_entry_date','_place_date','_birth_date','_resign_date','_province','_city','_subdistrict','_postcode','_marital','_religion','_nickname'
-		);
+		$type = parent::$_type;
+		
+		if($type=='internship'){
+			self::$list_meta = array(
+				'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode'
+			);
+		}else{
+			self::$list_meta = array(
+				'_address','_email','_sex','_entry_date','_place_date','_birth_date','_resign_date','_province','_city','_subdistrict','_postcode','_marital','_religion','_nickname'
+			);
+		}
+
 	}
 
 	public static function blueprint($type='employee'){
@@ -52,9 +61,6 @@ class sobad_user extends _class{
 
 		if($type=='internship'){
 			unset($args['detail']['divisi']);
-			self::$list_meta = array(
-				'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode'
-			);
 		}
 
 		return $args;

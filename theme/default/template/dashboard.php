@@ -2,7 +2,7 @@
 (!defined('THEMEPATH'))?exit:'';
 
 class admin_dashboard{
-	public function _dashboard($args=array()){
+	public static function _dashboard($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -15,8 +15,8 @@ class admin_dashboard{
 			}
 		}
 	}
-	
-	private function _block_info($args=array()){
+	 
+	private static function _block_info($args=array()){
 		// color blue-madison , red-intense , green-haze , purple-plum
 		$check = array_filter($args);
 		if(empty($check)){
