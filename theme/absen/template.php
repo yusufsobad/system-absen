@@ -67,7 +67,8 @@ abstract class absen_control{
 				$dayoff[$val['no_induk']] = array(
 					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
 					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
-					'group'	=> self::_get_group($val['divisi'])
+					'group'	=> self::_get_group($val['divisi']),
+					'class'	=> 'col-md-6'
 				);
 			}
 
@@ -75,7 +76,8 @@ abstract class absen_control{
 				$permit[$val['no_induk']] = array(
 					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
 					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
-					'group'	=> self::_get_group($val['divisi'])
+					'group'	=> self::_get_group($val['divisi']),
+					'class'	=> 'col-md-6'
 				);
 			}
 
@@ -83,7 +85,8 @@ abstract class absen_control{
 				$outcity[$val['no_induk']] = array(
 					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
 					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
-					'group'	=> self::_get_group($val['divisi'])
+					'group'	=> self::_get_group($val['divisi']),
+					'class'	=> 'col-md-6'
 				);
 			}
 		}
@@ -101,6 +104,8 @@ abstract class absen_control{
 
 		echo $json;
 		self::_layout();
+		self::_animation();
+
 	}
 
 	private static function _json(){
@@ -120,6 +125,17 @@ abstract class absen_control{
 	protected static function _layout(){
 		?>
 			<script type="text/javascript">
+				function set_total_absen(){
+					var m = 0;
+					for(g in work){
+						for(w in work[g]){
+							m += 1;
+						}
+					}
+
+					$("#total-work-absen").text(m);
+				}
+
 				function layout_user(id,arr){
 					var _class = '';
 
@@ -130,17 +146,17 @@ abstract class absen_control{
 					var args = ['div',[['class','absen-content '+_class]],''];
 					var a = ceBefore(id,args);
 
-					args = ['div',[['class','image-content']],'']
+					args = ['div',[['class','image-content']],''];
 					var b = ceAppend(a,args);
 
-					args = ['img',[['src','asset/img/user/'+arr['image']]],'']
+					args = ['img',[['src','asset/img/user/'+arr['image']]],''];
 					ceAppend(b,args);
 
-					args = ['div',[['class','employee name-content']],arr['name']]
+					args = ['div',[['class','employee name-content']],arr['name']];
 					ceAppend(a,args);
 
 					if("time" in arr){
-						args = ['div',[['class','employee time-content']],arr['time']]
+						args = ['div',[['class','employee time-content']],arr['time']];
 						ceAppend(a,args);
 					}
 				}
@@ -185,6 +201,8 @@ abstract class absen_control{
 					notWork();
 					Work();
 					outCity();
+					dayOff();
+					_permit();
 				}
 
 				function notWork(){
@@ -229,22 +247,77 @@ abstract class absen_control{
 				}
 
 				function outCity(){
-					var args = '';var display = 'none';
+					var args = '';var display = 'none';var size = 0;
 					var idx = document.getElementById("employee-excity");
 
-					if(outcity.length>0){
+					for(o in outcity){
+						size += 1;
+					}
+
+					if(size>0){
 						display = 'block';
 					}
 
-					args = ['div',[['class','row absen-exwork'],['style','display:'+display]],'Luar Kota'];
+					args = ['div',[['class','employee title-content'],['style','display:'+display]],'Luar Kota'];
 					ceAppend(idx,args);
+
+					args = ['div',[['class','row'],['style','height:auto;display:'+display]],''];
+					idx = ceAppend(idx,args);
 
 					for(var i in outcity){
 						layout_user(idx,outcity[i]);
 					}
 				}
 
+				function dayOff(){
+					var args = '';var display = 'none';var size = 0;
+					var idx = document.getElementById("employee-excity");
+
+					for(o in dayoff){
+						size += 1;
+					}
+
+					if(size>0){
+						display = 'block';
+					}
+
+					args = ['div',[['class','employee title-content'],['style','margin-top: 20px;display:'+display]],'Cuti'];
+					ceAppend(idx,args);
+
+					args = ['div',[['class','row'],['style','height:auto;display:'+display]],''];
+					idx = ceAppend(idx,args);
+
+					for(var i in dayoff){
+						layout_user(idx,dayoff[i]);
+					}
+				}
+
+				function _permit(){
+					var args = '';var display = 'none';var size = 0;
+					var idx = document.getElementById("employee-excity");
+
+					for(o in permit){
+						size += 1;
+					}
+
+					if(size>0){
+						display = 'block';
+					}
+
+					args = ['div',[['class','employee title-content'],['style','margin-top: 20px;display:'+display]],'Izin'];
+					ceAppend(idx,args);
+
+					args = ['div',[['class','row'],['style','height:auto;display:'+display]],''];
+					idx = ceAppend(idx,args);
+
+					for(var i in permit){
+						layout_user(idx,permit[i]);
+					}
+				}
+
 				load_absen();
+				set_total_absen();
+
 			</script>
 		<?php
 	}
@@ -252,7 +325,72 @@ abstract class absen_control{
 	private static function _animation(){
 		?>
 			<script type="text/javascript">
-				
+				function load_animation(data){
+					// start
+					var idx = document.getElementById("employee-animation");
+					var _idx = data['id'];
+					var _grp = notwork[_idx]['group'];
+
+					layout_user(idx,notwork[_idx]);
+					$('div#employee-animation').css("z-index","10");
+					$('#slider-notwork>div:nth-child(1)').remove();
+
+					// Check group
+					if(typeof work[_grp] === 'undefined'){
+						work[_grp] = [];
+
+						idx = document.getElementById("employee-work");
+						var a = cWork(idx,_grp);
+					}else{
+						var a = document.getElementById("workgroup-"+_grp);
+						a = a.getElementsByClassName("absen-work-content")[0];
+					}
+
+					work[_grp][_idx] = notwork[_idx];
+					work[_grp][_idx]['time'] = data['data']['date'];
+					work[_grp][_idx]['class'] = 'col-md-20 opac-none';
+
+					layout_user(a,work[_grp][_idx]);
+
+					// get posisi group
+					var _pos = $('#workgroup-'+_grp).position();
+					$('#employee-animation>.absen-content').animate({top:(_pos.top+57)+'px',left:(_pos.left+40)+'px',width:"7.2%"},'slow',function(){
+
+					//set normal
+						$("#workgroup-"+_grp+" .opac-none").removeClass("opac-none");
+						$('div#employee-animation').css("z-index","0");
+						$('#employee-animation').html('');
+
+					//pause slide to animation
+						delete notwork[_idx];
+
+					// Set Karyawan Masuk
+						set_total_absen();
+					});
+				}
+
+				function set_absen(data,id){
+					if(data['data']!=null){
+						$('#slider-notwork>div:nth-child(1)').before($('#absen-notwork-'+data['id']));
+						load_animation(data);
+					}
+
+					var m = Object.keys(notwork).length;
+
+					if(m>9){
+						$('#multiSlider').multislider('unPause');
+
+						if(m<1){
+							$('#absen-notwork').animate({opacity:0,height:'0px'},'slow');
+						}
+					}
+
+					if(data['status']){
+						if(data['msg']!=''){
+							toastr.success(data['msg']);
+						}
+					}
+				}
 			</script>
 		<?php
 	}

@@ -137,8 +137,54 @@ class absensi{
 	}
 
 	public static function _data_employee(){
+		$date = date('Y-m-d');
 		$whr = "AND `abs-user`.status!=0";
-		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','type','status','time_in','time_out'),$whr);
+		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','work_time','status'),$whr);
+		$permit = sobad_permit::get_all(array('user','type'),"AND start_date<='$date' AND range_date>='$date'");
+
+		$_permit = array(0 => 0);
+		foreach ($permit as $key => $val) {
+			$_permit[$val['user']] = $val['type'];
+		}
+
+		foreach ($user as $key => $val) {
+			$idx = $val['ID'];
+			$log = sobad_user::get_all(array('type','id_join','time_in','time_out'),"AND `abs-user`.ID='$idx' AND `abs-user-log`.inserted='$date'");
+
+			$_log = true;
+			$check = array_filter($log);
+			if(empty($check)){
+				$log[0] = array(
+					'type'		=> NULL,
+					'time_in'	=> NULL,
+					'time_out'	=> NULL
+				);
+
+				$_log = false;
+			}
+
+			if(array_key_exists($idx, $_permit)){
+				$log[0]['type'] = $_permit[$idx];
+
+				if($_log){
+					sobad_db::_update_single($log[0]['id_join'],'abs-user-log',array(
+							'user' 		=> $idx,
+							'type'		=> $_permit[$idx],
+						)
+					);
+				}else{
+					sobad_db::_insert_table('abs-user-log',array(
+							'user' 		=> $idx,
+							'shift' 	=> $val['work_time'],
+							'type'		=> $_permit[$idx],
+							'inserted'	=> $date
+						)
+					);
+				}
+			}
+
+			$user[$key] = array_merge($user[$key],$log[0]);
+		}
 
 		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
 

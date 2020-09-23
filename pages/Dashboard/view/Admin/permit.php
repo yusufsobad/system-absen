@@ -183,7 +183,7 @@ class permit_absen extends _page{
 	}
 
 	protected function _conv_type($id=0){
-		$args = array(1 => 'Izin', 'Cuti', 'Luar Kota', 'Libur');
+		$args = array(3 => 'Cuti', 'Izin', 'Luar Kota', 'Libur');
 		return isset($args[$id])?$args[$id]:'';
 	}
 
@@ -270,7 +270,7 @@ class permit_absen extends _page{
 			),
 			array(
 				'func'			=> 'opt_select',
-				'data'			=> array(1 => 'Izin', 'Cuti', 'Luar Kota', 'Libur'),
+				'data'			=> array(3 => 'Cuti', 'Izin', 'Luar Kota', 'Libur'),
 				'key'			=> 'type',
 				'label'			=> 'Jenis',
 				'class'			=> 'input-circle',

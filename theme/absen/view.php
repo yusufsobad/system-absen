@@ -138,10 +138,10 @@ class sobad_absen extends absen_control{
 		$masuk = !isset($args['masuk'])?0:$args['masuk'];
 		$cuti = !isset($args['cuti'])?0:$args['cuti'];
 		$izin = !isset($args['izin'])?0:$args['izin'];
-		$luar_kota = !isset($args['luar_kota'])?0:$args['luar_kota'];
+		$luar_kota = !isset($args['luar kota'])?0:$args['luar kota'];
 
 		$args = array(
-			'Masuk' 	=> $masuk,
+		//	'Masuk' 	=> $masuk,
 			'Cuti'		=> $cuti,
 			'Izin'		=> $izin,
 			'Luar Kota'	=> $luar_kota
