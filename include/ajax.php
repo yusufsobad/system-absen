@@ -1,7 +1,7 @@
 <?php
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
+//	ini_set('display_errors', 1);
+//	ini_set('display_startup_errors', 1);
+//	error_reporting(E_ALL);
 
 session_start();
 
@@ -88,8 +88,12 @@ class sobad_ajax{
 			return print_r($ajax);
 		}
 		
-		$object = new $_class();
-		$msg = $object->{$_func}($data);
+		try{
+			$object = new $_class();
+			$msg = $object->{$_func}($data);
+		}catch(Exception $e){
+			return _error::_alert_db($e->getMessage());
+		}
 
 		if(empty($msg)){
 			$ajax = array(

@@ -50,33 +50,6 @@ function convToGroup($args=array(),$data=array()){
 	return $group;
 }
 
-function hapus_module($id){
-	$id = str_replace('del_','',$id);
-	intval($id);
-
-	$q = sobad_db::_delete_single($id,'abs-module');
-	
-	return $q;
-}
-
-function hapus_holiday($id){
-	$id = str_replace('del_','',$id);
-	intval($id);
-
-	$q = sobad_db::_delete_single($id,'abs-holiday');
-	
-	return $q;
-}
-
-function hapus_group($id){
-	$id = str_replace('del_','',$id);
-	intval($id);
-
-	$q = sobad_db::_delete_single($id,'abs-group');
-	
-	return $q;
-}
-
 function hapus_button($val){
 	return _click_button($val);
 }
@@ -251,6 +224,24 @@ function dropdown_button($args=array()){
 	return $drop;
 }
 
+function _detectDelimiter($csvFile){
+    $delimiters = array(
+        ';' => 0,
+        ',' => 0,
+        "\t" => 0,
+        "|" => 0
+    );
+
+    $handle = fopen($csvFile, "r");
+    $firstLine = fgets($handle);
+    fclose($handle); 
+    foreach ($delimiters as $delimiter => &$count) {
+        $count = count(str_getcsv($firstLine, $delimiter));
+    }
+
+    return array_search(max($delimiters), $delimiters);
+}
+
 function script_chart(){
 	?>
 	<script>
@@ -263,15 +254,4 @@ function script_chart(){
 		});
 	</script>
 	<?php
-}
-
-// ----------------------------------------------
-// Function Logout Admin ------------------------
-// ----------------------------------------------
-
-function logout_admin(){
-	unset($_SESSION['malika_page']);
-	session_destroy();
-	
-	return '/system-kmi';
 }

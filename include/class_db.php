@@ -4,7 +4,6 @@
 require 'class_db/_class.php';
 
 require 'class_db/sobad_holiday.php';
-require 'class_db/sobad_internship.php';
 require 'class_db/sobad_module.php';
 require 'class_db/sobad_permit.php';
 require 'class_db/sobad_post.php';

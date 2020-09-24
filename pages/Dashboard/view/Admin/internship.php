@@ -18,7 +18,9 @@ class internship_absen extends _page{
 	protected function _array(){
 		$args = array(
 			'ID',
+			'picture',
 			'name',
+			'_nickname',
 			'no_induk',
 			'_sex',
 			'_address',
@@ -51,9 +53,9 @@ class internship_absen extends _page{
 		$type = parent::$type;
 
 		if($type=='intern_1'){
-			$where = "AND status='6'";
+			$where = "AND status='7'";
 		}else{
-			$where = "AND status='0' AND end_status='6'";
+			$where = "AND status='0' AND end_status='7'";
 		}
 		
 		$kata = '';
@@ -116,6 +118,7 @@ class internship_absen extends _page{
 
 			$status = "Non Aktif";
 			$no_induk = self::_conv_no_induk($val['no_induk'],$val['inserted']);
+			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -125,9 +128,15 @@ class internship_absen extends _page{
 					$no,
 					true
 				),
-				'NIK'		=> array(
+				'profile'	=> array(
 					'left',
 					'5%',
+					'<img src="asset/img/user/'.$image.'" style="width:100%">',
+					true
+				),
+				'NIK'		=> array(
+					'left',
+					'10%',
 					$no_induk,
 					true
 				),
@@ -212,12 +221,12 @@ class internship_absen extends _page{
 				array(
 					'key'	=> 'intern_1',
 					'label'	=> 'Aktif',
-					'qty'	=> sobad_internship::count("status='6'")
+					'qty'	=> sobad_user::count("status='7'")
 				),
 				array(
 					'key'	=> 'intern_0',
 					'label'	=> 'Non Aktif',
-					'qty'	=> sobad_internship::count("status='0' AND end_status='6'")
+					'qty'	=> sobad_user::count("status='0' AND end_status='7'")
 				)
 			),
 			'func'	=> '_portlet',
@@ -233,7 +242,7 @@ class internship_absen extends _page{
 		return tabs_admin($opt,$tabs);
 	}
 
-	private function _conv_no_induk($no=0,$date=''){
+	public function _conv_no_induk($no=0,$date=''){
 		$date = date($date);
 		$date = strtotime($date);
 		$date = date('y',$date);
@@ -245,7 +254,7 @@ class internship_absen extends _page{
 	// Form data category -----------------------------------
 	// ----------------------------------------------------------
 	public function add_form($func='',$load='sobad_portlet'){
-		$vals = array(0,'',1,'male','','',0,0,0,0,'',0,0,0,0,0,0,6,0,date('Y-m-d'));
+		$vals = array(0,0,'','',1,'male','','',0,0,0,0,'',0,0,0,0,0,0,7,0,date('Y-m-d'));
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
@@ -257,7 +266,8 @@ class internship_absen extends _page{
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> $func,
-				'load'		=> $load
+				'load'		=> $load,
+				'type'		=> 'intern_1'
 			)
 		);
 		
@@ -275,7 +285,8 @@ class internship_absen extends _page{
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_update_db',
-				'load'		=> 'sobad_portlet'
+				'load'		=> 'sobad_portlet',
+				'type'		=> 'intern_1'
 			)
 		);
 		
@@ -309,6 +320,13 @@ class internship_absen extends _page{
 				'type'			=> 'hidden',
 				'key'			=> 'ID',
 				'value'			=> $vals['ID']
+			),
+			array(
+				'id'			=> 'picture-employee',
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'picture',
+				'value'			=> $vals['picture']
 			),
 			array(
 				'func'			=> 'opt_hidden',
@@ -348,6 +366,15 @@ class internship_absen extends _page{
 				'class'			=> 'input-circle',
 				'value'			=> $vals['name'],
 				'data'			=> 'placeholder="Nama"'
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> '_nickname',
+				'label'			=> 'Panggilan',
+				'class'			=> 'input-circle',
+				'value'			=> $vals['_nickname'],
+				'data'			=> 'placeholder="Panggilan"'
 			),
 			array(
 				'func'			=> 'opt_box',
@@ -391,7 +418,7 @@ class internship_absen extends _page{
 			0 => array(
 				'func'			=> 'opt_textarea',
 				'type'			=> 'text',
-				'key'			=> 'address',
+				'key'			=> '_address',
 				'label'			=> 'Address',
 				'class'			=> 'input-circle',
 				'value'			=> $vals['_address'],
@@ -559,8 +586,9 @@ class internship_absen extends _page{
 			),
 			'content'	=> array(
 				0	=> array(
-					'func'	=> 'sobad_form',
-					'data'	=> $tab1
+					'func'	=> '_layout_form',
+					'object'=> 'employee_absen',
+					'data'	=> array($tab1,$vals['picture'])
 				),
 				1	=> array(
 					'func'	=> 'sobad_form',

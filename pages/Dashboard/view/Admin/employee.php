@@ -21,6 +21,7 @@ class employee_absen extends _file_manager{
 			'name',
 			'work_time',
 			'status',
+			'end_status',
 			'phone_no',
 			'username',
 			'_address',
@@ -54,9 +55,9 @@ class employee_absen extends _file_manager{
 		$type = str_replace('employee_', '', $tab);
 
 		if($type==0){
-			$where = "AND `abs-user`.status NOT IN ('0','6') AND `abs-user`.end_status!='6'";
+			$where = "AND `abs-user`.status NOT IN ('0','7') AND `abs-user`.end_status!='7'";
 		}else if($type==9){
-			$where = "AND `abs-user`.status='0' AND `abs-user`.end_status!='6'";
+			$where = "AND `abs-user`.status='0' AND `abs-user`.end_status!='7'";
 		}else{
 			$where = "AND `abs-user`.status='$type'";
 		}
@@ -136,7 +137,7 @@ class employee_absen extends _file_manager{
 					$no,
 					true
 				),
-				'profile'	=> array(
+				'Profile'	=> array(
 					'left',
 					'5%',
 					'<img src="asset/img/user/'.$image.'" style="width:100%">',
@@ -213,7 +214,7 @@ class employee_absen extends _file_manager{
 		$box = array(
 			'label'		=> 'Data Karyawan',
 			'tool'		=> '',
-			'action'	=> parent::action(),
+			'action'	=> self::action(),
 			'func'		=> 'sobad_table',
 			'data'		=> $data
 		);
@@ -230,10 +231,10 @@ class employee_absen extends _file_manager{
 		$tabs[0] = array(
 			'key'	=> 'employee_0',
 			'label'	=> self::_conv_status(0),
-			'qty'	=> sobad_user::count("status!='0'")
+			'qty'	=> sobad_user::count("status NOT IN ('0','7')")
 		);
 
-		for($i=1;$i<6;$i++){
+		for($i=1;$i<7;$i++){
 			$tabs[$i] = array(
 				'key'	=> 'employee_'.$i,
 				'label'	=> self::_conv_status($i),
@@ -262,21 +263,93 @@ class employee_absen extends _file_manager{
 		return tabs_admin($opt,$tabs);
 	}
 
+	protected function action(){
+		$import = array(
+			'ID'	=> 'import_0',
+			'func'	=> 'import_form',
+			'color'	=> 'btn-default',
+			'load'	=> 'here_modal2',
+			'icon'	=> 'fa fa-file-excel-o',
+			'label'	=> 'Import',
+			'spin'	=> false
+		);
+		
+		$import = apply_button($import);
+
+		$add = array(
+			'ID'	=> 'add_0',
+			'func'	=> 'add_form',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-plus',
+			'label'	=> 'Tambah',
+			'type'	=> self::$type
+		);
+		
+		$add = edit_button($add);
+
+		return $import.$add;
+	}
+
 	private function _conv_status($status=''){
-		$types = array('Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Pensiun');
+		$types = array('Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun');
 		$label = isset($types[$status])?$types[$status]:'Berhenti';
 
 		return $label;
 	}
 
 	// ----------------------------------------------------------
-	// Form data category -----------------------------------
+	// Form data category ---------------------------------------
 	// ----------------------------------------------------------
+
+	public function import_form(){
+		$data = array(
+			'id'	=> 'importForm',
+			'cols'	=> array(3,8),
+			0 => array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'ajax',
+				'value'			=> '_import'
+			),
+			array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'object',
+				'value'			=> self::$object
+			),
+			array(
+				'id'			=> 'file_import',
+				'func'			=> 'opt_file',
+				'type'			=> 'file',
+				'key'			=> 'data',
+				'label'			=> 'Filename',
+				'accept'		=> '.csv',
+				'data'			=> ''
+			)
+		);
+		
+		$args = array(
+			'title'		=> 'Import Karyawan',
+			'button'	=> '_btn_modal_import',
+			'status'	=> array(
+				'id'		=> 'importForm',
+				'link'		=> 'import_file',
+				'load'		=> 'sobad_portlet',
+				'type'		=> $_POST['type']
+			)
+		);
+		
+		$args['func'] = array('sobad_form');
+		$args['data'] = array($data);
+		
+		return modal_admin($args);
+	}
+
 	public function add_form($func='',$load='sobad_portlet'){
 		$no = sobad_user::get_maxNIK();
 		$no = sprintf("%03d",$no+1);
 
-		$vals = array(0,$no,1,'',0,1,'','','','','male',date('Y-m-d'),'',date('Y-m-d'),'',0,0,0,0,1,1,'',0);
+		$vals = array(0,$no,1,'',0,1,0,'','','','','male',date('Y-m-d'),'',date('Y-m-d'),'',0,0,0,0,1,1,'',0);
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
@@ -511,14 +584,21 @@ class employee_absen extends _file_manager{
 			)
 		);
 
+		$_key = 'status';
+		$_label = 'status';
+		if($vals[$_key]==0){
+			$_key = 'end_status';
+			$_label = 'status terakhir';
+		}
+
 		$tab3 = array(
 			0 => array(
 				'func'			=> 'opt_select',
-				'data'			=> array(1 => 'Training', 'Kontrak 1', 'Kontrak 2', 'Tetap', 'Pensiun'),
-				'key'			=> 'status',
-				'label'			=> 'Status',
+				'data'			=> array(1 => 'Training', 'Kontrak 1', 'Kontrak 2', 'Tetap', 'Founder', 'Pensiun'),
+				'key'			=> $_key,
+				'label'			=> $_label,
 				'class'			=> 'input-circle',
-				'select'		=> $vals['status'],
+				'select'		=> $vals[$_key],
 				'status'		=> ''
 			),
 			array(
@@ -745,5 +825,336 @@ class employee_absen extends _file_manager{
 			$pg = isset($_POST['page'])?$_POST['page']:1;
 			return self::_get_table($pg);
 		}
+	}
+
+	public function _check_noInduk($id=0){
+		//Check user ---> employee atau internship
+		$whr = "AND no_induk='$id'";
+		if(preg_match("/^M[0-9]{4}/", $id)){
+			$_id = preg_replace("/^M/", "", $id);
+
+			$year = preg_replace("/[0-9]{2}\z/","", $_id);
+			$year = "20".$year;
+
+			$_id = preg_replace("/^[0-9]{2}/","", $_id);
+			intval($_id);			
+
+			$whr = "AND YEAR(`abs-user`.inserted)='$year' AND no_induk='$_id'";
+		}else{
+			$_id = $id;
+		}
+
+		return array(
+			'id'	=> $_id,
+			'where'	=> $whr
+		);
+	}
+
+	protected function _check_import($files=array()){
+		$files = self::_convert_column($files);
+
+		if(!isset($files['status'])){
+			$files['status'] = 'berhenti';
+		}
+
+		if(isset($files['no_induk']) && !empty($files['no_induk'])){
+			$check = self::_check_noInduk($files['no_induk']);
+			$files['ID'] = $check['id'];
+			$where = $check['where'];
+			$status = false;
+
+			$user = sobad_user::get_all(array('ID'),$where);
+			$check = array_filter($user);
+			if(!empty($check)){
+				$status = true;
+			}
+
+			return array(
+				'status'	=> $status,
+				'data'		=> $files
+			);
+		}else{
+			$status = false;
+			$name = $files['name'];
+			$user = sobad_user::get_all(array('ID'),"AND name='$name'");
+			
+			$check = array_filter($user);
+			if(!empty($check)){
+				$files['ID'] = $user[0]['ID'];
+				$status = true;
+			}
+
+			return array(
+				'status'	=> $status,
+				'data'		=> $files
+			);
+		}
+	}
+
+	private function _convert_column($files=array()){
+		$data = array();
+
+		$args = array(
+			'no_induk'		=> array(
+				'data'			=> array('nik','no induk','induk karyawan','no induk karyawan'),
+				'type'			=> 'number'
+			),
+			'name'			=> array(
+				'data'			=> array('nama','nama lengkap','nama karyawan'),
+				'type'			=> 'text'
+			),
+			'_nickname'		=> array(
+				'data'			=> array('nama pendek','nama panggilan','panggilan','nickname'),
+				'type'			=> 'text'
+			),
+			'_sex'			=> array(
+				'data'			=> array('sex','kelamin','jenis kelamin'),
+				'type'			=> 'number'
+			),
+			'_religion'		=> array(
+				'data'			=> array('agama','religion'),
+				'type'			=> 'number'
+			),
+			'_place_date'	=> array(
+				'data'			=> array('tempat lahir'),
+				'type'			=> 'number'
+			),
+			'_birth_date'	=> array(
+				'data'			=> array('tanggal lahir'),
+				'type'			=> 'date'
+			),
+			'_marital'		=> array(
+				'data'			=> array('marital','status perkawinan','status pernikahan'),
+				'type'			=> 'number'
+			),
+			'_address'		=> array(
+				'data'			=> array('alamat','alamat lengkap','address','alamat sesuai ktp'),
+				'type'			=> 'text'
+			),
+			'phone_no'		=> array(
+				'data'			=> array('no. hp','no hp','no. handphone','no handphone','no telp','no. telp'),
+				'type'			=> 'text'
+			),
+			'_entry_date'	=> array(
+				'data'			=> array('tanggal masuk','masuk tanggal'),
+				'type'			=> 'date'
+			),
+			'divisi'		=> array(
+				'data'			=> array('jabatan','departemen','divisi'),
+				'type'			=> 'number'
+			),
+			'status'		=> array(
+				'data'			=> array('status','status karyawan'),
+				'type'			=> 'number'
+			)
+		);
+
+		foreach ($args as $key => $val) {
+			foreach ($files as $ky => $vl) {
+				$_data = '';
+				if(in_array($ky, $val['data'])){
+					$_data = self::_filter_column($key,$vl,$val['type']);
+					$data = array_merge($data,$_data);
+
+					unset($files[$ky]);
+					break;
+				}
+			}
+		}
+
+		return $data;
+	}
+
+	private function _filter_column($key='',$_data='',$type=''){
+		$data = array();
+		switch ($key) {
+			case '_sex':
+				$_data = strtolower($_data);
+				$_data = preg_replace('/\s+/', '', $_data);
+				if($_data=='laki-laki'){
+					$_data = 'male';
+				}else if($_data=='perempuan'){
+					$_data = 'female';
+				}else{
+					$_data = '';
+				}
+
+				break;
+
+			case '_religion':
+				$args = array('islam' => 1, 'kristen' => 2, 'katolik' => 3, 'hindu' => 4, 'buddha' => 5, 'konghucu' => 6, 'kepercayaan' => 7);
+				$_data = strtolower($_data);
+				if(isset($args[$_data])){
+					$_data = $args[$_data];
+				}else{
+					$_data = 0;
+				}
+				
+				break;
+
+			case '_place_date':
+				$city = sobad_wilayah::get_all(array('id_kab'),"kabupaten LIKE '%$_data%' GROUP BY id_kab");
+				
+				$check = array_filter($city);
+				if(!empty($check)){
+					$_data = $city[0]['id_kab'];
+				}else{
+					$_data = 0;
+				}
+
+				break;
+
+			case '_marital':
+				$args = array('belum menikah' => 0,'menikah' => 1,'cerai mati' => 2);
+				$_data = strtolower($_data);
+				if(isset($args[$_data])){
+					$_data = $args[$_data];
+				}else{
+					$_data = 0;
+				}
+				
+				break;
+
+			case '_address':
+				$data = array(
+					'_address' 		=> '',
+					'_province'		=> 0,
+					'_city'			=> 0,
+					'_subdistrict'	=> 0,
+					'_postcode'		=> 0
+				);
+
+				$_data = explode(',',$_data);
+				$_count = count($_data);
+				$_pos = explode('.',$_data[$_count-1]);
+
+				$_data[$_count-1] = $_pos[0];
+				$_pos = preg_replace('/\s+/', '', isset($_pos[1])?$_pos[1]:'');
+
+				for($i = ($_count - 1); $i>=0; $i--){
+					
+					// search provinsi
+					if(empty($data['_province'])){
+						$prov = $_data[$i];
+						$prov = trim($prov);
+						$prov = sobad_wilayah::get_all(array('id_prov'),"provinsi LIKE '%".$prov."%' GROUP BY id_prov");
+						
+						$check = array_filter($prov);
+						if(!empty($check)){
+							$data['_province'] = $prov[0]['id_prov'];
+							unset($_data[$i]);
+
+							continue;
+						}
+					}
+
+					// search Kabupaten
+					if(empty($data['_city'])){
+						$kab = str_replace('kota', '', $_data[$i]);
+						$kab = str_replace('kab', '', $kab);
+						$kab = str_replace('.', '', $kab);
+						$kab = str_replace('kabupaten', '', $kab);
+						$kab = trim($kab);
+
+						if(empty($data['_province'])){
+							$kab = sobad_wilayah::get_all(array('id_prov','id_kab'),"kabupaten LIKE '%".$kab."%' GROUP BY id_kab");
+						}else{
+							$prov = $data['_province'];
+							$kab = sobad_wilayah::get_all(array('id_prov','id_kab'),"id_prov='$prov' AND kabupaten LIKE '%".$kab."%' GROUP BY id_kab");
+						}
+
+						$check = array_filter($kab);
+						if(!empty($check)){
+							$data['_province'] = $kab[0]['id_prov'];
+							$data['_city'] = $kab[0]['id_kab'];
+							unset($_data[$i]);
+
+							continue;
+						}
+					}
+
+					// search kecamatan
+					if(empty($data['_subdistrict'])){
+						$kec = str_replace('kec', '', $_data[$i]);
+						$kec = str_replace('.', '', $kec);
+						$kec = str_replace('kecamatan', '', $kec);
+						$kec = trim($kec);
+
+
+						if(empty($data['_province']) && empty($data['_city'])){
+							//$data['_address'] = implode(', ', $_data);
+
+							break;
+						}else{
+							$prov = $data['_province'];
+							$kab = $data['_city'];
+							$kec = sobad_wilayah::get_all(array('id_kec','kodepos'),"id_prov='$prov' AND id_kab='$kab' AND kecamatan LIKE '%".$kec."%' GROUP BY id_kec");
+						}
+
+						$check = array_filter($kec);
+						if(!empty($check)){
+							$data['_subdistrict'] = $kec[0]['id_kec'];
+
+							if(empty($_pos)){
+								$data['_postcode'] = $kec[0]['kodepos'];
+							}else{
+								$data['_postcode'] = $_pos;
+							}
+
+							unset($_data[$i]);
+
+							continue;
+						}
+
+						break;
+					}
+				}
+				
+				$_data = implode(', ', $_data);
+				$_data .= empty($_pos)?'':empty($data['_subdistrict'])?'. '.$_pos:'';
+				break;
+
+			case 'status':
+				$args = array('berhenti' => 0, 'resign' => 0, 'training' => 1, 'kontrak1' => 2, 'kontrak2' => 3, 'tetap' => 4, 'founder' => 5, 'pensiun' => 6, 'internship' => 7);
+				
+				$_data = strtolower($_data);
+				$_data = preg_replace('/\s+/', '', $_data);
+
+				if(isset($args[$_data])){
+					$_data = $args[$_data];
+				}else{
+					$_data = 1;
+				}
+
+				break;
+
+			case 'divisi':
+				$args = sobad_module::_gets('department',array('ID'),"AND meta_value='$_data'");
+				
+				$check = array_filter($args);
+				if(empty($check)){
+					$_data = sobad_db::_insert_table('abs-module',array('meta_key' => 'department','meta_value' => ucwords($_data) ));
+				}else{
+					$_data = $args[0]['ID'];
+				}
+				
+				break;
+			
+			default:
+				// default
+				break;
+		}
+
+		if($type=='date'){
+			$args = conv_month_id();
+			foreach ($args as $ky => $vl) {
+				$_data = str_replace($vl, sprintf("%02d",$ky), $_data);
+				$_data = preg_replace('/\s+/', '-', $_data);
+			}
+		}
+
+		$data[$key] = formatting::sanitize($_data,$type);
+
+		return $data;
 	}
 }

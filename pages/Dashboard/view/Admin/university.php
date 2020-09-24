@@ -84,7 +84,7 @@ class university_absen extends _page{
 				'label'	=> 'hapus',
 			);
 
-			$qty = sobad_internship::count("(meta_key='university' AND meta_value='$id') ");
+			$qty = sobad_user::count("(status='7' OR end_status='7') AND (meta_key='_university' AND meta_value='$id') ");
 
 			$provinsi = sobad_wilayah::get_province($val['province']);
 			$kota = sobad_wilayah::get_city($val['city']);
@@ -193,7 +193,8 @@ class university_absen extends _page{
 	// Form data category -----------------------------------
 	// ----------------------------------------------------------
 	public function add_form($func='',$load='sobad_portlet'){
-		$vals = array(0,'','',0,0,0,'','',0);
+		$vals = array(0,'','','','',0,0,0,0);
+		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
 			$func = '_add_db';
@@ -217,18 +218,6 @@ class university_absen extends _page{
 			return '';
 		}
 		
-		$vals = array(
-			$vals['ID'],
-			$vals['name'],
-			$vals['address'],
-			$vals['province'],
-			$vals['city'],
-			$vals['subdistrict'],
-			$vals['phone_no'],
-			$vals['email'],
-			$vals['post_code']
-		);
-		
 		$args = array(
 			'title'		=> 'Edit data universitas',
 			'button'	=> '_btn_modal_save',
@@ -250,18 +239,18 @@ class university_absen extends _page{
 		$provinces = sobad_wilayah::get_provinces();
 		$provinces = convToOption($provinces,'id_prov','provinsi');
 
-		$cities = self::get_cities($vals[3]);
+		$cities = self::get_cities($vals['province']);
 
-		$subdistricts = self::get_subdistricts($vals[4]);
+		$subdistricts = self::get_subdistricts($vals['city']);
 
-		$postcodes = self::get_postcodes($vals[3],$vals[4],$vals[5]);
+		$postcodes = self::get_postcodes($vals['province'],$vals['city'],$vals['subdistrict']);
 
 		$data = array(
 			0	=> array(
 				'func'			=> 'opt_hidden',
 				'type'			=> 'hidden',
 				'key'			=> 'ID',
-				'value'			=> $vals[0]
+				'value'			=> $vals['ID']
 			),
 			array(
 				'func'			=> 'opt_input',
@@ -269,7 +258,7 @@ class university_absen extends _page{
 				'key'			=> 'name',
 				'label'			=> 'Nama',
 				'class'			=> 'input-circle',
-				'value'			=> $vals[1],
+				'value'			=> $vals['name'],
 				'data'			=> 'placeholder="Nama Universitas"'
 			),
 			array(
@@ -278,7 +267,7 @@ class university_absen extends _page{
 				'key'			=> 'address',
 				'label'			=> 'Address',
 				'class'			=> 'input-circle',
-				'value'			=> $vals[2],
+				'value'			=> $vals['address'],
 				'data'			=> 'placeholder="address"',
 				'rows'			=> 4
 			),
@@ -289,7 +278,7 @@ class university_absen extends _page{
 				'label'			=> 'Provinsi',
 				'class'			=> 'input-circle',
 				'searching'		=> true,
-				'select'		=> $vals[3],
+				'select'		=> $vals['province'],
 				'status'		=> 'data-sobad="option_city" data-load="city_cust" data-attribute="sobad_option_search" '
 			),
 			array(
@@ -300,7 +289,7 @@ class university_absen extends _page{
 				'label'			=> 'Kota/Kabupaten',
 				'class'			=> 'input-circle',
 				'searching'		=> true,
-				'select'		=> $vals[4],
+				'select'		=> $vals['city'],
 				'status'		=> 'data-sobad="option_subdistrict" data-load="subdistrict_cust" data-attribute="sobad_option_search" '
 			),
 			array(
@@ -311,7 +300,7 @@ class university_absen extends _page{
 				'label'			=> 'Kecamatan',
 				'class'			=> 'input-circle',
 				'searching'		=> true,
-				'select'		=> $vals[5],
+				'select'		=> $vals['subdistrict'],
 				'status'		=> 'data-sobad="option_postcode" data-load="post_code_cust" data-attribute="sobad_option_search" '
 			),
 			array(
@@ -320,7 +309,7 @@ class university_absen extends _page{
 				'key'			=> 'email',
 				'label'			=> 'Email',
 				'class'			=> 'input-circle',
-				'value'			=> $vals[6],
+				'value'			=> $vals['email'],
 				'data'			=> 'placeholder="Email"'
 			),
 			array(
@@ -329,7 +318,7 @@ class university_absen extends _page{
 				'key'			=> 'phone_no',
 				'label'			=> 'Phone No.',
 				'class'			=> 'input-circle',
-				'value'			=> $vals[7],
+				'value'			=> $vals['phone_no'],
 				'data'			=> 'placeholder="Phone Number"'
 			),
 			array(
@@ -339,7 +328,7 @@ class university_absen extends _page{
 				'key'			=> 'post_code',
 				'label'			=> 'Kode Pos',
 				'class'			=> 'input-circle',
-				'select'		=> $vals[8],
+				'select'		=> $vals['post_code'],
 				'status'		=> ''
 			)
 		);

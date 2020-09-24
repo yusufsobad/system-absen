@@ -79,7 +79,7 @@ class faculty_absen extends _page{
 				'label'	=> 'hapus',
 			);
 
-			$qty = sobad_internship::count("(meta_key='faculty' AND meta_value='$id') ");
+			$qty = sobad_user::count("(status='7' OR end_status='7') AND (meta_key='_faculty' AND meta_value='$id') ");
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(

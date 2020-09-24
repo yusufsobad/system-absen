@@ -23,26 +23,30 @@ class absensi{
 		$time = date('H:i');
 		$day = date('w');
 
-		//get work
-		$work = array();
-		//$work = sobad_user::get_id($id,array('shift1'));
-		//$work = json_decode($work[0]['shift1'],true);
+		//Check user ---> employee atau internship
+		$check = employee_absen::_check_noInduk($id);
+		$_id = $check['id'];
+		$whr = $check['where'];
 
-		if(!isset($work['shift'])){
+		//get work
+		$users = sobad_user::get_all(array('ID','work_time'),$whr." AND status!='0'");
+		$work = sobad_work::get_id($users[0]['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
+
+		$check = array_filter($work);
+		if(empty($check)){
 			$work = array(
-				'work'	=> '08:00:00',
-				'home'	=> '16:00:00'
+				'time_in'	=> '08:00:00',
+				'time_out'	=> '16:00:00'
 			);
 		}else{
-			$work = $work['shift'];
+			$work = $work[0];
 		}
 
 		//check log
-		$user = sobad_user::get_absen(array('id_join','type','time_in','time_out'),$date,"AND no_induk='$id'");
+		$user = sobad_user::get_absen(array('id_join','type','time_in','time_out'),$date,$whr);
 
 		$check = array_filter($user);
 		if(empty($check)){
-			$users = sobad_user::get_all(array('ID','work_time'),"AND no_induk='$id' AND status!='0'");
 			foreach ($users as $key => $val) {
 				sobad_db::_insert_table('abs-user-log',array(
 						'user' 		=> $val['ID'],
@@ -85,7 +89,7 @@ class absensi{
 				break;
 
 			case 1:
-				if($time>=$work['home']){
+				if($time>=$work['time_out']){
 					sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times));
 					return array(
 						'id' 		=> $id,
@@ -139,8 +143,20 @@ class absensi{
 	public static function _data_employee(){
 		$date = date('Y-m-d');
 		$whr = "AND `abs-user`.status!=0";
-		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','work_time','status'),$whr);
+		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','work_time','inserted','status'),$whr);
 		$permit = sobad_permit::get_all(array('user','type'),"AND start_date<='$date' AND range_date>='$date'");
+
+		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
+
+		$_group = array();
+		foreach ($group as $key => $val) {
+			$data = unserialize($val['meta_note']);
+			if(isset($data['data'])){
+				foreach ($data['data'] as $ky => $vl) {
+					array_push($_group,$vl);
+				}
+			}
+		}
 
 		$_permit = array(0 => 0);
 		foreach ($permit as $key => $val) {
@@ -148,6 +164,16 @@ class absensi{
 		}
 
 		foreach ($user as $key => $val) {
+			if($val['status']!=6){
+				if(!in_array($val['divisi'],$_group)){
+					unset($user[$key]);
+					continue;
+				}
+			}else{
+				$_date = date($val['inserted']);
+				$user[$key]['no_induk'] = internship_absen::_conv_no_induk($val['no_induk'],$val['inserted']);
+			}
+
 			$idx = $val['ID'];
 			$log = sobad_user::get_all(array('type','id_join','time_in','time_out'),"AND `abs-user`.ID='$idx' AND `abs-user-log`.inserted='$date'");
 
@@ -185,8 +211,6 @@ class absensi{
 
 			$user[$key] = array_merge($user[$key],$log[0]);
 		}
-
-		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
 
 		return array('user' => $user, 'group' => $group);
 	}

@@ -109,6 +109,11 @@ class absen_sobad{
 				duration:750,
 				interval: 1500,
 			});
+
+			if(Object.keys(notwork).length < 10){
+				$('#multiSlider').multislider('pause');
+				$('#multiSlider .MS-controls').css('opacity',0);
+			}
 			</script>
 		<?php
 	}

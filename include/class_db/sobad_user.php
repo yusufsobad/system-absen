@@ -18,7 +18,7 @@ class sobad_user extends _class{
 		
 		if($type=='internship'){
 			self::$list_meta = array(
-				'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode'
+				'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode','_nickname'
 			);
 		}else{
 			self::$list_meta = array(
@@ -139,13 +139,13 @@ class sobad_user extends _class{
 	}
 
 	public static function get_employees($args=array(),$limit=''){
-		$whr = "(`abs-user`.status!='6' AND `abs-user`.end_status='0' OR `abs-user`.status='0' AND `abs-user`.end_status!='6')";
+		$whr = "(`abs-user`.status!='7' AND `abs-user`.end_status='0' OR `abs-user`.status='0' AND `abs-user`.end_status!='7')";
 		$where = "WHERE $whr $limit";
 		return parent::_check_join($where,$args);
 	}
 
 	public static function get_internships($args=array(),$limit=''){
-		$whr = "(`abs-user`.status='6' AND `abs-user`.end_status='0' OR `abs-user`.status='0' AND `abs-user`.end_status='6')";
+		$whr = "(`abs-user`.status='7' AND `abs-user`.end_status='0' OR `abs-user`.status='0' AND `abs-user`.end_status='7')";
 		$where = "WHERE $whr $limit";
 		return parent::_check_join($where,$args,'internship');
 	}

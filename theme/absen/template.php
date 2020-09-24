@@ -366,6 +366,20 @@ abstract class absen_control{
 
 					// Set Karyawan Masuk
 						set_total_absen();
+
+					// Check jumlah notwork
+						var m = Object.keys(notwork).length;
+
+						if(m<10){
+							$('#multiSlider').multislider('pause');
+							$('#multiSlider .MS-controls').css('opacity',0);
+
+							if(m<1){
+								$('#absen-notwork').animate({height:'0px'},2000);
+							}
+						}else{
+							$('#multiSlider').multislider('unPause');
+						}
 					});
 				}
 
@@ -373,16 +387,6 @@ abstract class absen_control{
 					if(data['data']!=null){
 						$('#slider-notwork>div:nth-child(1)').before($('#absen-notwork-'+data['id']));
 						load_animation(data);
-					}
-
-					var m = Object.keys(notwork).length;
-
-					if(m>9){
-						$('#multiSlider').multislider('unPause');
-
-						if(m<1){
-							$('#absen-notwork').animate({opacity:0,height:'0px'},'slow');
-						}
 					}
 
 					if(data['status']){

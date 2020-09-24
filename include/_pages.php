@@ -13,6 +13,8 @@ abstract class _page{
 
 	protected static $limit = 10;
 
+	protected static $list_meta = '';
+
 	// ----------------------------------------------------------
 	// Layout Pages  --------------------------------------------
 	// ----------------------------------------------------------
@@ -268,15 +270,60 @@ abstract class _page{
 		return static::edit_form($q[0]);
 	}
 
-	// ----------------------------------------------------------
-	// Function Update to database -------------------------------
-	// ----------------------------------------------------------	
+	public function _import(){
+		$fileName = $_FILES["data"]["tmp_name"];
+		
+		if ($_FILES["data"]["size"] > 0) {
+	        $delimiter = _detectDelimiter($fileName);
+	        $file = fopen($fileName, "r");
+	        
+	        $status = true;$_colm = array();$files = array();
+	        while (($column = fgetcsv($file, 10000, $delimiter)) !== FALSE) {
+	        	foreach ($column as $key => $val) {
+	        		if($status){
+	        			$_colm[$key] = strtolower($val);
+	        		}else{
+	        			$files[$_colm[$key]] = $val;
+	        		}
+	        	}
 
-	public function _update_db($_args=array()){
+	        	if(empty($status)){
+		        	//Check data
+		        	$data = array();
+		        	$check = static::_check_import($files);
+		        	
+		        	foreach ($check['data'] as $key => $val) {
+		        		$data[] = array('name' => $key, 'value' => $val);
+		        	}
+
+		        	if($check['status']){
+		        		$q = self::_schema(json_encode($data),false); //Update data
+		        	}else{
+		        		$q = self::_schema(json_encode($data),true); // Add data
+		        	}
+		        }
+
+		        $status = false;
+	        }
+			
+			$q = $q['data'];
+			if($q!==0){
+				$pg = isset($_POST['page'])?$_POST['page']:1;
+				return self::_get_table($pg);
+			}
+	    }
+	}
+
+	// ----------------------------------------------------------
+	// Function Update to database ------------------------------
+	// ----------------------------------------------------------
+
+	protected function _schema($_args=array(),$add=false){
 		$args = sobad_asset::ajax_conv_json($_args);
 		$id = $args['ID'];
 		unset($args['ID']);
-		
+	
+		$src = array();
 		if(isset($args['search'])){
 			$src = array(
 				'search'	=> $args['search'],
@@ -292,12 +339,14 @@ abstract class _page{
 		}
 
 		$post = '';
-		if(property_exists(new static, $post)){
+		if(property_exists(new static, 'post')){
 			$post = static::$post;
 		}
-		
+
 		$object = static::$table;
 		$schema = $object::blueprint($post);
+
+		self::$list_meta = $object::list_meta($post);
 
 		$data = array();
 		$list = $object::_list();
@@ -307,9 +356,24 @@ abstract class _page{
 			}
 		}
 
-		$q = sobad_db::_update_single($id,$schema['table'],$data);
-		$q = self::_update_meta_db($id,$args,$schema);
-		
+		if($add){
+			
+			$q = sobad_db::_insert_table($schema['table'],$data);
+			$q = self::_add_meta_db($q,$args,$schema);
+		}else{
+
+			$q = sobad_db::_update_single($id,$schema['table'],$data);
+			$q = self::_update_meta_db($id,$args,$schema);
+		}
+
+		return array('data' => $q,'search' => $src);
+	}	
+
+	public function _update_db($args=array()){
+		$args = self::_schema($args,false);
+		$q = $args['data'];
+		$src = $args['search'];
+
 		if($q!==0){
 			$pg = isset($_POST['page'])?$_POST['page']:1;
 			return self::_get_table($pg,$src);
@@ -325,7 +389,7 @@ abstract class _page{
 
 			// Insert Data Meta
 			$_meta_key = $schema['meta']['key'];
-			$list = $object::list_meta();
+			$list = self::$list_meta;	
 			foreach ($list as $key => $val) {
 				if(!isset($args[$val])){
 					continue;
@@ -354,44 +418,10 @@ abstract class _page{
 	// Function Add to database -------------------------------
 	// ----------------------------------------------------------	
 
-	public function _add_db($_args=array(),$menu='default',$obj=''){
-		$args = sobad_asset::ajax_conv_json($_args);
-		$id = $args['ID'];
-		unset($args['ID']);
-		
-		if(isset($args['search'])){
-			$src = array(
-				'search'	=> $args['search'],
-				'words'		=> $args['words']
-			);
-
-			unset($args['search']);
-			unset($args['words']);
-		}
-
-		if(is_callable(array(new static(), '_callback'))){
-			$args = static::_callback($args,$_args);
-		}
-
-
-		$post = '';
-		if(property_exists(new static, $post)){
-			$post = static::$post;
-		}
-		
-		$object = static::$table;
-		$schema = $object::blueprint($post);
-
-		$data = array();
-		$list = $object::_list();
-		foreach ($list as $key => $val) {
-			if(isset($args[$val])){
-				$data[$val] = $args[$val];
-			}
-		}
-		
-		$q = sobad_db::_insert_table($schema['table'],$data);
-		$q = self::_add_meta_db($q,$args,$schema);
+	public function _add_db($args=array(),$menu='default',$obj=''){
+		$args = self::_schema($args,true);
+		$q = $args['data'];
+		$src = $args['search'];
 		
 		if($q!==0){
 			if($menu=='default'){
@@ -415,7 +445,7 @@ abstract class _page{
 
 			// Insert Data Meta
 			$_meta_key = $schema['meta']['key'];
-			$list = $schema['meta']['table'];
+			$list = self::$list_meta;
 			foreach ($list as $key => $val) {
 				if(!isset($args[$val])){
 					continue;

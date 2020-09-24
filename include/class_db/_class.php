@@ -37,7 +37,8 @@ abstract class _class{
 		return $list;
 	}
 
-	public static function list_meta(){
+	public static function list_meta($type=''){
+		self::$_type = $type;
 		$list = property_exists(new static,'list_meta')?static::$list_meta:array();
 		return $list;
 	}
@@ -106,7 +107,7 @@ abstract class _class{
 		$check = array_filter($args);
 		if(empty($args)){
 			$joins = self::list_join();
-			$metas = self::list_meta();
+			$metas = self::list_meta($type);
 
 			$args = array_merge($user,$logs,$metas);
 		}
@@ -128,7 +129,7 @@ abstract class _class{
 		if(isset($blueprint['meta'])){
 			$check = array_filter($blueprint['meta']);
 			if(!empty($check)){
-				$args = self::_meta($args);
+				$args = self::_meta($args,$type);
 			}
 		}
 
@@ -201,10 +202,10 @@ abstract class _class{
 
 	}
 
-	private static function _meta($args=array()){
+	private static function _meta($args=array(),$type=''){
 		$where = self::$_where;
 		$inner = '';$group = $where;
-		$meta = self::list_meta();
+		$meta = self::list_meta($type);
 		$select = "max(case when `".static::$tbl_meta."`.meta_key = '{{key}}' then `".static::$tbl_meta."`.meta_value end) '{{key}}'";
 
 		foreach ($args as $key => $val) {
