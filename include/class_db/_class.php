@@ -72,8 +72,8 @@ abstract class _class{
 		return $count[0]['count'];
 	}
 	
-	public static function get_id($id,$args=array(),$type=''){
-		$where = "WHERE `".static::$table."`.ID='$id'";
+	public static function get_id($id,$args=array(),$limit='',$type=''){
+		$where = "WHERE `".static::$table."`.ID='$id' $limit";
 		return self::_check_join($where,$args,$type);
 	}
 

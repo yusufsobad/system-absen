@@ -29,7 +29,7 @@ class absensi{
 		$whr = $check['where'];
 
 		//get work
-		$users = sobad_user::get_all(array('ID','work_time'),$whr." AND status!='0'");
+		$users = sobad_user::get_all(array('ID','work_time'),$whr." AND status!='0'");	
 		$work = sobad_work::get_id($users[0]['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
 
 		$check = array_filter($work);
@@ -120,7 +120,7 @@ class absensi{
 				break;
 		}
 
-		return array('id' => $id,'data' => NULL, 'status' => 0);
+		return array('id' => $id,'data' => NULL, 'status' => 1);
 	}
 
 	public static function _set_logs(){
@@ -164,7 +164,7 @@ class absensi{
 		}
 
 		foreach ($user as $key => $val) {
-			if($val['status']!=6){
+			if($val['status']!=7){
 				if(!in_array($val['divisi'],$_group)){
 					unset($user[$key]);
 					continue;
@@ -218,6 +218,7 @@ class absensi{
 	public static function _status(){
 		$args = array(
 			'total'		=> self::_employees(),
+			'intern'	=> self::_internship(),
 			'masuk'		=> self::_inWork(),
 			'izin'		=> self::_permitWork(),
 			'cuti'		=> self::_holidayWork(),
@@ -228,7 +229,12 @@ class absensi{
 	}
 
 	public static function _employees(){
-		$work = sobad_user::count("status!=0");
+		$work = sobad_user::count("status NOT IN ('0','7')");
+		return $work;
+	}
+
+	public static function _internship(){
+		$work = sobad_user::count("status IN ('7')");
 		return $work;
 	}
 

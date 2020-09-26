@@ -179,7 +179,7 @@ var uploads = '';
 			data = data.concat(sobad_get_fileInput());
 		}
 		
-		var pg = $('#dash_pagination li.disabled a').attr('data-qty');
+		var pg = $('#'+id+' #dash_pagination li.disabled a').attr('data-qty');
 		data = conv_array_submit(data);
 		
 		data = "ajax="+ajx+"&object="+object+"&data="+data+"&type="+tp+"&page="+pg+"&filter="+filter;

@@ -134,6 +134,7 @@ class sobad_absen extends absen_control{
 
 	private static function absen_box_right($args=array()){
 		$total = !isset($args['total'])?0:$args['total'];
+		$intern = !isset($args['intern'])?0:$args['intern'];
 
 		$masuk = !isset($args['masuk'])?0:$args['masuk'];
 		$cuti = !isset($args['cuti'])?0:$args['cuti'];
@@ -165,12 +166,12 @@ class sobad_absen extends absen_control{
 				<div class="info_video">
 					<div class="layout_video">
 	                    <div class="frame_video">
-	                        <iframe> </iframe>
+	                        <iframe src="asset/img/upload/video.mp4"></iframe>
 	                    </div>
-	                    <div class="play_video default-sobad">
+	                    <div class="play_video default-sobad" style="opacity: 0;">
                         	<i class="fa fa-play"></i>
 	                    </div>
-	                    <div class="text_video title-content">
+	                    <div class="text_video title-content" style="opacity: 0;">
 	                        <label> Staff <span class="default-sobad">Profile </span></label>
 	                    </div>
 	                </div>
@@ -181,6 +182,7 @@ class sobad_absen extends absen_control{
                 			<div class="display-table-cell">
 		                    	<label>Keterangan</label>
 		                    	<span id="total-employee">Karyawan Total : <?php print($total) ;?></span>
+		                    	<span id="total-internship">Internship Total : <?php print($intern) ;?></span>
 		                    </div>
 		                </div>
 		            </div>

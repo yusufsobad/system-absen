@@ -407,6 +407,13 @@ abstract class metronic_template{
 					<?php
 						$li_cls = 'active';
 						foreach($args['menu'] as $key => $val){
+							if(isset($args['active'])){
+								$li_cls = '';
+								if($args['active']==$key){
+									$li_cls = 'active';
+								}
+							}
+
 							echo '
 								<li class="'.$li_cls.'">
 									<a id="'.$val['key'].'" data-toggle="tab" href="#inline_malika'.$key.'" aria-expanded="true">
@@ -426,6 +433,13 @@ abstract class metronic_template{
 					<?php
 						$active = 'active';
 						foreach($args['content'] as $key => $val){
+							if(isset($args['active'])){
+								$active = '';
+								if($args['active']==$key){
+									$active = 'active';
+								}
+							}
+
 							$object = isset($val['object'])?$val['object']:'metronic_template';
 							$func = $val['func'];
 							if(method_exists($object, $func)){

@@ -46,7 +46,7 @@ class employee_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status');
+		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -94,6 +94,7 @@ class employee_absen extends _file_manager{
 		);
 
 		$no = ($start-1) * $nLimit;
+		$now = time();
 		foreach($args as $key => $val){
 			$no += 1;
 			$edit = array(
@@ -121,13 +122,54 @@ class employee_absen extends _file_manager{
 				'type'	=> $tab
 			);
 
-			if($val['status']){
+			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
+			
+			$umur = date($val['_birth_date']);
+			$umur = strtotime($umur);
+			$umur = $now - $umur;
+			$umur = floor($umur / (60 * 60 * 24 * 365))." Tahun";
+
+			// Check masa status
+			switch ($val['status']) {
+				case 1:
+					$masa = date($val['_entry_date']);
+					$masa = strtotime($masa);
+					$masa = strtotime("+3 month",$masa);
+					$masa -= $now;
+					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
+					break;
+
+				case 2:
+					$masa = date($val['_entry_date']);
+					$masa = strtotime($masa);
+					$masa = strtotime("+1 year",$masa);
+					$masa -= $now;
+					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
+					break;
+
+				case 3:
+					$masa = date($val['_entry_date']);
+					$masa = strtotime($masa);
+					$masa = strtotime("+2 year",$masa);
+					$masa -= $now;
+					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
+					break;
+
+				case 4:
+					$masa = '-';
+					break;
+				
+				default:
+					$masa = '';
+					break;
+			}
+
+		if($val['status']){
 				$status = self::_conv_status($val['status']);
 			}else{
 				$status = self::_conv_status($val['end_status']);
+				$masa = '';
 			}
-
-			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -157,7 +199,7 @@ class employee_absen extends _file_manager{
 				),
 				'Alamat'	=> array(
 					'left',
-					'30%',
+					'20%',
 					$val['_address'],
 					true
 				),
@@ -167,10 +209,16 @@ class employee_absen extends _file_manager{
 					$val['phone_no'],
 					true
 				),
-				'Status'	=> array(
+				'Umur'	=> array(
 					'left',
 					'10%',
-					$status,
+					$umur,
+					true
+				),
+				'Status'	=> array(
+					'left',
+					'13%',
+					$status.' : '.$masa,
 					true
 				),
 				'Edit'		=> array(
@@ -754,6 +802,8 @@ class employee_absen extends _file_manager{
 
 				function set_file_list(val){
 					select_file_list(val,false);
+					$("#myModal2").modal('hide');
+
 					$('#profile-employee').attr('src',_select_file_list[0]['url']);
 					$('#picture-employee').val(_select_file_list[0]['id']);
 				}

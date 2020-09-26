@@ -79,7 +79,7 @@ class hostname{
 		$host = self::get_hostname();
 
 		if($server!=$host){
-			die('Halaman ini tidak di akses tidak dengan semestinya!!!');
+			//die('Halaman ini di akses tidak dengan semestinya!!!');
 		}
 
 	// Include File Component	

@@ -175,6 +175,7 @@ abstract class _file_manager extends _page{
 		);
 
 		$data = array(
+			'active'	=> 81,
 			'menu'		=> array(
 				80	=> array(
 					'key'	=> '',
