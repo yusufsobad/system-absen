@@ -8,7 +8,7 @@ define('SERVER',"localhost");
 define('USERNAME',"root");
 
 // set Password
-define('PASSWORD','root');
+define('PASSWORD','');
 
 // set Database
 define('DB_NAME','absen2020');

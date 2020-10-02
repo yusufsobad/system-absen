@@ -1,4 +1,5 @@
-<?php
+ 
+ <?php
 
 (!defined('THEMEPATH'))?exit:'';
 
@@ -55,7 +56,7 @@ abstract class absen_control{
 					$work[$grp] = array();
 				}
 
-				$work[$grp][] = array(
+				$work[$grp][$val['no_induk']] = array(
 					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
 					'class'	=> 'col-md-20',
 					'time'	=> substr($val['time_in'],0,5),
@@ -329,6 +330,12 @@ abstract class absen_control{
 					// start
 					var idx = document.getElementById("employee-animation");
 					var _idx = data['id'];
+
+					if(typeof notwork[_idx] === 'undefined'){
+						toastr.error("ID tidak terdaftar!!!");
+						return '';
+					}
+
 					var _grp = notwork[_idx]['group'];
 
 					layout_user(idx,notwork[_idx]);
@@ -379,10 +386,80 @@ abstract class absen_control{
 					});
 				}
 
+				function back_animation(data){
+					// start
+					var idx = document.getElementById("employee-animation");
+					var _idx = data['id'];
+					var _grp = 0;
+					var _qty = 0;
+					var _pos = 0;
+
+					//Get Group
+					for(var i in work){
+						_pos = -1;
+						for(var j in work[i]){
+							_pos += 1;
+							if(j==_idx){
+								_grp = i;
+								_qty = Object.keys(work[_grp]).length;
+								break;
+							}
+						}
+
+						if(j==_idx){
+							break;
+						}
+					}
+			
+					_pos = (_qty-_pos);				
+					//Get position Group
+					var _pos_grp = $("#workgroup-"+_grp).position();
+					layout_user(idx,work[_grp][_idx]);
+					
+					$("#workgroup-"+_grp+">.row>.absen-content:nth-child("+_pos+")").css("opacity","0");
+					$('div#employee-animation>.absen-content').css("top",((_pos_grp.top+57) + (Math.floor(_pos/5)*93)) + "px");
+					$('div#employee-animation>.absen-content').css("left",((_pos_grp.left+45) + ((_pos-1)*73)) + "px");
+
+					$('#employee-animation').animate({"z-index":"10"},'slow',function(){
+						//Add notwork
+						notwork[_idx] = {"group":_grp,"name":work[_grp][_idx]['name'],"image":work[_grp][_idx]['image']};
+
+						//animation back
+						$('#employee-animation>.absen-content').animate({top:"86.5%",left:"90px",width:"6.6%"},'slow',function(){
+
+						//Add notwork
+							var a = document.getElementById("slider-notwork");
+							a = ceBefore(a,['div',[['id','absen-notwork-'+_idx],['class','item'],['data-induk',_idx]],'']);
+							layout_user(a,notwork[_idx]);
+
+						//set normal
+							$('div#employee-animation').css("z-index","0");
+							$('#employee-animation').html('');
+
+						//pause slide to animation
+							$("#workgroup-"+_grp+">.row>.absen-content:nth-child("+_pos+")").remove();
+							delete work[_grp][_idx];
+
+						//hidden workgroup
+							var m = Object.keys(work[_grp]).length;
+							if(m<1){
+								$("#workgroup-"+_grp).remove();
+							}
+
+						// Set Karyawan Masuk
+							set_total_absen();
+						});
+					});
+				}
+
 				function set_absen(data,id){
 					if(data['data']!=null){
-						$('#slider-notwork>div:nth-child(1)').before($('#absen-notwork-'+data['id']));
-						load_animation(data);
+						if(data['data']['type']==1){
+							$('#slider-notwork>div:nth-child(1)').before($('#absen-notwork-'+data['id']));
+							load_animation(data);
+						}else{
+							back_animation(data);
+						}
 					}
 
 					var m = Object.keys(notwork).length;

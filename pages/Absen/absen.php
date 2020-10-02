@@ -22,15 +22,20 @@ class absensi{
 		$times = date('H:i:s');
 		$time = date('H:i');
 		$day = date('w');
-
+ 
 		//Check user ---> employee atau internship
 		$check = employee_absen::_check_noInduk($id);
 		$_id = $check['id'];
 		$whr = $check['where'];
 
 		//get work
-		$users = sobad_user::get_all(array('ID','work_time'),$whr." AND status!='0'");	
-		$work = sobad_work::get_id($users[0]['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
+		$work = array();
+		$users = sobad_user::get_all(array('ID','work_time'),$whr." AND status!='0'");
+
+		$check = array_filter($users);
+		if(!empty($check)){
+			$work = sobad_work::get_id($users[0]['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
+		}
 
 		$check = array_filter($work);
 		if(empty($check)){
