@@ -26,8 +26,8 @@ abstract class metronic_template{
 
 			$object = 'metronic_template';
 			if(isset($val['object'])){
-				if(class_exists($object)){
-					$object = $object;
+				if(class_exists($val['object'])){
+					$object = $val['object'];
 				}
 			}
 
@@ -35,7 +35,7 @@ abstract class metronic_template{
 				// add style
 				$css = array_filter($val['style']);
 				if(!empty($css)){
-					if(is_callable(array($val['style'][0],$val['style'][1]))){
+					if(is_callable(array(new $val['style'][0](),$val['style'][1]))){
 						$obj = $val['style'][0];
 						$style = $val['style'][1];						
 						$obj::{$style}();
@@ -50,7 +50,7 @@ abstract class metronic_template{
 				// add script
 				$js = array_filter($val['script']);
 				if(!empty($js)){
-					if(is_callable(array($val['script'][0],$val['script'][1]))){
+					if(is_callable(array(new $val['script'][0](),$val['script'][1]))){
 						$obj = $val['script'][0];
 						$style = $val['script'][1];
 						$obj::{$style}();

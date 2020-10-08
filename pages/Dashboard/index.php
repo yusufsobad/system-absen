@@ -40,6 +40,8 @@ class admin_sobad{
 				$script->_get_('_css_page_level',array('bootstrap-datepicker','bootstrap-clockpicker','fullcalender','bootstrap-editable')),
 				$script->_get_('_css_dropzone'),
 				$script->_get_('_css_contextmenu'),
+				$script->_get_('_css_tags_input'),
+				$script->_get_('_css_chart'),
 				$script->_get_('_css_datatable',array('datatable')),
 				$theme->_get_('_css_page_level',array('themes-search')),
 				$theme->_get_('_css_page'),
@@ -53,6 +55,8 @@ class admin_sobad{
 				$script->_get_('_js_dropzone'),
 				$script->_get_('_js_mask_money'),
 				$script->_get_('_js_contextmenu'),
+				$script->_get_('_js_tags_input'),
+				$script->_get_('_js_chart'),
 				//$script->_get_('_js_form_editable'),
 				//$script->_get_('_js_page_modal'),
 				$theme->_get_('_js_page_level')

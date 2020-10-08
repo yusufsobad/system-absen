@@ -63,12 +63,22 @@ class divisi_absen extends _page{
 			$no += 1;
 			$id = $val['ID'];
 
+			$qty = sobad_user::count("divisi='$id' AND status!='0'");
+
 			$edit = array(
 				'ID'	=> 'edit_'.$id,
 				'func'	=> '_edit',
 				'color'	=> 'blue',
 				'icon'	=> 'fa fa-edit',
 				'label'	=> 'edit'
+			);
+
+			$detail = array(
+				'ID'	=> 'detail_'.$id,
+				'func'	=> '_detail',
+				'color'	=> '',
+				'icon'	=> '',
+				'label'	=> $qty
 			);
 			
 			$hapus = array(
@@ -78,8 +88,6 @@ class divisi_absen extends _page{
 				'icon'	=> 'fa fa-trash',
 				'label'	=> 'hapus',
 			);
-
-			$qty = sobad_user::count("divisi='$id'");
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -104,7 +112,7 @@ class divisi_absen extends _page{
 				'jumlah'	=> array(
 					'center',
 					'10%',
-					$qty,
+					_modal_button($detail),
 					true
 				),
 				'Edit'			=> array(
@@ -242,6 +250,68 @@ class divisi_absen extends _page{
 		
 		$args['func'] = array('sobad_form');
 		$args['data'] = array($data);
+		
+		return modal_admin($args);
+	}
+
+	public function _detail($id=0){
+		$id = str_replace('detail_', '', $id);
+		intval($id);
+
+		$args = sobad_user::get_all(array('picture','no_induk','name','status'),"AND divisi='$id' AND status!='0'");
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($args as $key => $val) {
+			$no += 1;
+
+			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
+			$status = employee_absen::_conv_status($val['status']);
+
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'no'		=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Profile'	=> array(
+					'left',
+					'5%',
+					'<img src="asset/img/user/'.$image.'" style="width:100%">',
+					true
+				),
+				'NIK'		=> array(
+					'left',
+					'5%',
+					$val['no_induk'],
+					true
+				),
+				'Nama'		=> array(
+					'left',
+					'auto',
+					$val['name'],
+					true
+				),
+				'Status'	=> array(
+					'left',
+					'13%',
+					$status,
+					true
+				),
+			);
+		}
+
+		$args = array(
+			'title'		=> 'Detail data',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
 		
 		return modal_admin($args);
 	}

@@ -253,14 +253,12 @@ class group_absen extends _page{
 				'data'			=> 'placeholder="Nama"'
 			),
 			array(
-				'func'			=> 'opt_select',
+				'func'			=> 'opt_select_tags',
 				'data'			=> $divisi,
 				'key'			=> 'meta_note',
 				'label'			=> 'Jabatan',
-				'searching'		=> true,
 				'class'			=> 'input-circle',
-				'select'		=> $vals['meta_note'],
-				'status'		=> 'multiple'
+				'select'		=> $vals['meta_note']
 			)
 		);
 		
@@ -275,9 +273,8 @@ class group_absen extends _page{
 	// ----------------------------------------------------------
 
 	public function _callback($args=array(),$_args=array()){
-		$_args = sobad_asset::ajax_conv_array_json($_args);
 
-		$data = array('data' => $_args['meta_note']);
+		$data = array('data' => explode(',', $args['meta_note']));
 		$data = serialize($data);
 
 		$args['meta_key'] = 'group';

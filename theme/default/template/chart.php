@@ -8,7 +8,7 @@ class create_chart{
 		}
 		
 		foreach($args as $key => $val){	
-			if(is_callable(array($this,$val['func']))){
+			if(is_callable(array(new self(),$val['func']))){
 				$func = $val['func'];
 				self::{$func}($val['data']);
 			}

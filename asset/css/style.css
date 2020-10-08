@@ -47,3 +47,7 @@ ul.dropdown-menu li a.btn_data_malika {
 .popover.clockpicker-popover {
     z-index: 99999;
 }
+
+.bootstrap-tagsinput {
+    width: 100%;
+}

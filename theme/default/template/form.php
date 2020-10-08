@@ -339,6 +339,80 @@ class create_form{
 		$inp .= '</div>';
 		return $inp;
 	}
+
+	private static function opt_select_tags($val=array()){
+		// id , class , key , data, select
+		// label (optional)
+		$inp = '';
+		if(isset($val['label'])){
+			$inp .= self::opt_label($val['label']);
+		}else{
+			$inp .= '<div class="col-md-'. self::$col_label .'"></div>';
+		}
+		
+		$id = 'tag-blood';
+		if(isset($val['id'])){
+			$id = $val['id'];
+		}
+
+		$_id = str_replace('-', '', $id);
+
+		$cols = self::$col_input;
+
+		// Insert type data --->
+		self::$_types[$val['key']] = "select";
+		
+		$inp .= '<div class="col-md-'. $cols .'">';
+		$inp .= '<input id="'.$id.'" type="text" class="form-control '.$val['class'].'" name="'.$val['key'].'" >';
+		
+		$inp .= '</div>';
+
+		$_data = array();
+		foreach ($val['data'] as $ky => $vl) {
+			$_data[] = array(
+				'value'		=> $ky,
+				'text'		=> $vl
+			);
+		}
+
+		$_data = json_encode($_data);
+
+		ob_start();
+		?>
+			<script type="text/javascript">
+				var <?php print($_id) ;?> = new Bloodhound({
+					datumTokenizer: Bloodhound.tokenizers.obj.whitespace('text'),
+					queryTokenizer: Bloodhound.tokenizers.whitespace,
+					local: <?php print($_data) ;?>
+				});
+
+				<?php print($_id) ;?>.initialize();
+
+				var elt = $('#<?php print($id) ;?>');
+
+				elt.tagsinput({
+					itemValue: 'value',
+					itemText: 'text',
+					typeaheadjs: {
+						name: 'selected',
+						displayKey: 'text',
+						source: <?php print($_id) ;?>.ttAdapter()
+					}
+				});
+
+				<?php
+					$text = '';
+					foreach ($val['select'] as $ky => $vl) {
+						$text = isset($val['data'][$vl])?$val['data'][$vl]:'';
+						echo 'elt.tagsinput("add", { "value": '.$vl.' , "text": "'.$text.'"});';
+					}
+				?>
+			</script>
+		<?php
+		$script = ob_get_clean();
+
+		return $inp.$script;
+	}
 	
 	private static function opt_select($val=array()){
 		// id, key , class , data , select

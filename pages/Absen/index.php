@@ -114,6 +114,10 @@ class absen_sobad{
 				$('#multiSlider').multislider('pause');
 				$('#multiSlider .MS-controls').css('opacity',0);
 			}
+
+			setTimeout(function(){
+				$('#video-profile')[0].play();
+			},3000);
 			</script>
 		<?php
 	}

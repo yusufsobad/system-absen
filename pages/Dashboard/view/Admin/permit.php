@@ -191,7 +191,7 @@ class permit_absen extends _page{
 	// Form data category -----------------------------------
 	// ----------------------------------------------------------
 	public function add_form(){
-		$vals = array(0,0,date('d-m-Y'),date('d-m-Y'),1,'');
+		$vals = array(0,array(),date('d-m-Y'),date('d-m-Y'),1,'');
 		$vals = array_combine(self::_array(),$vals);
 		
 		$args = array(
@@ -236,10 +236,7 @@ class permit_absen extends _page{
 		$intern = sobad_user::get_internships(array('ID','name'));
 		$intern = convToOption($intern,'ID','name');
 
-		$group = array(
-			'Karyawan'	=> $user,
-			'Magang'	=> $intern
-		);
+		$group = array_merge($user,$intern);
 
 		$data = array(
 			0 => array(
@@ -249,24 +246,19 @@ class permit_absen extends _page{
 				'value'			=> $vals['ID']
 			),
 			array(
-				'func'			=> 'opt_select',
+				'func'			=> 'opt_select_tags',
 				'data'			=> $group,
-				'group'			=> true,
 				'key'			=> 'user',
 				'label'			=> 'Nama',
 				'class'			=> 'input-circle',
-				'searching'		=> true,
-				'select'		=> $vals['user'],
-				'status'		=> ''
+				'select'		=> $vals['user']
 			),
 			array(
 				'func'			=> 'opt_datepicker',
 				'key'			=> 'start_date',
 				'label'			=> 'Tanggal',
 				'class'			=> 'input-circle',
-				'value'			=> $vals['start_date'],
-				'to'			=> 'range_date',
-				'data'			=> $vals['range_date']
+				'value'			=> $vals['start_date']
 			),
 			array(
 				'func'			=> 'opt_select',
@@ -292,5 +284,13 @@ class permit_absen extends _page{
 		$args['data'] = array($data);
 		
 		return modal_admin($args);
+	}
+
+	protected function _callback($args=array()){
+		$users = explode(',', $args['user']);
+
+		foreach ($users as $key => $val) {
+			
+		}
 	}
 }

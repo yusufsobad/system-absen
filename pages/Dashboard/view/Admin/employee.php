@@ -135,6 +135,10 @@ class employee_absen extends _file_manager{
 					$masa = date($val['_entry_date']);
 					$masa = strtotime($masa);
 					$masa = strtotime("+3 month",$masa);
+
+					$end_date = date("Y-m-d",$masa);
+					$end_date = format_date_id($end_date);
+
 					$masa -= $now;
 					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
 					break;
@@ -143,6 +147,10 @@ class employee_absen extends _file_manager{
 					$masa = date($val['_entry_date']);
 					$masa = strtotime($masa);
 					$masa = strtotime("+1 year",$masa);
+
+					$end_date = date("Y-m-d",$masa);
+					$end_date = format_date_id($end_date);
+
 					$masa -= $now;
 					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
 					break;
@@ -151,20 +159,26 @@ class employee_absen extends _file_manager{
 					$masa = date($val['_entry_date']);
 					$masa = strtotime($masa);
 					$masa = strtotime("+2 year",$masa);
+
+					$end_date = date("Y-m-d",$masa);
+					$end_date = format_date_id($end_date);
+
 					$masa -= $now;
 					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
 					break;
 
 				case 4:
+					$end_date = '';
 					$masa = '-';
 					break;
 				
 				default:
+					$end_date = '';
 					$masa = '';
 					break;
 			}
 
-		if($val['status']){
+			if($val['status']){
 				$status = self::_conv_status($val['status']);
 			}else{
 				$status = self::_conv_status($val['end_status']);
@@ -218,7 +232,7 @@ class employee_absen extends _file_manager{
 				'Status'	=> array(
 					'left',
 					'13%',
-					$status.' : '.$masa,
+					$status.' : '.$masa.'<br><strong>'.$end_date.'</strong>',
 					true
 				),
 				'Edit'		=> array(
@@ -290,7 +304,7 @@ class employee_absen extends _file_manager{
 			);
 		}
 
-		$tabs[6] = array(
+		$tabs[7] = array(
 			'key'	=> 'employee_9',
 			'label'	=> 'Berhenti',
 			'qty'	=> sobad_user::count("status='0'")
@@ -338,8 +352,8 @@ class employee_absen extends _file_manager{
 		return $import.$add;
 	}
 
-	private function _conv_status($status=''){
-		$types = array('Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun');
+	public function _conv_status($status=''){
+		$types = array('Non Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun');
 		$label = isset($types[$status])?$types[$status]:'Berhenti';
 
 		return $label;
@@ -1165,7 +1179,7 @@ class employee_absen extends _file_manager{
 				break;
 
 			case 'status':
-				$args = array('berhenti' => 0, 'resign' => 0, 'training' => 1, 'kontrak1' => 2, 'kontrak2' => 3, 'tetap' => 4, 'founder' => 5, 'pensiun' => 6, 'internship' => 7);
+				$args = array('berhenti' => 0, 'resign' => 0, 'training' => 1, 'masa percobaan' => 1, 'kontrak1' => 2, 'kontrak2' => 3, 'tetap' => 4, 'founder' => 5, 'pensiun' => 6, 'internship' => 7);
 				
 				$_data = strtolower($_data);
 				$_data = preg_replace('/\s+/', '', $_data);

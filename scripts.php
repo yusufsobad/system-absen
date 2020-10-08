@@ -104,6 +104,7 @@ if(!class_exists('vendor_script')){
 		private function _css_tags_input($idx=array()){
 			$loc = $this->lokasi();
 			$css = array(
+				'bootstrap'			=> $loc.'bootstrap-tagsinput/src/bootstrap-tagsinput.css',
 				'jquery-tags'		=> $loc.'jquery-tags-input/jquery.tagsinput.css',
 				'typeahead'			=> $loc.'typeahead/typeahead.css',
 				'tokenize2'			=> $loc.'Tokenize2/tokenize2.css'
@@ -340,6 +341,7 @@ if(!class_exists('vendor_script')){
 		private function _js_tags_input($idx=array()){
 			$loc = $this->lokasi();
 			$js = array(
+				'bootstrap'				=> $loc.'bootstrap-tagsinput/src/bootstrap-tagsinput.js',
 				'jquery-tags'			=> $loc.'jquery-tags-input/jquery.tagsinput.min.js',
 				'handlebar'				=> $loc.'typeahead/handlebars.min.js',
 				'typeahead'				=> $loc.'typeahead/typeahead.bundle.min.js',			

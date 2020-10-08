@@ -150,4 +150,12 @@ class sobad_user extends _class{
 		return parent::_check_join($where,$args,'internship');
 	}
 
+	public static function count_log($id=0,$limit=''){
+		self::$table = 'abs-user-log';
+		$where = "WHERE user='$id' $limit";
+
+		$count = parent::_get_data($where,array('count(ID) AS cnt'));
+		return $count[0]['cnt'];
+	}
+
 }
