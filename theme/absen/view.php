@@ -168,6 +168,7 @@ class sobad_absen extends absen_control{
 	                    <div class="frame_video">
 	                    	<video id="video-profile" autoplay>
 								<source class="active" src="asset/img/upload/video.mp4" type="video/mp4">
+								<source src="asset/img/upload/storyResize.mp4" type="video/mp4">
 								<source src="asset/img/upload/video2.mp4" type="video/mp4">
 								Your browser does not support the video tag.
 							</video>

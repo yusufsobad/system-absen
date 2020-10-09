@@ -140,7 +140,7 @@ class employee_absen extends _file_manager{
 					$end_date = format_date_id($end_date);
 
 					$masa -= $now;
-					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
+					$masa = (floor($masa / (60 * 60 * 24) + 1) * -1)." Hari";
 					break;
 
 				case 2:
@@ -152,7 +152,7 @@ class employee_absen extends _file_manager{
 					$end_date = format_date_id($end_date);
 
 					$masa -= $now;
-					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
+					$masa = (floor($masa / (60 * 60 * 24) + 1) * -1)." Hari";
 					break;
 
 				case 3:
@@ -164,7 +164,7 @@ class employee_absen extends _file_manager{
 					$end_date = format_date_id($end_date);
 
 					$masa -= $now;
-					$masa = (floor($masa / (60 * 60 * 24)) * -1)." Hari";
+					$masa = (floor($masa / (60 * 60 * 24) + 1) * -1)." Hari";
 					break;
 
 				case 4:
@@ -187,7 +187,7 @@ class employee_absen extends _file_manager{
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
-				'no'		=> array(
+				'No'		=> array(
 					'center',
 					'5%',
 					$no,

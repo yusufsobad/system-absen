@@ -91,25 +91,25 @@ class divisi_absen extends _page{
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
-				'no'		=> array(
+				'No'		=> array(
 					'center',
 					'5%',
 					$no,
 					true
 				),
-				'name'		=> array(
+				'Name'		=> array(
 					'left',
 					'auto',
 					$val['meta_value'],
 					true
 				),
-				'status'	=> array(
+				'Status'	=> array(
 					'left',
 					'25%',
 					empty($val['meta_note'])?'user':'admin',
 					true
 				),
-				'jumlah'	=> array(
+				'Jumlah'	=> array(
 					'center',
 					'10%',
 					_modal_button($detail),

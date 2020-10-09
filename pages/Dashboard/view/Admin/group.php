@@ -64,6 +64,14 @@ class group_absen extends _page{
 			$no += 1;
 			$id = $val['ID'];
 
+			$view = array(
+				'ID'	=> 'view_'.$id,
+				'func'	=> '_view',
+				'color'	=> 'yellow',
+				'icon'	=> 'fa fa-eye',
+				'label'	=> 'View'
+			);
+
 			$edit = array(
 				'ID'	=> 'edit_'.$id,
 				'func'	=> '_edit',
@@ -108,6 +116,12 @@ class group_absen extends _page{
 					'10%',
 					$val['meta_reff']==1?'aktif':'non aktif',
 					true
+				),
+				'View'			=> array(
+					'center',
+					'10%',
+					_modal_button($view),
+					false
 				),
 				'Edit'			=> array(
 					'center',
@@ -264,6 +278,72 @@ class group_absen extends _page{
 		
 		$args['func'] = array('sobad_form');
 		$args['data'] = array($data);
+		
+		return modal_admin($args);
+	}
+
+	public function _view($id=0){
+		$id = str_replace('view_', '', $id);
+		intval($id);
+
+		$divisi = sobad_module::get_id($id,array('meta_note'));
+		$divisi = sobad_module::_conv_divisi($divisi[0]['meta_note']);
+		$divisi = implode(', ',$divisi['ID']);
+
+		$args = sobad_user::get_all(array('picture','no_induk','name','divisi','status'),"AND divisi IN ($divisi)");
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($args as $key => $val) {
+			$no += 1;
+
+			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
+			$status = employee_absen::_conv_status($val['status']);
+
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'no'		=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Profile'	=> array(
+					'left',
+					'5%',
+					'<img src="asset/img/user/'.$image.'" style="width:100%">',
+					true
+				),
+				'NIK'		=> array(
+					'left',
+					'5%',
+					$val['no_induk'],
+					true
+				),
+				'Nama'		=> array(
+					'left',
+					'auto',
+					$val['name'],
+					true
+				),
+				'Status'	=> array(
+					'left',
+					'13%',
+					$status,
+					true
+				),
+			);
+		}
+
+		$args = array(
+			'title'		=> 'Group User',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
 		
 		return modal_admin($args);
 	}
