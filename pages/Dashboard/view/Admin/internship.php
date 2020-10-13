@@ -1,11 +1,15 @@
 <?php
 
-class internship_absen extends _page{
+class internship_absen extends _file_manager{
 	protected static $object = 'internship_absen';
 
 	protected static $table = 'sobad_user';
 
 	protected static $post = 'internship';
+
+	protected static $file_type = 'profile';
+
+	protected static $url = '../asset/img/user';
 
 	// ----------------------------------------------------------
 	// Layout category  ------------------------------------------
@@ -608,6 +612,20 @@ class internship_absen extends _page{
 		$args['data'] = array($data);
 
 		return modal_admin($args);
+	}
+
+	public function _form_upload(){
+
+		$args = array(
+			'title'		=> 'Select Photo Profile',
+			'button'	=> '',
+			'status'	=> array(
+				'link'		=> '',
+				'load'		=> ''
+			)
+		);
+
+		return parent::_item_form($args);
 	}
 
 	// ----------------------------------------------------------

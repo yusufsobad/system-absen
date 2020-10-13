@@ -87,6 +87,9 @@ class absen_sobad{
 
 			},1000);
 
+			//Fullscreen
+			launchIntoFullscreen(document.documentElement); // the whole page
+
 			jQuery(document).ready(function() {     
 				$("#qrscanner").focus();
 				$("#qrscanner").on('change',function(){
@@ -109,6 +112,17 @@ class absen_sobad{
 				duration:750,
 				interval: 1500,
 			});
+
+			for(var i in work){
+				$('#workgroup-'+i).multislider({
+					duration:750,
+					interval: 1500,
+				});
+
+				if(Object.keys(work[i]).length<13){
+					$('#workgroup-'+i).multislider('pause');
+				}
+			}
 
 			if(Object.keys(notwork).length < 10){
 				$('#multiSlider').multislider('pause');
