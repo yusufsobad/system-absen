@@ -254,7 +254,10 @@ class internship_absen extends _page{
 	// Form data category -----------------------------------
 	// ----------------------------------------------------------
 	public function add_form($func='',$load='sobad_portlet'){
-		$vals = array(0,0,'','',1,'male','','',0,0,0,0,'',0,0,0,0,0,0,7,0,date('Y-m-d'));
+		$year = date('Y');
+		$no = sobad_user::get_maxNIM();
+
+		$vals = array(0,0,'','',$no+1,'male','','',0,0,0,0,'',0,0,0,0,0,0,7,0,date('Y-m-d'));
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){

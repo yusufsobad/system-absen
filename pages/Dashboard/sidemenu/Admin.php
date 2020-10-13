@@ -170,7 +170,7 @@ function menu_report(){
 		'status'	=> '',
 		'icon'		=> '',
 		'label'		=> 'Group',
-		'func'		=> 'report_absen',
+		'func'		=> '',//'report_absen',
 		'child'		=> NULL
 	);
 
@@ -182,11 +182,11 @@ function menu_report(){
 		'child'		=> NULL
 	);
 
-	$args['statik'] = array(
+	$args['statistik'] = array(
 		'status'	=> '',
 		'icon'		=> '',
-		'label'		=> 'Statik',
-		'func'		=> 'statik_absen',
+		'label'		=> 'Statistik',
+		'func'		=> '',//'statik_absen',
 		'child'		=> NULL
 	);	
 	

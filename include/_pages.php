@@ -261,7 +261,7 @@ abstract class _page{
 		}
 
 		$object = static::$table;
-		$q = $object::get_id($id,$args,$post);
+		$q = $object::get_id($id,$args,'',$post);
 		
 		if($q===0){
 			return '';

@@ -101,6 +101,20 @@ class sobad_user extends _class{
 		return $data[0]['nik'];
 	}
 
+	public static function get_maxNIM(){
+		$year = date('Y');
+		$args = array('MAX(no_induk) as nim');
+		$where = "WHERE divisi = '0' AND status IN ('0','7') AND YEAR(inserted)='$year'";
+		
+		$data = parent::_get_data($where,$args);
+		$check = array_filter($data);
+		if(empty($check)){
+			return 0;
+		}
+
+		return $data[0]['nim'];
+	}
+
 	public static function not_work($args=array(),$limit=''){
 		$where = "WHERE `".self::$tbl_join."`.type='0' $limit";
 		return parent::_check_join($where,$args);

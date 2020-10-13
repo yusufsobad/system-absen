@@ -258,7 +258,7 @@ class divisi_absen extends _page{
 		$id = str_replace('detail_', '', $id);
 		intval($id);
 
-		$args = sobad_user::get_all(array('picture','no_induk','name','status'),"AND divisi='$id' AND status!='0'");
+		$args = sobad_user::get_all(array('picture','no_induk','name','status'),"AND divisi='$id'");
 
 		$data['class'] = '';
 		$data['table'] = array();

@@ -38,7 +38,8 @@ class employee_absen extends _file_manager{
 			'_marital',
 			'_religion',
 			'_nickname',
-			'picture'
+			'picture',
+			'dayOff'
 		);
 
 		return $args;
@@ -46,7 +47,7 @@ class employee_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date');
+		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date','_resign_date');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -107,20 +108,40 @@ class employee_absen extends _file_manager{
 			);
 
 			$color = 'yellow';$status = '';
-			if($val['status']==0){
-				$status = "disabled";
-				$color = "red";
-			}
+
+			$btn_next = array(
+				'ID'	=> 'next_'.$val['ID'],
+				'func'	=> '_next',
+				'icon'	=> 'fa fa-user',
+				'color'	=> '',
+				'label'	=> 'Lanjut',
+				'status'=> '',
+				'type'	=> $tab
+			);
 			
 			$btn_sts = array(
 				'ID'	=> 'status_'.$val['ID'],
 				'func'	=> '_status',
-				'color'	=> $color,
-				'icon'	=> 'fa fa-user',
+				'icon'	=> 'fa fa-power-off',
+				'color'	=> '',
 				'label'	=> 'Non Aktif',
-				'status'=> $status,
+				'status'=> '',
 				'type'	=> $tab
 			);
+
+			$drop = array(
+				'label'		=> 'Change',
+				'color'		=> 'default',
+				'button'	=> array(
+					_click_button($btn_next),
+					_click_button($btn_sts)
+				)
+			);
+
+			$change = dropdown_button($drop);
+			if($val['status']==0){
+				$change = '';
+			}
 
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 			
@@ -183,6 +204,11 @@ class employee_absen extends _file_manager{
 			}else{
 				$status = self::_conv_status($val['end_status']);
 				$masa = '';
+				$end_date = ' - ';
+
+				if(!empty($val['_resign_date'])){
+					$end_date = format_date_id($val['_resign_date']);
+				}
 			}
 			
 			$data['table'][$key]['tr'] = array('');
@@ -244,7 +270,7 @@ class employee_absen extends _file_manager{
 				'Change'	=> array(
 					'center',
 					'10%',
-					_click_button($btn_sts),
+					$change,
 					false
 				)
 				
@@ -292,7 +318,7 @@ class employee_absen extends _file_manager{
 
 		$tabs[0] = array(
 			'key'	=> 'employee_0',
-			'label'	=> self::_conv_status(0),
+			'label'	=> 'Semua',
 			'qty'	=> sobad_user::count("status NOT IN ('0','7')")
 		);
 
@@ -411,7 +437,7 @@ class employee_absen extends _file_manager{
 		$no = sobad_user::get_maxNIK();
 		$no = sprintf("%03d",$no+1);
 
-		$vals = array(0,$no,1,'',0,1,0,'','','','','male',date('Y-m-d'),'',date('Y-m-d'),'',0,0,0,0,1,1,'',0);
+		$vals = array(0,$no,1,'',0,1,0,'','','','','male',date('Y-m-d'),'',date('Y-m-d'),'',0,0,0,0,1,1,'',0,7);
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
@@ -689,6 +715,15 @@ class employee_absen extends _file_manager{
 				'label'			=> 'Tanggal Masuk',
 				'class'			=> 'input-circle',
 				'value'			=> $vals['_entry_date']
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'dayOff',
+				'label'			=> 'Sisa Cuti',
+				'class'			=> 'input-circle',
+				'value'			=> $vals['dayOff'],
+				'data'			=> 'readonly'
 			)
 		);
 			
@@ -864,6 +899,24 @@ class employee_absen extends _file_manager{
 	// ----------------------------------------------------------
 	// Function category to database -----------------------------
 	// ----------------------------------------------------------
+
+	public function _next($id){
+		$id = str_replace("next_", '', $id);
+		$user = sobad_user::get_id($id,array('status'));
+		$status = $user[0]['status'];
+
+		$status += 1;
+		if($status==5){
+			$status = 6;
+		}
+
+		$q = sobad_db::_update_single($id,'abs-user',array('ID' => $id,'status' => $status));
+		
+		if($q!==0){
+			$pg = isset($_POST['page'])?$_POST['page']:1;
+			return self::_get_table($pg);
+		}
+	}
 
 	public function _status($id){
 		$id = str_replace("status_", '', $id);
