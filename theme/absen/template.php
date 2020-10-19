@@ -29,7 +29,7 @@ abstract class absen_control{
 		$outcity = array(); $dayoff = array(); $permit = array();
 
 		$group[0]['name'] = 'Internship';
-		$group[0]['group'] = 0;
+		$group[0]['group'] = 2;
 		$group[0]['punish'] = 1;
 		$_group[0] = array(0);
 

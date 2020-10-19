@@ -174,7 +174,7 @@ class employee_absen extends _file_manager{
 				$end_date = ' - ';
 
 				if(!empty($val['_resign_date'])){
-					$masa = $val['_resign_status']==2?' - Di Berhentikan':' - Resign';
+					$masa = $val['_resign_status']==2?'<br>- Di Berhentikan':'<br>- Resign';
 					$end_date = format_date_id($val['_resign_date']);
 				}
 			}
