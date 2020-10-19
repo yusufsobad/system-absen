@@ -144,6 +144,63 @@ div#total-work-absen {
     font-size: 40px;
 }
 
+.box-work-flex {
+    width: 100%;
+    display: inline-block;
+}
+
+/* ------------------------ */
+/* -- Width Work ---------- */
+/* ------------------------ */
+
+.user-work-1{
+    width: 100%;
+}
+
+.user-work-2{
+    width: 50%;
+}
+
+.user-work-3{
+    width: 33.33333%;
+}
+
+.user-work-4{
+    width: 25%;
+}
+
+.user-work-5{
+    width: 20%;
+}
+
+.user-work-6{
+    width: 16.66667%;
+}
+
+.user-work-7{
+    width: 14.28571%;
+}
+
+.user-work-8{
+    width: 12.5%;
+}
+
+.user-work-9{
+    width: 11.11111%;
+}
+
+.user-work-10{
+    width: 10%;
+}
+
+.user-work-11{
+    width: 9.09091%;
+}
+
+.user-work-12{
+    width: 8.33333%;
+}
+
 /* ------------------------ */
 /* -- Block Animation ----- */
 /* ------------------------ */
@@ -364,4 +421,25 @@ div#multiSlider .MS-content .item {
 .item>img {
     width: 90%;
     height: auto;
+}
+
+.work-slider{
+    padding: 0px;
+    margin-right: 20px;
+}
+
+div.work-slider .MS-content {
+    white-space: nowrap;
+    overflow: hidden;
+    height: 100%;
+    padding-top: 10px;
+}
+
+div.work-slider .MS-content .item {
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+    height: 100%;
+    white-space: normal;
+    padding: 0px;
 }

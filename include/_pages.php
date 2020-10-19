@@ -299,7 +299,9 @@ abstract class _page{
 		        	if($check['status']){
 		        		$q = self::_schema(json_encode($data),false); //Update data
 		        	}else{
-		        		$q = self::_schema(json_encode($data),true); // Add data
+		        		if($check['insert']){
+		        			$q = self::_schema(json_encode($data),true); // Add data
+		        		}
 		        	}
 		        }
 

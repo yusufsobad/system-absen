@@ -67,6 +67,7 @@ class absen_sobad{
 	private function load_script(){
 		?>
 			<script>
+			var m = 0;
 			var reload = true;
 
 			setInterval(function(){
@@ -88,13 +89,35 @@ class absen_sobad{
 			},1000);
 
 			//Fullscreen
-			launchIntoFullscreen(document.documentElement); // the whole page
+			//launchIntoFullscreen(document.documentElement); // the whole page
 
 			jQuery(document).ready(function() {     
 				$("#qrscanner").focus();
 				$("#qrscanner").on('change',function(){
 					setcookie("sidemenu","absensi");
-					data = "ajax=_send&object=absensi&data="+this.value;
+
+					if(typeof notwork[this.value] == 'undefined'){
+						var _group = null;
+					}else{
+						var _group = notwork[this.value]['group'];
+					}
+
+					var _pos_grp = Object.keys(work).length;
+					var _pos_user = 1;
+
+					if(typeof work[_group] === 'undefined'){
+						_pos_grp += 1;
+						if(typeof group[_group] != 'undefined'){
+							group[_group]['position'] = _pos_grp;
+						}
+					}else{
+						_pos_user = Object.keys(work[_group]).length;
+						_pos_user += 1;
+						_pos_grp = group[_group]['position'];
+					}
+
+					data = [this.value,_pos_user,_pos_grp];
+					data = "ajax=_send&object=absensi&data="+JSON.stringify(data);
 
 					//pause slide to animation
 					$('#multiSlider').multislider('pause');
@@ -121,6 +144,14 @@ class absen_sobad{
 
 				if(Object.keys(work[i]).length<13){
 					$('#workgroup-'+i).multislider('pause');
+				}
+			}
+
+			for(var j in work){
+				m = Object.keys(work[j]).length;
+				$('#employee-work>div:nth-child('+group[j]['position']+')').before($('#workgroup-'+j));
+				for(var k in work[j]){
+					$('#workgroup-'+j+'>.MS-content>div:nth-child('+(m-work[j][k]['position'])+')').after($('#work-'+k));
 				}
 			}
 

@@ -20,6 +20,7 @@ abstract class absen_control{
 	}
 
 	protected static function _control($args=array()){
+		$day = date('w');
 		$args = static::$data;
 		$args = $args['data'];
 
@@ -27,21 +28,38 @@ abstract class absen_control{
 		$group = array(); $work = array(); $notwork = array(); 
 		$outcity = array(); $dayoff = array(); $permit = array();
 
-		$group[0] = 'Internship';
+		$group[0]['name'] = 'Internship';
+		$group[0]['group'] = 0;
+		$group[0]['punish'] = 1;
 		$_group[0] = array(0);
 
 		foreach ($args['group'] as $key => $val) {
-			$data = unserialize($val['meta_note']);
+			$data = $val['meta_note'];
 			if(isset($data['data'])){
-				$group[$val['ID']] = $val['meta_value'];
+				$group[$val['ID']] = array('name' => $val['meta_value']);
 				$_group[$val['ID']] = $data['data'];
+			}
+
+			if(isset($data['status'])){
+				if(in_array(2,$data['status'])){
+					$group[$val['ID']]['group'] = 2;
+				}else{
+					$group[$val['ID']]['group'] = 1;
+				}
+
+				if(in_array(3,$data['status'])){
+					$group[$val['ID']]['punish'] = 1;
+				}else{
+					$group[$val['ID']]['punish'] = 0;
+				}
 			}
 		}
 
 		self::$_group = $_group;
 
+		$pos = 0;
 		foreach ($args['user'] as $key => $val) {
-			if(empty($val['type'])){
+			if(empty($val['type']) || $val['type']==2){
 				$notwork[$val['no_induk']] = array(
 					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
 					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
@@ -50,18 +68,45 @@ abstract class absen_control{
 			}
 
 			if($val['type']==1){
+				$_work = sobad_work::get_id($val['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
 				$grp = self::_get_group($val['divisi']);
+
+				$check = array_filter($_work);
+				if(empty($check)){
+					$_work = array(
+						'time_in'	=> '08:00:00',
+						'time_out'	=> '16:00:00'
+					);
+				}else{
+					$_work = $_work[0];
+				}
 				
 				if(!isset($work[$grp])){
 					$work[$grp] = array();
 				}
 
+				$time = substr($val['time_in'],0,5);
+				$waktu = $time;
+
+				$pos = $val['note']['pos_user'];
+/*				
+				if($pos==1){
+					$waktu = '<span style="color:green;">'.$time.'</span>';
+				}
+*/
+				if($time>=$_work['time_in']){
+					$waktu = '<span style="color:red;">'.$time.'</span>';
+				}
+
 				$work[$grp][$val['no_induk']] = array(
-					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
-					'class'	=> 'col-md-20',
-					'time'	=> substr($val['time_in'],0,5),
-					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
+					'name'		=> empty($val['_nickname'])?'no name':$val['_nickname'],
+					'class'		=> '',
+					'time'		=> $waktu,
+					'image'		=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
+					'position'	=> $pos
 				);
+
+				$group[$grp]['position'] = $val['note']['pos_group'];
 			}
 
 			if($val['type']==3){
@@ -135,6 +180,18 @@ abstract class absen_control{
 					}
 
 					$("#total-work-absen").text(m);
+				}
+
+				function launchIntoFullscreen(element) {
+					if(element.requestFullscreen) {
+						element.requestFullscreen();
+					} else if(element.mozRequestFullScreen) {
+						element.mozRequestFullScreen();
+					} else if(element.webkitRequestFullscreen) {
+						element.webkitRequestFullscreen();
+					} else if(element.msRequestFullscreen) {
+						element.msRequestFullscreen();
+					}
 				}
 
 				function layout_user(id,arr){
@@ -219,29 +276,75 @@ abstract class absen_control{
 				}
 
 				function Work(){
-					var args = '';var a = '';
-					var idx = document.getElementById("employee-work");
+					var args = '';var a = '';var b = '';var w = 2;
+					var idx = '';
 
 					for(var i in work){
 
+						switch(group[i]['group']){
+							case 0:
+								idx = document.getElementById("internship-work");
+								break;
+
+							case 1:
+								idx = document.getElementById("employee-work");
+								break;
+
+							case 2:
+								idx = document.getElementById("employee-exclude");
+								break;
+
+							default:
+								idx = document.getElementById("employee-work")
+								break;
+						}
+
 						a = cWork(idx,i);
+						w = Object.keys(work[i]).length;
+
+						if(w<2){
+							w = 2;
+						}else if(w<12){
+							w = w
+						}else{
+							w = 12
+						}
+
+						w = 'user-work-'+w;
 
 						for(j in work[i]){
-							layout_user(a,work[i][j]);
+							if(group[i]['punish']==0){
+								work[i][j]['time'] = '';
+							}
+
+							args = ['div',[['id','work-'+j],['class','item '+w]],''];
+							b = ceBefore(a,args);
+
+							layout_user(b,work[i][j]);
 						}
 					}
 				}
 
 				function cWork(idx,grp){
-					var a = '';
+					var a = '';var col = 12;
+					var w = Object.keys(work[grp]).length;
 
-					args = ['div',[['id','workgroup-'+grp],['class','col-md-6']],''];
+					if(w<2){
+						col = 2;
+					}else if(w<12){
+						col = Object.keys(work[grp]).length;
+					}else{
+						col = 12
+					}
+
+
+					args = ['div',[['id','workgroup-'+grp],['class','work-slider carousel slide col-md-'+col],['data-ride','carousel']],''];
 					a = ceAppend(idx,args);
 
-					args = ['div',[['class','employee title-content']],group[grp]];
+					args = ['div',[['class','employee title-content']],group[grp]['name']];
 					ceAppend(a,args);
 
-					args = ['div',[['class','row absen-work-content']],''];
+					args = ['div',[['class','MS-content'],['role','listbox']],''];
 					a = ceAppend(a,args);
 
 					return a;
@@ -328,6 +431,7 @@ abstract class absen_control{
 			<script type="text/javascript">
 				function load_animation(data){
 					// start
+					var col = 2;
 					var idx = document.getElementById("employee-animation");
 					var _idx = data['id'];
 
@@ -346,18 +450,71 @@ abstract class absen_control{
 					if(typeof work[_grp] === 'undefined'){
 						work[_grp] = [];
 
-						idx = document.getElementById("employee-work");
+						switch(group[_grp]['group']){
+							case 0:
+								idx = document.getElementById("internship-work");
+								break;
+
+							case 1:
+								idx = document.getElementById("employee-work");
+								break;
+
+							case 2:
+								idx = document.getElementById("employee-exclude");
+								break;
+
+							default:
+								idx = document.getElementById("employee-work")
+								break;
+						}
+
 						var a = cWork(idx,_grp);
 					}else{
 						var a = document.getElementById("workgroup-"+_grp);
-						a = a.getElementsByClassName("absen-work-content")[0];
+						a = a.getElementsByClassName("MS-content")[0];
+
+						if(Object.keys(work[_grp]).length>11){
+							$('#workgroup-'+_grp).multislider({
+								duration:750,
+								interval: 1500,
+							});
+
+							$('#workgroup-'+_grp).multislider('pause');
+
+							col = 12;
+						}else{
+							col = Object.keys(work[_grp]).length;
+
+							if(col > 1){
+								$('#workgroup-'+_grp).addClass('col-md-'+(col+1));
+								$('#workgroup-'+_grp).removeClass('col-md-'+col);
+
+								$('#workgroup-'+_grp+' .MS-content .item').addClass('user-work-'+(col+1));
+								$('#workgroup-'+_grp+' .MS-content .item').removeClass('user-work-'+col);
+							}
+
+							if(col < 12){
+								col = col+1;
+							}
+						}
 					}
 
 					work[_grp][_idx] = notwork[_idx];
-					work[_grp][_idx]['time'] = data['data']['date'];
-					work[_grp][_idx]['class'] = 'col-md-20 opac-none';
 
-					layout_user(a,work[_grp][_idx]);
+					if(group[_grp]['punish']==1){
+						work[_grp][_idx]['time'] = data['data']['date'];
+					}else{
+						work[_grp][_idx]['time'] = '';
+					}
+
+					work[_grp][_idx]['class'] = 'opac-none';
+
+					var _pos = Object.keys(work[_grp]).length;
+					work[_grp][_idx]['position'] = _pos;
+
+					args = ['div',[['id','work-'+_idx],['class','item user-work-'+col]],''];
+					b = ceBefore(a,args);
+					layout_user(b,work[_grp][_idx]);
 
 					// get posisi group
 					var _pos = $('#workgroup-'+_grp).position();
@@ -376,6 +533,10 @@ abstract class absen_control{
 
 					// Check jumlah notwork
 						var m = Object.keys(notwork).length;
+
+						if(Object.keys(work[_grp]).length>12){
+							$('#workgroup-'+_grp).multislider('unPause');
+						}
 
 						if(m<10){
 
@@ -396,10 +557,9 @@ abstract class absen_control{
 
 					//Get Group
 					for(var i in work){
-						_pos = -1;
 						for(var j in work[i]){
-							_pos += 1;
 							if(j==_idx){
+								_pos = work[i][_idx]['position'];
 								_grp = i;
 								_qty = Object.keys(work[_grp]).length;
 								break;
@@ -410,15 +570,22 @@ abstract class absen_control{
 							break;
 						}
 					}
-			
-					_pos = (_qty-_pos);				
+				
+					if(Object.keys(work[_grp]).length>12){
+						$('#workgroup-'+_grp).multislider('pause');
+						$('#workgroup-'+_grp+'>.MS-content>div:nth-child(1)').before($('#work-'+_idx));
+						_pos = 1;
+					}else{
+						_pos = (_qty-_pos);
+					}
+									
 					//Get position Group
 					var _pos_grp = $("#workgroup-"+_grp).position();
 					layout_user(idx,work[_grp][_idx]);
 					
-					$("#workgroup-"+_grp+">.row>.absen-content:nth-child("+_pos+")").css("opacity","0");
-					$('div#employee-animation>.absen-content').css("top",((_pos_grp.top+57) + (Math.floor(_pos/5)*93)) + "px");
-					$('div#employee-animation>.absen-content').css("left",((_pos_grp.left+45) + ((_pos-1)*73)) + "px");
+					$("#workgroup-"+_grp+" #work-"+_idx).css("opacity","0");
+					$('div#employee-animation>.absen-content').css("top",(_pos_grp.top+57) + "px");
+					$('div#employee-animation>.absen-content').css("left",((_pos_grp.left+45) + ((_pos-1)*73))+ "px");
 
 					$('#employee-animation').animate({"z-index":"10"},'slow',function(){
 						//Add notwork
@@ -436,9 +603,25 @@ abstract class absen_control{
 							$('div#employee-animation').css("z-index","0");
 							$('#employee-animation').html('');
 
-						//pause slide to animation
-							$("#workgroup-"+_grp+">.row>.absen-content:nth-child("+_pos+")").remove();
+						//delete user
+							$("#workgroup-"+_grp+" #work-"+_idx).remove();
 							delete work[_grp][_idx];
+
+						//play slider
+							if(Object.keys(work[_grp]).length>12){
+								$('#workgroup-'+_grp).multislider('unPause');
+							}else{
+								$('#workgroup-'+_grp).multislider('pause');
+								var col = Object.keys(work[_grp]).length;
+
+								if(col>1){	
+									$('#workgroup-'+_grp).addClass('col-md-'+col);
+									$('#workgroup-'+_grp).removeClass('col-md-'+(col+1));
+
+									$('#workgroup-'+_grp+' .MS-content .item').addClass('user-work-'+col);
+									$('#workgroup-'+_grp+' .MS-content .item').removeClass('user-work-'+(col+1));
+								}
+							}
 
 						//hidden workgroup
 							var m = Object.keys(work[_grp]).length;

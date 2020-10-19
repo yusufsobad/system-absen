@@ -213,8 +213,15 @@ class create_form{
 
 		foreach ($val['data'] as $ky => $vl) {
 			$check = '';
-			if($val['value']==$vl['value']){
-				$check = 'checked';
+
+			if(is_array($val['value'])){
+				if(in_array($vl['value'], $val['value'])){
+					$check = 'checked';
+				}
+			}else{
+				if($val['value']==$vl['value']){
+					$check = 'checked';
+				}
 			}
 
 			$class = '';

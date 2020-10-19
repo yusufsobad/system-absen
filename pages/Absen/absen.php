@@ -16,12 +16,18 @@ class absensi{
 		sobad_absen::_divisi($group);
 	}
 
-	public function _send($id){
+	public function _send($args=array()){
 		$datetime = date('Y-m-d H:i:s');
 		$date = date('Y-m-d');
 		$times = date('H:i:s');
 		$time = date('H:i');
 		$day = date('w');
+
+		//Convert data
+		$args = json_decode($args);
+		$id = $args[0];
+		$pos_user = $args[1];
+		$pos_group = $args[2];
  
 		//Check user ---> employee atau internship
 		$check = employee_absen::_check_noInduk($id);
@@ -59,16 +65,26 @@ class absensi{
 						'shift'		=> $val['work_time'],
 						'inserted' 	=> $date,
 						'time_in' 	=> $times,
-						'time_out'	=> '00:00:00'
+						'time_out'	=> '00:00:00',
+						'note'		=> serialize(array('pos_user' => $pos_user, 'pos_group' => $pos_group))
 					)
 				);
+			}
+
+			$waktu = $time;
+			if($pos_user==1){
+	//			$waktu = '<span style="color:green;">'.$time.'</span>';
+			}
+
+			if($times>=$work['time_in']){
+				$waktu = '<span style="color:red;">'.$time.'</span>';
 			}
 
 			return array(
 					'id' 		=> $id,
 					'data' 		=> array(
 						'type' => 1,
-						'date' => $time
+						'date' => $waktu
 					),
 					'status' 	=> 1,
 					'msg' 		=> ''
@@ -80,6 +96,14 @@ class absensi{
 
 		switch ($user['type']) {
 			case 0:
+				if($pos_user==1){
+					$time = '<span style="color:green;">'.$time.'</span>';
+				}
+
+				if($time>=$work['time_in']){
+					$time = '<span style="color:red;">'.$time.'</span>';
+				}
+
 				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 1,'time_in' => $times));
 				return array(
 					'id' 		=> $id,
@@ -156,6 +180,8 @@ class absensi{
 		$_group = array();
 		foreach ($group as $key => $val) {
 			$data = unserialize($val['meta_note']);
+			$group[$key]['meta_note'] = $data;
+
 			if(isset($data['data'])){
 				foreach ($data['data'] as $ky => $vl) {
 					array_push($_group,$vl);
@@ -180,7 +206,7 @@ class absensi{
 			}
 
 			$idx = $val['ID'];
-			$log = sobad_user::get_all(array('type','id_join','time_in','time_out'),"AND `abs-user`.ID='$idx' AND `abs-user-log`.inserted='$date'");
+			$log = sobad_user::get_all(array('type','id_join','time_in','time_out','note'),"AND `abs-user`.ID='$idx' AND `abs-user-log`.inserted='$date'");
 
 			$_log = true;
 			$check = array_filter($log);
@@ -188,10 +214,16 @@ class absensi{
 				$log[0] = array(
 					'type'		=> NULL,
 					'time_in'	=> NULL,
-					'time_out'	=> NULL
+					'time_out'	=> NULL,
+					'note'		=> array(
+						'pos_user'	=> 1,
+						'pos_group'	=> 1
+					)
 				);
 
 				$_log = false;
+			}else{
+				$log[0]['note'] = unserialize($log[0]['note']);
 			}
 
 			if(array_key_exists($idx, $_permit)){

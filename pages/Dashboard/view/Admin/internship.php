@@ -50,7 +50,7 @@ class internship_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','name','no_induk','_address','phone_no','status','inserted');
+		$args = array('ID','name','no_induk','_address','phone_no','picture','status','inserted');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);

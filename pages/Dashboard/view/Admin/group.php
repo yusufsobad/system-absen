@@ -90,6 +90,29 @@ class group_absen extends _page{
 
 			$divisi = sobad_module::_conv_divisi($val['meta_note']);
 			$divisi = implode(', ',$divisi['meta_value']);
+
+			$_data = unserialize($val['meta_note']);
+			$status = 'Status : <br>';
+
+			if(isset($_data['status'])){
+				if(in_array(1, $_data['status'])){
+					$status .= '- <strong>Aktif </strong><br>';
+				}else{
+					$status .= '- <strong>Non Aktif </strong><br>';
+				}
+
+				if(in_array(2, $_data['status'])){
+					$status .= '- <strong>Exclude </strong><br>';
+				}else{
+					$status .= '- <strong>Include </strong><br>';
+				}
+
+				if(in_array(3, $_data['status'])){
+					$status .= '- <strong>Punishmnent </strong><br>';
+				}else{
+					$status .= '- <strong>Non Punishmnent </strong><br>';
+				}
+			}
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -112,9 +135,9 @@ class group_absen extends _page{
 					true
 				),
 				'status'	=> array(
-					'center',
-					'10%',
-					$val['meta_reff']==1?'aktif':'non aktif',
+					'left',
+					'12%',
+					$status,
 					true
 				),
 				'View'			=> array(
@@ -187,7 +210,7 @@ class group_absen extends _page{
 	// Form data category -----------------------------------
 	// ----------------------------------------------------------
 	public function add_form($func=''){
-		$vals = array(0,'',array(),1,'group');
+		$vals = array(0,'',array(),array(1,3),'group');
 		$vals = array_combine(self::_array(), $vals);
 		
 		$args = array(
@@ -212,6 +235,10 @@ class group_absen extends _page{
 		$_dt = unserialize($vals['meta_note']);
 		if(isset($_dt['data'])){
 			$data = $_dt['data'];
+		}
+
+		if(isset($_dt['status'])){
+			$vals['meta_reff'] = $_dt['status'];
 		}
 		
 		$vals['meta_note'] = $data;
@@ -249,11 +276,20 @@ class group_absen extends _page{
 				'type'			=> 'checkbox',
 				'key'			=> 'meta_reff',
 				'label'			=> 'Status',
+				'inline'		=> true,
 				'value'			=> $vals['meta_reff'],
 				'data'			=> array(
 					0	=> array(
 						'title'		=> 'Aktif',
 						'value'		=> '1'
+					),
+					1	=> array(
+						'title'		=> 'Exclude',
+						'value'		=> '2'
+					),
+					2	=> array(
+						'title'		=> 'Punishmnet',
+						'value'		=> '3'
 					)
 				)
 			),
@@ -353,13 +389,17 @@ class group_absen extends _page{
 	// ----------------------------------------------------------
 
 	public function _callback($args=array(),$_args=array()){
-
-		$data = array('data' => explode(',', $args['meta_note']));
+		$_args = sobad_asset::ajax_conv_array_json($_args);
+		$data = array(
+			'data' 		=> explode(',', $args['meta_note']),
+			'status'	=> $_args['meta_reff']
+		);
 		$data = serialize($data);
 
 		$args['meta_key'] = 'group';
 		$args['meta_note'] = $data;
 
+		unset($args['meta_reff']);
 		return $args;
 	}
 }

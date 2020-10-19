@@ -22,7 +22,7 @@ class sobad_user extends _class{
 			);
 		}else{
 			self::$list_meta = array(
-				'_address','_email','_sex','_entry_date','_place_date','_birth_date','_resign_date','_province','_city','_subdistrict','_postcode','_marital','_religion','_nickname'
+				'_address','_email','_sex','_entry_date','_place_date','_birth_date','_resign_date','_province','_city','_subdistrict','_postcode','_marital','_religion','_nickname','_resign_status'
 			);
 		}
 

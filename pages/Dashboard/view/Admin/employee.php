@@ -47,7 +47,7 @@ class employee_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date','_resign_date');
+		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date','_resign_date','_resign_status');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -121,10 +121,20 @@ class employee_absen extends _file_manager{
 			
 			$btn_sts = array(
 				'ID'	=> 'status_'.$val['ID'],
-				'func'	=> '_status',
+				'func'	=> '_resign',
 				'icon'	=> 'fa fa-power-off',
 				'color'	=> '',
-				'label'	=> 'Non Aktif',
+				'label'	=> 'Resign',
+				'status'=> '',
+				'type'	=> $tab
+			);
+
+			$btn_miss = array(
+				'ID'	=> 'status_'.$val['ID'],
+				'func'	=> '_dismissed',
+				'icon'	=> 'fa fa-power-off',
+				'color'	=> '',
+				'label'	=> 'Di Berhentikan',
 				'status'=> '',
 				'type'	=> $tab
 			);
@@ -134,7 +144,8 @@ class employee_absen extends _file_manager{
 				'color'		=> 'default',
 				'button'	=> array(
 					_click_button($btn_next),
-					_click_button($btn_sts)
+					_click_button($btn_sts),
+					_click_button($btn_miss)
 				)
 			);
 
@@ -151,53 +162,9 @@ class employee_absen extends _file_manager{
 			$umur = floor($umur / (60 * 60 * 24 * 365))." Tahun";
 
 			// Check masa status
-			switch ($val['status']) {
-				case 1:
-					$masa = date($val['_entry_date']);
-					$masa = strtotime($masa);
-					$masa = strtotime("+3 month",$masa);
-
-					$end_date = date("Y-m-d",$masa);
-					$end_date = format_date_id($end_date);
-
-					$masa -= $now;
-					$masa = (floor($masa / (60 * 60 * 24) + 1) * -1)." Hari";
-					break;
-
-				case 2:
-					$masa = date($val['_entry_date']);
-					$masa = strtotime($masa);
-					$masa = strtotime("+1 year",$masa);
-
-					$end_date = date("Y-m-d",$masa);
-					$end_date = format_date_id($end_date);
-
-					$masa -= $now;
-					$masa = (floor($masa / (60 * 60 * 24) + 1) * -1)." Hari";
-					break;
-
-				case 3:
-					$masa = date($val['_entry_date']);
-					$masa = strtotime($masa);
-					$masa = strtotime("+2 year",$masa);
-
-					$end_date = date("Y-m-d",$masa);
-					$end_date = format_date_id($end_date);
-
-					$masa -= $now;
-					$masa = (floor($masa / (60 * 60 * 24) + 1) * -1)." Hari";
-					break;
-
-				case 4:
-					$end_date = '';
-					$masa = '-';
-					break;
-				
-				default:
-					$end_date = '';
-					$masa = '';
-					break;
-			}
+			$life = self::_check_lifetime($val['status'],$val['_entry_date']);
+			$masa = empty($life['masa'])?'':$life['masa'].' Hari';
+			$end_date = $life['end_date'];
 
 			if($val['status']){
 				$status = self::_conv_status($val['status']);
@@ -207,6 +174,7 @@ class employee_absen extends _file_manager{
 				$end_date = ' - ';
 
 				if(!empty($val['_resign_date'])){
+					$masa = $val['_resign_status']==2?' - Di Berhentikan':' - Resign';
 					$end_date = format_date_id($val['_resign_date']);
 				}
 			}
@@ -318,7 +286,7 @@ class employee_absen extends _file_manager{
 
 		$tabs[0] = array(
 			'key'	=> 'employee_0',
-			'label'	=> 'Semua',
+			'label'	=> 'Aktif',
 			'qty'	=> sobad_user::count("status NOT IN ('0','7')")
 		);
 
@@ -332,7 +300,7 @@ class employee_absen extends _file_manager{
 
 		$tabs[7] = array(
 			'key'	=> 'employee_9',
-			'label'	=> 'Berhenti',
+			'label'	=> 'Non Aktif',
 			'qty'	=> sobad_user::count("status='0'")
 		);
 
@@ -383,6 +351,59 @@ class employee_absen extends _file_manager{
 		$label = isset($types[$status])?$types[$status]:'Berhenti';
 
 		return $label;
+	}
+
+	public function _check_lifetime($status=0,$entry=''){
+		$now = time();
+		switch ($status) {
+			case 1:
+				$masa = date($entry);
+				$masa = strtotime($masa);
+				$masa = strtotime("+3 month",$masa);
+
+				$end_date = date("Y-m-d",$masa);
+				$end_date = format_date_id($end_date);
+
+				$masa -= $now;
+				$masa = (floor($masa / (60 * 60 * 24) + 1) * -1);
+				break;
+
+			case 2:
+				$masa = date($entry);
+				$masa = strtotime($masa);
+				$masa = strtotime("+1 year",$masa);
+
+				$end_date = date("Y-m-d",$masa);
+				$end_date = format_date_id($end_date);
+
+				$masa -= $now;
+				$masa = (floor($masa / (60 * 60 * 24) + 1) * -1);
+				break;
+
+			case 3:
+				$masa = date($entry);
+				$masa = strtotime($masa);
+				$masa = strtotime("+2 year",$masa);
+
+				$end_date = date("Y-m-d",$masa);
+				$end_date = format_date_id($end_date);
+
+				$masa -= $now;
+				$masa = (floor($masa / (60 * 60 * 24) + 1) * -1);
+				break;
+
+			case 4:
+				$end_date = '';
+				$masa = '';
+				break;
+				
+			default:
+				$end_date = '';
+				$masa = '';
+				break;
+		}
+
+		return array('masa' => $masa,'end_date' => $end_date);
 	}
 
 	// ----------------------------------------------------------
@@ -590,7 +611,7 @@ class employee_absen extends _file_manager{
 			),
 			array(
 				'func'			=> 'opt_select',
-				'data'			=> array('belum menikah','menikah','cerai mati'),
+				'data'			=> array('belum menikah','menikah','cerai mati','cerai hidup'),
 				'key'			=> '_marital',
 				'label'			=> 'Status Perkawinan',
 				'class'			=> 'input-circle',
@@ -902,7 +923,13 @@ class employee_absen extends _file_manager{
 
 	public function _next($id){
 		$id = str_replace("next_", '', $id);
-		$user = sobad_user::get_id($id,array('status'));
+		$user = sobad_user::get_id($id,array('status','_entry_date'));
+
+		$life = self::_check_lifetime($user[0]['status'],$user[0]['_entry_date']);
+		if($life['masa']<0){
+			die(_error::_alert_db('Karyawan belum Habis Masa!!!'));
+		}
+
 		$status = $user[0]['status'];
 
 		$status += 1;
@@ -918,23 +945,39 @@ class employee_absen extends _file_manager{
 		}
 	}
 
-	public function _status($id){
+	public function _resign($id){
+		return self::_status($id,1);
+	}
+
+	public function _dismissed($id){
+		return self::_status($id,2);
+	}
+
+	private function _status($id,$type=0){
 		$id = str_replace("status_", '', $id);
 		$user = sobad_user::get_id($id,array('status'));
 		$status = $user[0]['status'];
 
 		$q = sobad_db::_update_single($id,'abs-user',array('ID' => $id,'status' => 0,'end_status' => $status));
 
-		// Update user-meta
-		$data2 = array('meta_id' => $id,'meta_key' => date('Y-m-d'));
+		// Insert Status Berhenti
+		sobad_db::_insert_table('abs-user-meta',array(
+				'meta_id' 		=> $id,
+				'meta_key' 		=> '_resign_status',
+				'meta_value' 	=> $type
+			)
+		);
 
-		$dt_meta = sobad_user::check_meta($id,'resign_date');	
+		// Update user-meta
+		$data2 = array('meta_id' => $id,'meta_value' => date('Y-m-d'));
+
+		$dt_meta = sobad_user::check_meta($id,'_resign_date');	
 		$check = array_filter($dt_meta);
 		if(empty($check)){
-			$data2['meta_key'] = 'resign_date';
+			$data2['meta_key'] = '_resign_date';
 			$q = sobad_db::_insert_table('abs-user-meta',$data2);
 		}else{
-			$whr = "meta_id='$id' AND meta_key='resign_date'";
+			$whr = "meta_id='$id' AND meta_key='_resign_date'";
 			$q = sobad_db::_update_multiple($whr,'abs-user-meta',$data2);
 		}
 		
@@ -968,6 +1011,15 @@ class employee_absen extends _file_manager{
 	}
 
 	protected function _check_import($files=array()){
+		$check = array_filter($files);
+		if(empty($check)){
+			return array(
+				'status'	=> false,
+				'data'		=> $files,
+				'insert'	=> false
+			);
+		}
+
 		$files = self::_convert_column($files);
 
 		if(!isset($files['status'])){
