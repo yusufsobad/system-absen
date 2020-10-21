@@ -38,7 +38,7 @@ class dash_head1{
 
 		$user = sobad_user::get_all(array('ID','name'));
 		foreach ($user as $key => $val) {
-			$log = sobad_user::count_log($val['ID'],"AND time_in>'07:59:59' AND inserted BETWEEN '$start_date' AND '$end_date'");
+			$log = sobad_user::count_log($val['ID'],"AND time_in>'07:59:59' AND _inserted BETWEEN '$start_date' AND '$end_date'");
 
 			$color = 0;
 			if($log>0){

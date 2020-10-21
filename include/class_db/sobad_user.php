@@ -148,7 +148,7 @@ class sobad_user extends _class{
 	public static function get_absen($args=array(),$date='',$limit=''){
 		$date = empty($date)?date('Y-m-d'):$date;
 
-		$where = "WHERE `".self::$tbl_join."`.inserted='$date' $limit";
+		$where = "WHERE `".self::$tbl_join."`._inserted='$date' $limit";
 		return parent::_check_join($where,$args);
 	}
 
@@ -169,7 +169,65 @@ class sobad_user extends _class{
 		$where = "WHERE user='$id' $limit";
 
 		$count = parent::_get_data($where,array('count(ID) AS cnt'));
+
+		self::$table = 'abs-user';
 		return $count[0]['cnt'];
+	}
+
+	public static function get_logs($args=array(),$limit='1=1'){
+		self::$table = 'abs-user-log';
+		$where = "WHERE $limit";
+
+		$args = parent::_get_data($where,$args);
+
+		self::$table = 'abs-user';
+		return $args;
+	}
+
+	public static function get_late($date=''){
+		$date = date($date);
+		$date = strtotime($date);
+		$year = date('Y',$date);
+		$month = date('m',$date);
+
+		$work = array();
+		$works = sobad_work::get_all(array('ID','name','days','time_in'));
+		foreach ($works as $key => $val) {
+			$idx = $val['ID'];
+			if(!isset($work[$idx])){
+				$work[$idx] = array();
+			}
+
+			$work[$idx][$val['days']] = $val['time_in'];
+		}
+
+		self::$table = 'abs-user-log';
+		$where = "WHERE YEAR(_inserted)='$year' AND MONTH(_inserted)='$month' AND type IN (1,2)";
+
+		$data = array();
+		$logs = parent::_get_data($where,array('ID','user','shift','type','time_in','_inserted'));
+		foreach ($logs as $key => $val) {
+			$_date = date($val['_inserted']);
+			$_date = strtotime($_date);
+			$_date = date('w',$_date);
+
+			$punish = 30;
+			$time = $work[$val['shift']][$_date];
+			if($val['time_in']>=$time){
+				$time = date_create($time);
+				date_add($time, date_interval_create_from_date_string('5 minutes'));
+				$time = date_format($time,'H:i:s');
+
+				if($val['time_in']>=$time){
+					$punish = 60;
+				}
+				$val['punishment'] = $punish;
+				$data[] = $val;
+			}
+		}
+
+		self::$table = 'abs-user';
+		return $data;
 	}
 
 }

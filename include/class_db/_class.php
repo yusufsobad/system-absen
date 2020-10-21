@@ -140,7 +140,11 @@ abstract class _class{
 			}
 		}
 
-		$args = self::$_join;
+		$check = array_filter(self::$_join);
+		if(!empty($check)){
+			$args = self::$_join;
+		}
+
 		$where = self::$_inner.self::$_where;
 		return self::_get_data($where,$args);
 	}
@@ -232,7 +236,7 @@ abstract class _class{
 
 	protected static function _get_data($where='',$args=array()){
 		$data = array();
-		
+
 		$q = sobad_db::_select_table($where,static::$table,$args);
 		if($q!==0){
 			while($r=$q->fetch_assoc()){

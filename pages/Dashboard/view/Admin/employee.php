@@ -347,7 +347,7 @@ class employee_absen extends _file_manager{
 	}
 
 	public function _conv_status($status=''){
-		$types = array('Non Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun');
+		$types = array('Non Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun','Internship');
 		$label = isset($types[$status])?$types[$status]:'Berhenti';
 
 		return $label;

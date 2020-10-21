@@ -63,7 +63,7 @@ class absensi{
 						'user' 		=> $val['ID'],
 						'type' 		=> 1,
 						'shift'		=> $val['work_time'],
-						'inserted' 	=> $date,
+						'_inserted' => $date,
 						'time_in' 	=> $times,
 						'time_out'	=> '00:00:00',
 						'note'		=> serialize(array('pos_user' => $pos_user, 'pos_group' => $pos_group))
@@ -206,7 +206,7 @@ class absensi{
 			}
 
 			$idx = $val['ID'];
-			$log = sobad_user::get_all(array('type','id_join','time_in','time_out','note'),"AND `abs-user`.ID='$idx' AND `abs-user-log`.inserted='$date'");
+			$log = sobad_user::get_all(array('type','id_join','time_in','time_out','note'),"AND `abs-user`.ID='$idx' AND `abs-user-log`._inserted='$date'");
 
 			$_log = true;
 			$check = array_filter($log);
@@ -240,7 +240,7 @@ class absensi{
 							'user' 		=> $idx,
 							'shift' 	=> $val['work_time'],
 							'type'		=> $_permit[$idx],
-							'inserted'	=> $date
+							'_inserted'	=> $date
 						)
 					);
 				}
@@ -277,25 +277,25 @@ class absensi{
 
 	public static function _inWork(){
 		$date = date('Y-m-d');
-		$work = sobad_user::go_work(array('id_join'),"AND `abs-user-log`.inserted='$date'");
+		$work = sobad_user::go_work(array('id_join'),"AND `abs-user-log`._inserted='$date'");
 		return count($work);
 	}
 
 	public static function _permitWork(){
 		$date = date('Y-m-d');
-		$work = sobad_user::go_permit(array('id_join'),"AND `abs-user-log`.inserted='$date'");
+		$work = sobad_user::go_permit(array('id_join'),"AND `abs-user-log`._inserted='$date'");
 		return count($work);
 	}
 
 	public static function _holidayWork(){
 		$date = date('Y-m-d');
-		$work = sobad_user::go_holiday(array('id_join'),"AND `abs-user-log`.inserted='$date'");
+		$work = sobad_user::go_holiday(array('id_join'),"AND `abs-user-log`._inserted='$date'");
 		return count($work);
 	}
 
 	public static function _outCity(){
 		$date = date('Y-m-d');
-		$work = sobad_user::go_outCity(array('id_join'),"AND `abs-user-log`.inserted='$date'");
+		$work = sobad_user::go_outCity(array('id_join'),"AND `abs-user-log`._inserted='$date'");
 		return count($work);
 	}
 }

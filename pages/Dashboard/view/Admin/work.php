@@ -63,6 +63,14 @@ class worktime_absen extends _page{
 			$no += 1;
 			$id = $val['ID'];
 
+			$view = array(
+				'ID'	=> 'view_'.$id,
+				'func'	=> '_view',
+				'color'	=> 'yellow',
+				'icon'	=> 'fa fa-eye',
+				'label'	=> 'view'
+			);
+
 			$edit = array(
 				'ID'	=> 'edit_'.$id,
 				'func'	=> '_edit',
@@ -137,6 +145,12 @@ class worktime_absen extends _page{
 					'auto',
 					$_table,
 					true
+				),
+				'View'			=> array(
+					'center',
+					'10%',
+					_modal_button($view),
+					false
 				),
 				'Edit'			=> array(
 					'center',
@@ -354,8 +368,76 @@ class worktime_absen extends _page{
 	}
 
 	// ----------------------------------------------------------
-	// Function category to database -----------------------------
+	// Function category to database ----------------------------
 	// ----------------------------------------------------------
+
+	public function _view($id=0){
+		$id = str_replace('view_', '', $id);
+		intval($id);
+
+		$args = sobad_user::get_all(array('picture','no_induk','name','divisi','status','inserted'),"AND work_time='$id' AND status!='0'");
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($args as $key => $val) {
+			$no += 1;
+
+			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
+			$status = employee_absen::_conv_status($val['status']);
+
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'No'		=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Profile'	=> array(
+					'left',
+					'5%',
+					'<img src="asset/img/user/'.$image.'" style="width:100%">',
+					true
+				),
+				'NIK'		=> array(
+					'left',
+					'5%',
+					$val['status']==7?internship_absen::_conv_no_induk($val['no_induk'],$val['inserted']):$val['no_induk'],
+					true
+				),
+				'Nama'		=> array(
+					'left',
+					'auto',
+					$val['name'],
+					true
+				),
+				'Divisi'	=> array(
+					'left',
+					'20%',
+					$val['meta_value_divi'],
+					true
+				),
+				'Status'	=> array(
+					'left',
+					'13%',
+					$status,
+					true
+				),
+			);
+		}
+
+		$args = array(
+			'title'		=> 'Detail data',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
 
 	public function _update_db($args=array()){
 		$lang = get_locale();

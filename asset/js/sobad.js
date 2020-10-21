@@ -1,6 +1,6 @@
 // support jQuery Core
 var system = "system-absen";
-var server = "http://abadi-server/"+system;
+var server = "http://abadi-server/"+system; 
 
 var url_ajax = "include/ajax.php";
 var url_preview = "include/preview.php";
@@ -438,9 +438,11 @@ function sobad_ajax(id,data,func,msg,val,html){
 		success:function(response){
 			var req = sobad_callback(id,response,func,msg);
 		},
-		error: function (jqXHR) {
-        	toastr.error(jqXHR);	
-	    },
+		error: function(jqXHR) { 
+        if(jqXHR.status==0) {
+            	alert(" fail to connect, please check your connection settings");
+        	}
+    	},
     	complete: function () {
         	if(val){
 				$(val).removeAttr('disabled');

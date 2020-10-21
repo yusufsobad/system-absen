@@ -8,6 +8,7 @@ require 'group.php';
 require 'holiday.php';
 require 'internship.php';
 require 'permit.php';
+require 'punishment.php';
 require 'study program.php';
 require 'university.php';
 require 'work.php';
