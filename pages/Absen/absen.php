@@ -58,6 +58,15 @@ class absensi{
 
 		$check = array_filter($user);
 		if(empty($check)){
+			if($times>=$work['time_out']){
+				return array(
+					'id' 		=> $id,
+					'data' 		=> NULL,
+					'status' 	=> 1,
+					'msg' 		=> 'Sudah Jam Pulang!!!'
+				);
+			}
+
 			foreach ($users as $key => $val) {
 				sobad_db::_insert_table('abs-user-log',array(
 						'user' 		=> $val['ID'],
