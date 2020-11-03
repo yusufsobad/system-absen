@@ -18,7 +18,8 @@ class sobad_module extends _class{
 				'department',
 				'faculty',
 				'study_program',
-				'group'
+				'group',
+				'day_off'
 			);
 
 			if(in_array($type, $args)){

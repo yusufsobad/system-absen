@@ -53,8 +53,19 @@ class absensi{
 			$work = $work[0];
 		}
 
+
+			$work = array(
+				'time_in'	=> '08:00:00',
+				'time_out'	=> '18:00:00'
+			);
+
+		//check kemarin
+//		$yesterday = strtotime($date);
+//		$yesterday = date('Y-m-d',strtotime('-1 days',$yesterday));
+//		$user_y = sobad_user::get_absen(array('id_join','type','time_in','time_out'),$yesterday,$whr." AND `abs-user-log`.type='1'");
+
 		//check log
-		$user = sobad_user::get_absen(array('id_join','type','time_in','time_out'),$date,$whr);
+		$user = sobad_user::get_absen(array('_nickname','id_join','type','time_in','time_out'),$date,$whr);
 
 		$check = array_filter($user);
 		if(empty($check)){
@@ -67,6 +78,11 @@ class absensi{
 				);
 			}
 
+			$punish = 0;
+			if($times>=$work['time_in']){
+				$punish = 1;
+			}
+
 			foreach ($users as $key => $val) {
 				sobad_db::_insert_table('abs-user-log',array(
 						'user' 		=> $val['ID'],
@@ -75,7 +91,9 @@ class absensi{
 						'_inserted' => $date,
 						'time_in' 	=> $times,
 						'time_out'	=> '00:00:00',
-						'note'		=> serialize(array('pos_user' => $pos_user, 'pos_group' => $pos_group))
+						'note'		=> serialize(array('pos_user' => $pos_user, 'pos_group' => $pos_group)),
+						'punish'	=> $punish,
+						'history'	=> serialize(array('logs' => array('type' => 1,'time' => $time)))
 					)
 				);
 			}
@@ -139,11 +157,36 @@ class absensi{
 						'msg' 		=> ''
 					);
 				}else{
+					$waktu = date_create($user['time_in']);
+					date_add($waktu, date_interval_create_from_date_string('3 minutes'));
+					$waktu = date_format($waktu,'H:i:s');
+
+					if($time<=$waktu){
+						return array(
+							'id' 		=> $id,
+							'data' 		=> NULL,
+							'status' 	=> 1,
+							'msg' 		=> 'Anda sudah scan masuk!!!'
+						);	
+					}
+
 					return array(
 						'id' 		=> $id,
-						'data' 		=> NULL,
-						'status' 	=> 1,
-						'msg' 		=> 'Anda sudah scan masuk!!!'
+						'data' 		=> true,
+						'status' 	=> 0,
+						'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau Kemana \''.$user['_nickname'].'\'?</div>
+										<div class="row" style="text-align:center;">
+											<div class="col-md-4">
+												<button style="width:80%;" type="button" class="btn btn-info" onclick="send_request(5)">Luar Kota</button>
+											</div>
+											<div class="col-md-4">
+												<button style="width:80%;" type="button" class="btn btn-warning" onclick="send_request(4)">Izin</button>
+											</div>
+											<div class="col-md-4">
+												<button style="width:80%;" type="button" class="btn btn-danger" onclick="send_request(2)">Pulang</button>
+											</div>
+										</div>',
+						'modal'		=> true
 					);
 				}
 
@@ -156,26 +199,63 @@ class absensi{
 				);
 
 				break;
+
+			case 4:
+			case 5:
+				$to = 1;
+				if($time>=$work['time_out']){
+					$to = 2;
+				}
+
+				return array(
+					'id' 		=> $id,
+					'data' 		=> array(
+							'type'	=> $user['type'],
+							'date'	=> $time,
+							'to'	=> $to
+						),
+					'status' 	=> 1,
+					'msg' 		=> ''
+				);
+
+				break;
 		}
 
 		return array('id' => $id,'data' => NULL, 'status' => 1);
 	}
 
-	public static function _set_logs(){
-		$log = sobad_user::get_log(array('id_log'),date('Y-m-d'));
-		if(count($log)>0){
-			return '&nbsp;';
+	public function _request($args=array()){
+		$date = date('Y-m-d');
+		$time = date('H:i');
+
+		$args = json_decode($args);
+		$data = $args[0];
+		$type = $args[1];
+
+		$user = sobad_user::get_all(array('ID','id_join','history'),"AND no_induk='$data' AND `abs-user-log`._inserted='$date'");
+		$idx = $user[0]['id_join'];
+
+		$user = unserialize($user[0]['history']);
+		$user['logs'][] = array('type' => $type, 'time' => $time);
+
+		$_args = array('type' => $type,'history' => serialize($user));
+		if($type==2){
+			$_args['type'] = 4;
+			$_args['time_out'] = $time;
 		}
 
-		$users = sobad_user::get_all(array('ID'),"AND status='1'");
-		foreach ($users as $key => $val) {
-			$data = array(
-				'ID'	=> $val['ID'],
-				'shift'	=> 1
-			);
+		sobad_db::_update_single($idx,'abs-user-log',$_args);
 
-			sobad_db::_insert_table('abs-user-log',$data);
-		}
+		return array(
+					'id' 		=> $data,
+					'data' 		=> array(
+							'type'	=> $type,
+							'date'	=> $time,
+							'to'	=> $type
+						),
+					'status' 	=> 1,
+					'msg' 		=> ''
+				);
 	}
 
 	public static function _data_employee(){
@@ -262,13 +342,41 @@ class absensi{
 	}
 
 	public static function _status(){
+		$video = array();
+		$user = sobad_user::get_employees(array('no_induk','status'),"AND status!='0'");
+		$intern = sobad_user::get_internships(array('no_induk','inserted','status'),"AND status!='0'");
+
+		foreach ($user as $key => $val) {
+			if($val['status']==0){
+				continue;
+			}
+
+			$filename = 'asset/img/upload/user_'.$val['no_induk'].'.mp4';
+			if(file_exists($filename)){
+				$video[] = $filename;
+			}
+		}
+
+		foreach ($intern as $key => $val) {
+			if($val['status']==0){
+				continue;
+			}
+
+			$no_induk = internship_absen::_conv_no_induk($val['no_induk'],$val['inserted']);
+			$filename = 'asset/img/upload/user_'.$no_induk.'.mp4';
+			if(file_exists($filename)){
+				$video[] = $filename;
+			}
+		}
+
 		$args = array(
 			'total'		=> self::_employees(),
 			'intern'	=> self::_internship(),
 			'masuk'		=> self::_inWork(),
 			'izin'		=> self::_permitWork(),
 			'cuti'		=> self::_holidayWork(),
-			'luar kota'	=> self::_outCity()
+			'luar kota'	=> self::_outCity(),
+			'video'		=> $video
 		);
 
 		return $args;

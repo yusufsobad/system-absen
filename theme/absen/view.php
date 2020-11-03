@@ -59,6 +59,26 @@ class sobad_absen extends absen_control{
 					</div>
 				</div>
 			</div>
+
+			<!-- Modal -->
+			<div class="modal fade" id="myModal" role="dialog">
+				<div class="modal-dialog">
+			    
+					<!-- Modal content-->
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h4 class="modal-title">Solo Abadi</h4>
+						</div>
+						<div class="modal-body">
+							
+						</div>
+						<div class="modal-footer">
+						</div>
+					</div>
+				</div>
+			</div>
+
 		</div>
 		<?php
 	}
@@ -73,7 +93,7 @@ class sobad_absen extends absen_control{
         			<div class="display-table">
         				<div class="display-table-cell">
         					<div class="text-work-layout">
-        						<span>Karyawan</span>
+        						<span>Team</span>
         						<label>Masuk</label>
         					</div>
         				</div>
@@ -149,6 +169,8 @@ class sobad_absen extends absen_control{
 		$izin = !isset($args['izin'])?0:$args['izin'];
 		$luar_kota = !isset($args['luar kota'])?0:$args['luar kota'];
 
+		$video = !isset($args['video'])?array():$args['video'];
+
 		$args = array(
 		//	'Masuk' 	=> $masuk,
 			'Cuti'		=> $cuti,
@@ -175,8 +197,13 @@ class sobad_absen extends absen_control{
 					<div class="layout_video">
 	                    <div class="frame_video">
 	                    	<video id="video-profile" autoplay>
-								<source class="active" src="asset/img/upload/Ana.mp4" type="video/mp4">
-								<source class="active" src="asset/img/upload/Abed.mp4" type="video/mp4">
+	                    		<?php
+
+	                    			foreach ($video as $key => $val) {
+	                    				echo '<source class="active" src="'.$val.'" type="video/mp4">';
+	                    			}
+	                    		?>
+
 								Your browser does not support the video tag.
 							</video>
 	                    </div>

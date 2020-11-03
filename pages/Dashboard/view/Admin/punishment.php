@@ -16,7 +16,7 @@ class punishment_absen extends _page{
 		$object = self::$table;
 		$args = $object::get_late($date);
 		
-		$data['class'] = '';
+		$data['class'] = 'punishment';
 		$data['table'] = array();
 
 		$no = 0;
@@ -182,7 +182,7 @@ class punishment_absen extends _page{
 			unset($args['words']);
 		}
 
-		$log = sobad_user::get_logs(array('note'),"ID='$id'");
+		$log = sobad_user::get_logs(array('shift','_inserted','note','history'),"ID='$id'");
 		if(empty($log[0]['note'])){
 			$note = array('permit' => $args['note']);
 			$note = serialize($note);
@@ -192,13 +192,23 @@ class punishment_absen extends _page{
 			$note = serialize($note);
 		}
 
+		$day = date($log[0]['_inserted']);
+		$day = strtotime($day);
+		$day = date('w',$day);
+
+		$work = sobad_work::get_id($log[0]['shift'],array('time_in'),"AND days='$day' AND status='1'");
+
+		$history = unserialize($log[0]['history']);
+		$history['logs'][] = array('type' => 4,'time' => $work[0]['time_in']);
+
 		$data = array(
-			'type'		=> 4,
-			'note'		=> $note
+			'note'		=> $note,
+			'punish'	=> 0,
+			'history'	=> serialize($history)
 		);
 
 		$q = sobad_db::_update_single($id,'abs-user-log',$data);
-		
+
 		if($q!==0){
 			$table = self::table();
 			return table_admin($table);

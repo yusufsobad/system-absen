@@ -202,7 +202,7 @@ class sobad_user extends _class{
 		}
 
 		self::$table = 'abs-user-log';
-		$where = "WHERE YEAR(_inserted)='$year' AND MONTH(_inserted)='$month' AND type IN (1,2)";
+		$where = "WHERE YEAR(_inserted)='$year' AND MONTH(_inserted)='$month' AND type IN (1,2) AND punish='1'";
 
 		$data = array();
 		$logs = parent::_get_data($where,array('ID','user','shift','type','time_in','_inserted'));

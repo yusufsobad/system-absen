@@ -223,7 +223,7 @@ class dayOff_absen extends _page{
 				'func'			=> 'opt_input',
 				'type'			=> 'text',
 				'key'			=> 'meta_value',
-				'label'			=> 'Nama Fakultas',
+				'label'			=> 'Nama Cuti',
 				'class'			=> 'input-circle',
 				'value'			=> $vals['meta_value'],
 				'data'			=> 'placeholder="ex: Cuti Karyawan"'
