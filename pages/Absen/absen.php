@@ -53,12 +53,6 @@ class absensi{
 			$work = $work[0];
 		}
 
-
-			$work = array(
-				'time_in'	=> '08:00:00',
-				'time_out'	=> '18:00:00'
-			);
-
 		//check kemarin
 //		$yesterday = strtotime($date);
 //		$yesterday = date('Y-m-d',strtotime('-1 days',$yesterday));
