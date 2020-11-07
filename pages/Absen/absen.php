@@ -3,17 +3,29 @@
 class absensi{
 	protected $object = 'absensi';
 
-	public function layout(){
-		self::divisi();
-	}
+	public static function _status_group($data = array()){
+		$group = array();
+		if(isset($data)){
+			if(in_array(1,$data)){
+				$group['status'] = 1;
+			}else{
+				$group['status'] = 0;
+			}
 
-	private function divisi($id=0){
-		$where = '';
+			if(in_array(2,$data)){
+				$group['group'] = 1;
+			}else{
+				$group['group'] = 0;
+			}
 
-		$group = sobad_group::get_all(array('name','data'),"AND status='1'");
-		$group = sobad_group::_conv_absensi($group);
+			if(in_array(3,$data)){
+				$group['punish'] = 1;
+			}else{
+				$group['punish'] = 0;
+			}
+		}
 
-		sobad_absen::_divisi($group);
+		return $group;
 	}
 
 	public function _send($args=array()){
@@ -36,11 +48,12 @@ class absensi{
 
 		//get work
 		$work = array();
-		$users = sobad_user::get_all(array('ID','work_time'),$whr." AND status!='0'");
+		$users = sobad_user::get_all(array('ID','divisi','work_time'),$whr." AND status!='0'");
 
 		$check = array_filter($users);
 		if(!empty($check)){
 			$work = sobad_work::get_id($users[0]['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
+			$group = sobad_module::_get_group($users[0]['divisi']);
 		}
 
 		$check = array_filter($work);
@@ -48,6 +61,13 @@ class absensi{
 			$work = array(
 				'time_in'	=> '08:00:00',
 				'time_out'	=> '16:00:00'
+			);
+
+			$group = array(
+				'ID'	=> 0,
+				'name'	=> 'undefined',
+				'data'	=> array(0),
+				'group'	=> array(0)
 			);
 		}else{
 			$work = $work[0];
@@ -58,8 +78,20 @@ class absensi{
 //		$yesterday = date('Y-m-d',strtotime('-1 days',$yesterday));
 //		$user_y = sobad_user::get_absen(array('id_join','type','time_in','time_out'),$yesterday,$whr." AND `abs-user-log`.type='1'");
 
+		//check group
+		$group['status'] = self::_status_group($group['status']);
+
+		$punish = 0;
+		if($times>=$work['time_in']){
+			$punish = 1;
+		}
+
+		if($group['status']['punish']==0){
+			$punish = 0;
+		}
+
 		//check log
-		$user = sobad_user::get_absen(array('_nickname','id_join','type','time_in','time_out'),$date,$whr);
+		$user = sobad_user::get_absen(array('_nickname','id_join','type','time_in','time_out','history'),$date,$whr);
 
 		$check = array_filter($user);
 		if(empty($check)){
@@ -72,11 +104,6 @@ class absensi{
 				);
 			}
 
-			$punish = 0;
-			if($times>=$work['time_in']){
-				$punish = 1;
-			}
-
 			foreach ($users as $key => $val) {
 				sobad_db::_insert_table('abs-user-log',array(
 						'user' 		=> $val['ID'],
@@ -87,7 +114,7 @@ class absensi{
 						'time_out'	=> '00:00:00',
 						'note'		=> serialize(array('pos_user' => $pos_user, 'pos_group' => $pos_group)),
 						'punish'	=> $punish,
-						'history'	=> serialize(array('logs' => array('type' => 1,'time' => $time)))
+						'history'	=> serialize(array('logs' => array( 0 => array('type' => 1,'time' => $time))))
 					)
 				);
 			}
@@ -117,15 +144,19 @@ class absensi{
 
 		switch ($user['type']) {
 			case 0:
-				if($pos_user==1){
-					$time = '<span style="color:green;">'.$time.'</span>';
-				}
-
 				if($time>=$work['time_in']){
 					$time = '<span style="color:red;">'.$time.'</span>';
 				}
 
-				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 1,'time_in' => $times));
+				if($group['status']['punish']==0){
+					$time = '';
+				}
+
+				$history = unserialize($user['history']);
+				$history['logs'][] = array('type' => 1,'time' => $times);
+				$history = unserialize($history['logs']);
+
+				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 1,'punish' => $punish,'time_in' => $times,'history' => $history));
 				return array(
 					'id' 		=> $id,
 					'data' 		=> array(
