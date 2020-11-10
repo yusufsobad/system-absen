@@ -120,10 +120,10 @@
 		$list = array(
 			'user_log'	=> 0,
 			'date_punish'	=> date('Y-m-d'),
-			'date_actual'	=> date('Y-m-d'),
 			'punish'	=> 0,
 			'status'	=> 0,
-			'note'	=> '',	
+			'date_actual'	=> '',
+			'punish_history'	=> '',	
 		);
 		
 		return $list;

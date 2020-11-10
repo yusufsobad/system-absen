@@ -149,7 +149,14 @@ class absen_sobad{
 
 			for(var j in work){
 				m = Object.keys(work[j]).length;
-				$('#employee-work>div:nth-child('+group[j]['position']+')').before($('#workgroup-'+j));
+
+				if(group[j]['group']==2){
+					var idx = "employee-exclude";
+				}else{
+					var idx = "employee-work";
+				}
+
+				$('#'+idx+'>div:nth-child('+group[j]['position']+')').before($('#workgroup-'+j));
 				for(var k in work[j]){
 					$('#workgroup-'+j+'>.MS-content>div:nth-child('+(m-work[j][k]['position'])+')').after($('#work-'+k));
 				}

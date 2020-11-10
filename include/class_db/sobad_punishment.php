@@ -20,8 +20,8 @@ class sobad_punishment extends _class{
 						),
 						'shift'		=> array(
 							'key'		=> 'ID',
-							'table'		=> 'abs-user-log',
-							'column'	=> array('name')
+							'table'		=> 'abs-work',
+							'column'	=> array('ID','name')
 						)
 					)
 				)
@@ -29,5 +29,11 @@ class sobad_punishment extends _class{
 		);
 
 		return $args;
+	}
+
+	public static function _check_log($log=0){
+		$where = "WHERE user_log='$log'";
+
+		return parent::_get_data($where,array('ID'));
 	}
 }

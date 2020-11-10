@@ -11,6 +11,10 @@ class punishment_absen extends _page{
 	// ----------------------------------------------------------
 
 	protected function table(){
+		if(parent::$type=='punishment_1'){
+			return self::table_schedule();
+		}
+
 		$date = date('Y-m');
 
 		$object = self::$table;
@@ -78,6 +82,57 @@ class punishment_absen extends _page{
 		return $data;
 	}
 
+	protected function table_schedule(){
+		$date = date('Y-m');
+		$sum = sum_days(date('m'),date('Y'));
+
+		$awal = $date.'-01';
+		$akhir = $date.'-'.sprintf("%02d",$sum);
+
+		$whr = "AND `abs-punishment`.status IN ('0','2') OR (`abs-punishment`.status='1' AND date_punish BETWEEN '$awal' AND '$akhir')";
+
+		$object = self::$table;
+		$args = sobad_punishment::get_all(array(),$whr);
+		
+		$data['class'] = 'schedule';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach($args as $key => $val){
+			$no += 1;
+
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'No'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Name'			=> array(
+					'left',
+					'auto',
+					$val['name_user'],
+					true
+				),
+				'Tanggal'		=> array(
+					'left',
+					'25%',
+					format_date_id($val['date_punish']),
+					true
+				),
+				'Waktu'			=> array(
+					'center',
+					'10%',
+					$val['punish'].' menit',
+					true
+				)
+			);
+		}
+
+		return $data;
+	}
+
 	private function head_title(){
 		$args = array(
 			'title'	=> 'Punishment <small>data punishment</small>',
@@ -95,11 +150,19 @@ class punishment_absen extends _page{
 
 	protected function get_box(){
 		$data = self::table();
+
+		$label = 'Data punishment';
+		$action = '';
+
+		if(parent::$type=='punishment_1'){
+			$label = 'Schedule Punishment';
+			$action = self::action();
+		}
 		
 		$box = array(
-			'label'		=> 'Data punishment',
+			'label'		=> $label,
 			'tool'		=> '',
-			'action'	=> '',
+			'action'	=> $action,
 			'func'		=> 'sobad_table',
 			'data'		=> $data
 		);
@@ -109,6 +172,23 @@ class punishment_absen extends _page{
 
 	protected function layout(){
 		$box = self::get_box();
+
+		$tabs = array(
+			'tab'	=> array(
+				0	=> array(
+					'key'	=> 'punishment_0',
+					'label'	=> 'User',
+					'qty'	=> ''
+				),
+				1	=> array(
+					'key'	=> 'punishment_1',
+					'label'	=> 'Jadwal',
+					'qty'	=> ''
+				)
+			),
+			'func'	=> '_portlet',
+			'data'	=> $box
+		);
 		
 		$opt = array(
 			'title'		=> self::head_title(),
@@ -116,7 +196,20 @@ class punishment_absen extends _page{
 			'script'	=> array('')
 		);
 		
-		return portlet_admin($opt,$box);
+		return tabs_admin($opt,$tabs);
+	}
+
+	protected function action(){
+		$add = array(
+			'ID'	=> 'schedule_0',
+			'func'	=> '_schedule',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-refresh',
+			'label'	=> 'Schedule',
+			'type'	=> parent::$type
+		);
+		
+		return _click_button($add);
 	}
 
 	public static function _permit($id=0){
@@ -163,6 +256,187 @@ class punishment_absen extends _page{
 		$args['data'] = array($data);
 		
 		return modal_admin($args);
+	}
+
+	protected static function _check_holiday($date='',$dayoff=array()){
+
+		$date = date($date);
+		$_date = strtotime($date);
+
+		$year = date('Y',$_date);
+		$month = date('m',$_date);
+		$day = date('d',$_date);
+		$sum = sum_days($month,$year);
+
+		for($i=$day;$i<=$sum;$i++){
+			$date = $year.'-'.$month.'-'.sprintf("%02d",$i);
+
+			$date = date($date);
+			$_date = strtotime($date);
+
+			if(date('w',$_date)==0){
+				continue;
+			}
+
+			if(in_array($date,$dayoff)){
+				continue;
+			}
+
+			return $date;
+		}
+	}
+
+	public function _schedule(){
+		$date = date('Y-m-d');
+		$date = strtotime($date);
+
+		$day = date('w');
+		$sum = sum_days(date('m'),date('Y'));
+
+		$sunday = floor(($sum - $day - date('d')) / 7) + 1;
+
+		$awal = date('Y-m-d');
+		$akhir = date('Y-m').'-'.sprintf("%02d",$sum);
+		$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday BETWEEN '$awal' AND '$akhir'");
+		$dayoff = count($holidays);
+		$_total = ($sum - $sunday - $dayoff - date('d'));
+
+		$object = self::$table;
+		$args = $object::get_late(date('Y-m',$date));
+
+		$j = 2;
+		if(count($args)>=($_total*2)){
+			$j = ceil(count($args) / $_total);
+		}else{
+			$_total = ceil(count($args) / 2);
+		}
+
+		$z = ($_total * $j) - count($args);
+		$_a = $_total - $z;
+
+		$holiday = array();
+		foreach ($holidays as $key => $val) {
+			$holiday[] = $val['holiday'];
+		}
+
+		$_cols = array();
+		$cols = array();
+
+		$ky = -1;
+		for($h = 0;$h < $_total;$h++){
+			for($i = 0;$i < $j;$i++) {
+				if(($i + 1) == $j){
+					if(($h + 1) > $_a){
+						$_key = date('Y-m-d',strtotime("+1 days",$date));
+						$date = strtotime($_key);
+						continue;
+					}
+				}
+
+				$ky += 1;
+			
+				$val = $args[$ky];
+				$_key = date('Y-m-d',$date);
+
+				if(isset($cols[$_key])){
+					if(count($cols[$_key])==$j){
+						$_key = date('Y-m-d',strtotime("+1 days",$date));
+						$date = strtotime($_key);
+					}
+				}
+
+				if(!isset($cols[$_key])){
+					$_key = self::_check_holiday($_key,$holiday);
+					$cols[$_key] = array();
+
+					$date = strtotime($_key);
+				}
+
+				if(isset($cols[$_key][$i])){
+					continue;
+				}
+
+				if($i>0){
+					// Check user dalam satu baris
+					// Jika Ada
+					if(in_array($val['user'],$cols[$_key])){
+
+						// lakukan pencarian baris yang belum di isi oleh user X
+						for($k = ($key+1);$k < $sum;$k++){
+
+							$_k = date('Y-m').'-'.sprintf("%02d",$k);
+							if(!isset($cols[$_k])){
+								$_key = self::_check_holiday($_k,$holiday);
+								$cols[$_k] = array();
+							}
+
+							if(in_array($val['user'],$cols[$_k])){
+								continue;
+							}else{
+
+								// Jika baris sudah terisi penuh
+								if(count($cols[$_k])==$j){
+									continue;
+								}
+
+								// Pengisian terhadap kolom yang belum di isi user X
+								$_l = count($cols[$_k]) - 1;
+								$cols[$_k][$_l] = $val['user'];
+
+								$_cols[$_k][$_l] = array(
+									'user_log'		=> $val['ID'],
+									'date_punish'	=> $_k,
+									'punish'		=> $val['punishment'],
+									'punish_history'=> serialize(array('history' => array(
+											0			=> array(
+												'date'		=> $_k,
+												'periode'	=> 1
+											)
+										))
+									)
+								);
+
+								break;
+							}
+						}
+					}
+				}
+
+				$cols[$_key][$i] = $val['user'];
+
+				$_cols[$_key][$i] = array(
+					'user_log'		=> $val['ID'],
+					'date_punish'	=> $_key,
+					'punish'		=> $val['punishment'],
+					'punish_history'=> serialize(array('history' => array(
+							0			=> array(
+								'date'		=> $_key,
+								'periode'	=> 1
+							)
+						))
+					)
+				);
+			}
+		}	
+
+		$q = 0;
+		foreach ($_cols as $key => $val) {
+			//check log punishment
+			foreach($val as $ky => $vl){
+				$punish = sobad_punishment::_check_log($vl['user_log']);
+				$check = array_filter($punish);
+				if(!empty($check)){
+					continue;
+				}
+
+				$q = sobad_db::_insert_table('abs-punishment',$vl);
+			}
+		}
+
+		if($q!==0){
+			$table = self::table_schedule();
+			return table_admin($table);
+		}
 	}
 
 	public function _add_permit($args=array()){

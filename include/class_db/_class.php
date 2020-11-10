@@ -109,7 +109,7 @@ abstract class _class{
 			$joins = self::list_join();
 			$metas = self::list_meta($type);
 
-			$args = array_merge($user,$logs,$metas);
+			$args = array_merge($user,$joins,$metas);
 		}
 	
 		if(isset($blueprint['detail'])){
