@@ -86,6 +86,14 @@ function menu_general(){
 		'func'		=> 'permit_absen',
 		'child'		=> NULL
 	);
+
+	$args['auto-shift'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Auto Shift',
+		'func'		=> 'shift_absen',
+		'child'		=> NULL
+	);
 	
 	return $args;
 }

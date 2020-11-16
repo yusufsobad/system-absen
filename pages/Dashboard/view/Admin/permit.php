@@ -31,7 +31,7 @@ class permit_absen extends _page{
 		$start = intval(parent::$page);
 		$nLimit = intval(parent::$limit);
 		
-		$kata = '';$where = "";
+		$kata = '';$where = "AND type NOT IN (9) ORDER BY start_date DESC ";
 		if(parent::$search){
 			$src = parent::like_search($args,$where);	
 			$cari = $src[0];
@@ -148,7 +148,7 @@ class permit_absen extends _page{
 			'link'	=> array(
 				0	=> array(
 					'func'	=> self::$object,
-					'label'	=> 'jabatan'
+					'label'	=> 'izin'
 				)
 			),
 			'date'	=> false
@@ -481,6 +481,8 @@ class permit_absen extends _page{
 
 		if(isset($args['range_date'])){
 			$data['range_date'] = $args['range_date'];
+		}else{
+			$data['range_date'] = '0000-00-00';
 		}
 
 		if(isset($args['num_day'])){

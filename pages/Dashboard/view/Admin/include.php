@@ -1,5 +1,6 @@
 <?php
 
+require 'auto_shift.php';
 require 'divisi.php';
 require 'day off.php';
 require 'employee.php';

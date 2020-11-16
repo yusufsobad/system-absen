@@ -45,6 +45,7 @@ class absensi{
 		$check = employee_absen::_check_noInduk($id);
 		$_id = $check['id'];
 		$whr = $check['where'];
+		$_userid = 0;
 
 		//get work
 		$work = array();
@@ -52,7 +53,18 @@ class absensi{
 
 		$check = array_filter($users);
 		if(!empty($check)){
-			$work = sobad_work::get_id($users[0]['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
+			//Check Setting Auto Shift
+			$_userid = $users[0]['ID'];
+			$shift = sobad_permit::get_all(array('note'),"AND user='$_userid' AND type='9' AND start_date<='$date' AND range_date>='$date'");
+			
+			$check = array_filter($shift);
+			if(!empty($check)){
+				$worktime = $shift[0]['note'];
+			}else{
+				$worktime = $users[0]['work_time'];
+			}
+
+			$work = sobad_work::get_id($worktime,array('time_in','time_out'),"AND days='$day' AND status='1'");
 			$group = sobad_module::_get_group($users[0]['divisi']);
 		}
 
@@ -73,10 +85,19 @@ class absensi{
 			$work = $work[0];
 		}
 
+
 		//check kemarin
 //		$yesterday = strtotime($date);
 //		$yesterday = date('Y-m-d',strtotime('-1 days',$yesterday));
 //		$user_y = sobad_user::get_absen(array('id_join','type','time_in','time_out'),$yesterday,$whr." AND `abs-user-log`.type='1'");
+
+		//Check Permit
+		$permit = sobad_permit::get_all(array('ID','user','type'),"AND user='$_userid' AND start_date<='$date' AND range_date>='$date' OR user='$_userid' AND start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'");
+
+		$check = array_filter($permit);
+		if(!empty($check)){
+			sobad_db::_update_single($permit[0]['ID'],'abs-permit',array('range_date' => $date));
+		}
 
 		//check group
 		$group['status'] = self::_status_group($group['status']);
@@ -108,7 +129,7 @@ class absensi{
 				sobad_db::_insert_table('abs-user-log',array(
 						'user' 		=> $val['ID'],
 						'type' 		=> 1,
-						'shift'		=> $val['work_time'],
+						'shift'		=> $worktime,
 						'_inserted' => $date,
 						'time_in' 	=> $times,
 						'time_out'	=> '00:00:00',
@@ -287,7 +308,7 @@ class absensi{
 		$date = date('Y-m-d');
 		$whr = "AND `abs-user`.status!=0";
 		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','work_time','inserted','status'),$whr);
-		$permit = sobad_permit::get_all(array('user','type'),"AND start_date<='$date' AND range_date>='$date'");
+		$permit = sobad_permit::get_all(array('user','type'),"AND start_date<='$date' AND range_date>='$date' OR start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'");
 
 		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
 
