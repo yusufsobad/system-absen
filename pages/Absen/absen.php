@@ -96,7 +96,9 @@ class absensi{
 
 		$check = array_filter($permit);
 		if(!empty($check)){
-			sobad_db::_update_single($permit[0]['ID'],'abs-permit',array('range_date' => $date));
+			$pDate = strtotime($date);
+			$pDate = date('Y-m-d',strtotime('-1 days',$pDate));
+			sobad_db::_update_single($permit[0]['ID'],'abs-permit',array('range_date' => $pDate));
 		}
 
 		//check group

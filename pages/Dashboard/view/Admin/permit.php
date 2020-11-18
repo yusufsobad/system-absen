@@ -18,7 +18,8 @@ class permit_absen extends _page{
 			'range_date',
 			'num_day',
 			'type',
-			'note'
+			'note',
+			'type_date'
 		);
 
 		return $args;
@@ -82,36 +83,65 @@ class permit_absen extends _page{
 				'label'	=> 'hapus',
 			);
 
+			$sts_day = 'hari';
+			if($val['range_date']=='0000-00-00'){
+				$val['range_date'] = date('Y-m-d');
+			}
+
 			$range = strtotime($val['range_date']) - strtotime($val['start_date']);
 			$range = floor($range / (60 * 60 * 24));
+
+			if($val['num_day']>0){
+				$range = $val['num_day'];
+				
+				switch ($val['type_date']) {
+					case 1:
+						$sts_day = 'hari';
+						$_num = $range.' days';
+						break;
+
+					case 2:
+						$sts_day = 'bulan';
+						$_num = $range.' months';
+						break;
+
+					case 3:
+						$sts_day = 'tahun';
+						$_num = $range.' years';
+						break;
+				}
+
+				$range_date = strtotime($val['start_date']);
+				$val['range_date'] = date('Y-m-d',strtotime('+'.$_num,$range_date));
+			}
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
-				'no'		=> array(
+				'No'		=> array(
 					'center',
 					'5%',
 					$no,
 					true
 				),
-				'name'		=> array(
+				'Name'		=> array(
 					'left',
 					'auto',
 					$val['name_user'],
 					true
 				),
-				'mulai'		=> array(
+				'Mulai'		=> array(
 					'center',
 					'18%',
 					conv_day_id($val['start_date']).', '.format_date_id($val['start_date']),
 					true
 				),
-				'sampai'	=> array(
+				'Sampai'	=> array(
 					'center',
 					'18%',
 					conv_day_id($val['range_date']).', '.format_date_id($val['range_date']),
 					true
 				),
-				'jenis'		=> array(
+				'Jenis'		=> array(
 					'center',
 					'10%',
 					self::_conv_type($val['type']),
@@ -120,7 +150,7 @@ class permit_absen extends _page{
 				'Lama'		=> array(
 					'center',
 					'10%',
-					($range + 1).' hari',
+					($range + 1).' '.$sts_day,
 					true
 				),
 				'Edit'		=> array(
@@ -204,7 +234,7 @@ class permit_absen extends _page{
 	// Form data category -----------------------------------
 	// ----------------------------------------------------------
 	public function add_form(){
-		$vals = array(0,array(),date('d-m-Y'),date('d-m-Y'),1,3,'');
+		$vals = array(0,array(),date('d-m-Y'),date('d-m-Y'),1,3,'',0);
 		$vals = array_combine(self::_array(),$vals);
 		
 		$args = array(
@@ -446,6 +476,9 @@ class permit_absen extends _page{
 
 			return array('value' => $nilai, 'type' => 1);
 		}
+
+		intval($nilai);
+		return array('value' => $nilai, 'type' => 1);
 	}
 
 	public function _add_db($_args=array(),$menu='default',$obj=''){
