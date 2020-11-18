@@ -226,7 +226,7 @@ class permit_absen extends _page{
 			return $type;
 		}
 
-		$data = sobad_module::get_id($id,array('meta_value'));
+		$data = sobad_module::get_id(($id - 10),array('meta_value'));
 		$check = array_filter($data);
 
 		return !empty($check)?$data[0]['meta_value']:'';
@@ -521,7 +521,7 @@ class permit_absen extends _page{
 			$idx = $args['type'] - 10;
 			$conv = self::_conv_day_off($idx);
 
-			$data['type'] = $idx;
+			$data['type'] = $idx + 10;
 			$data['num_day'] = $conv['value'];
 			$data['type_date'] = $conv['type'];
 		}
