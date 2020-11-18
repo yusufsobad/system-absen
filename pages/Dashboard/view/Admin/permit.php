@@ -136,19 +136,19 @@ class permit_absen extends _page{
 				),
 				'Mulai'		=> array(
 					'center',
-					'18%',
+					'17%',
 					conv_day_id($val['start_date']).', '.format_date_id($val['start_date']),
 					true
 				),
 				'Sampai'	=> array(
 					'center',
-					'18%',
+					'17%',
 					conv_day_id($val['range_date']).', '.format_date_id($val['range_date']),
 					true
 				),
 				'Jenis'		=> array(
 					'center',
-					'10%',
+					'15%',
 					self::_conv_type($val['type']),
 					true
 				),
@@ -220,7 +220,16 @@ class permit_absen extends _page{
 
 	protected function _conv_type($id=0){
 		$args = array(3 => 'Cuti', 'Izin', 'Luar Kota', 'Libur');
-		return isset($args[$id])?$args[$id]:'';
+		$type = isset($args[$id])?$args[$id]:'';
+
+		if(!empty($type)){
+			return $type;
+		}
+
+		$data = sobad_module::get_id($id,array('meta_value'));
+		$check = array_filter($data);
+
+		return !empty($check)?$data[0]['meta_value']:'';
 	}
 
 	public function _script(){
