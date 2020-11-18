@@ -92,7 +92,7 @@ class permit_absen extends _page{
 			$range = floor($range / (60 * 60 * 24));
 
 			if($val['num_day']>0){
-				$range = $val['num_day'];
+				$range = $val['num_day']-1;
 				
 				switch ($val['type_date']) {
 					case 1:
@@ -108,6 +108,11 @@ class permit_absen extends _page{
 					case 3:
 						$sts_day = 'tahun';
 						$_num = $range.' years';
+						break;
+
+					default:
+						$sts_day = 'hari';
+						$_num = $range.' days';
 						break;
 				}
 
@@ -477,8 +482,8 @@ class permit_absen extends _page{
 			return array('value' => $nilai, 'type' => 1);
 		}
 
-		intval($nilai);
-		return array('value' => $nilai, 'type' => 1);
+		intval($data);
+		return array('value' => $data, 'type' => 1);
 	}
 
 	public function _add_db($_args=array(),$menu='default',$obj=''){
@@ -504,8 +509,8 @@ class permit_absen extends _page{
 		);
 
 		if($args['type']>6){
-			$conv = self::_conv_day_off($idx);
 			$idx = $args['type'] - 10;
+			$conv = self::_conv_day_off($idx);
 
 			$data['type'] = $idx;
 			$data['num_day'] = $conv['value'];
