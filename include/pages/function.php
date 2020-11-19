@@ -242,6 +242,16 @@ function _detectDelimiter($csvFile){
     return array_search(max($delimiters), $delimiters);
 }
 
+function _calc_time($time='',$code='1 minutes'){
+	$time = empty($time)?date('H:i:s'):$time;
+
+	$time = date_create($time);
+	date_add($time, date_interval_create_from_date_string($code));
+	$time = date_format($time,'H:i:s');
+
+	return $time;
+}
+
 function script_chart(){
 	?>
 	<script>

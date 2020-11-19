@@ -28,6 +28,63 @@ class absensi{
 		return $group;
 	}
 
+	public static function _check_punishment($user=0,$worktime=''){
+		$punish = 0;
+		$times = date('H:i:s');	
+		$worktime = _calc_time($worktime,'-40 minutes'); // 10 menit adalah waktu briefing
+
+		if($times<$worktime){
+			$punish = 30;
+		}
+
+		$worktime = _calc_time($worktime,'-30 minutes');
+
+		if($times<$worktime){
+			$punish = 60;
+		}
+
+		$where = "AND _log_id.user='$user' AND `abs-punishment`.status!='1'";
+		$punishment = sobad_punishment::get_all(array('ID','log_id','punish','status'),$where);
+
+		$_name = '';$_nik = '';
+		$total = 0;$status = false;$_data = array();
+		foreach ($punishment as $key => $val) {
+			if($val['status']==2){
+				$val['punish'] -= 30;
+			}
+
+			if($val['punish']<=$punish){
+				$_data[] = array($val['ID'],);
+				$status = true;
+			}
+
+			$_name = $val['name_user'];
+			$_nik = $val['no_induk_user'];
+			$total += $val['punish'];
+		}
+
+		$modal = array(
+			'id' 		=> $_nik,
+			'data' 		=> true,
+			'status' 	=> 0,
+			'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Anda punishment yha, \''.$_name.'\'?</div>
+					<div class="row" style="text-align:center;">
+						<div class="col-md-12">
+							Sisa punishment anda : <H1>'.$total.'</H1> menit
+						</div>
+					</div>
+				</div>',
+			'modal'		=> true,
+			'timeout'	=> 10 * 1000
+		);
+
+		return array(
+			'status'	=> $status,
+			'total'		=> $total,
+			'modal'		=> $modal
+		);
+	}
+
 	public function _send($args=array()){
 		$datetime = date('Y-m-d H:i:s');
 		$date = date('Y-m-d');
@@ -92,7 +149,7 @@ class absensi{
 //		$user_y = sobad_user::get_absen(array('id_join','type','time_in','time_out'),$yesterday,$whr." AND `abs-user-log`.type='1'");
 
 		//Check Permit
-		$permit = sobad_permit::get_all(array('ID','user','type'),"AND user='$_userid' AND start_date<='$date' AND range_date>='$date' OR user='$_userid' AND start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'");
+		$permit = sobad_permit::get_all(array('ID','user','type'),"AND user='$_userid' AND type!='9' AND start_date<='$date' AND range_date>='$date' OR user='$_userid' AND start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'");
 
 		$check = array_filter($permit);
 		if(!empty($check)){
@@ -140,6 +197,12 @@ class absensi{
 						'history'	=> serialize(array('logs' => array( 0 => array('type' => 1,'time' => $time))))
 					)
 				);
+			}
+
+			//Check punishment
+			$check = self::_check_punishment($_userid,$work['time_in']);
+			if($check['status']){
+				return $check['modal'];
 			}
 
 			$waktu = $time;
@@ -310,7 +373,7 @@ class absensi{
 		$date = date('Y-m-d');
 		$whr = "AND `abs-user`.status!=0";
 		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','work_time','inserted','status'),$whr);
-		$permit = sobad_permit::get_all(array('user','type'),"AND start_date<='$date' AND range_date>='$date' OR start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'");
+		$permit = sobad_permit::get_all(array('user','type'),"AND type!='9' AND start_date<='$date' AND range_date>='$date' OR start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'");
 
 		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
 

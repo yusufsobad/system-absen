@@ -8,7 +8,7 @@ class sobad_punishment extends _class{
 			'type'	=> 'punishment',
 			'table'	=> self::$table,
 			'detail'=> array(
-				'user_log'	=> array(
+				'log_id'	=> array(
 					'key'		=> 'ID',
 					'table'		=> 'abs-user-log',
 					'column'	=> array('user','shift','time_in'),

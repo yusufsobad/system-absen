@@ -1,7 +1,7 @@
 <?php
 (!defined('AUTHPATH'))?exit:'';
 
-class sobad_table{
+class sobad_table{
 
 	public static function _get_table($func){
 		$func = str_replace('-','_',$func);
@@ -60,7 +60,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_holiday(){
 		$list = array(
 			'title'	=> '',
@@ -70,7 +70,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_module(){
 		$list = array(
 			'meta_key'	=> '',
@@ -81,7 +81,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_permit(){
 		$list = array(
 			'user'	=> 0,
@@ -95,7 +95,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_post(){
 		$list = array(
 			'title'	=> 0,
@@ -115,10 +115,10 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_punishment(){
 		$list = array(
-			'user_log'	=> 0,
+			'log_id'	=> 0,
 			'date_punish'	=> date('Y-m-d'),
 			'punish'	=> 0,
 			'status'	=> 0,
@@ -128,7 +128,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_university(){
 		$list = array(
 			'name'	=> '',
@@ -143,7 +143,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_user(){
 		$list = array(
 			'username'	=> '',
@@ -162,7 +162,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_user_log(){
 		$list = array(
 			'user'	=> 0,
@@ -178,7 +178,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_user_meta(){
 		$list = array(
 			'meta_id'	=> 0,
@@ -188,7 +188,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_work(){
 		$list = array(
 			'name'	=> '',
@@ -197,7 +197,7 @@
 		
 		return $list;
 	}
-
+
 	private static function abs_work_normal(){
 		$list = array(
 			'reff'	=> 0,
@@ -210,7 +210,7 @@
 		
 		return $list;
 	}
-
+
 	private static function tbl_wilayah(){
 		$list = array(
 			'id_prov'	=> 0,

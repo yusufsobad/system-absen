@@ -785,7 +785,11 @@ abstract class absen_control{
 							$('#myModal .modal-content>.modal-body').html(data['msg']);
 							$('#myModal').modal('show');
 
-							setTimeout(function(){ $('#myModal').modal('hide'); }, 1 * 60 * 1000);
+							if(typeof data['timeout'] === 'undefined'){
+								data['timeout'] = 1 * 60 * 1000;
+							}
+
+							setTimeout(function(){ $('#myModal').modal('hide'); }, data['timeout']);
 						}
 					}
 

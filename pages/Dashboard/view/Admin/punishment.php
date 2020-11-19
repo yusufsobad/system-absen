@@ -302,7 +302,7 @@ class punishment_absen extends _page{
 		$_total = ($sum - $sunday - $dayoff - date('d'));
 
 		$object = self::$table;
-		$args = $object::get_late(date('Y-m',$date));
+		$args = $object::get_late();
 
 		$j = 2;
 		if(count($args)>=($_total*2)){
