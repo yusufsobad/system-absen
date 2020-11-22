@@ -30,7 +30,9 @@ class absensi{
 
 	public static function _check_punishment($user=0,$worktime=''){
 		$punish = 0;
-		$times = date('H:i:s');	
+		$times = date('H:i:s');
+		$waktu = date('H:i');
+
 		$worktime = _calc_time($worktime,'-40 minutes'); // 10 menit adalah waktu briefing
 
 		if($times<$worktime){
@@ -43,29 +45,38 @@ class absensi{
 			$punish = 60;
 		}
 
-		$where = "AND _log_id.user='$user' AND `abs-punishment`.status!='1'";
-		$punishment = sobad_punishment::get_all(array('ID','log_id','punish','status'),$where);
+		$where = "AND _log_id.user='$user' AND `abs-log-detail`.status!='1'";
+		$punishment = sobad_logDetail::get_punishments(array('ID','log_id','times','status','date_actual'),$where);
 
 		$_name = '';$_nik = '';
-		$total = 0;$status = false;$_data = array();
+		$total = $punish * -1;
+		$status = false;$_data = array();
 		foreach ($punishment as $key => $val) {
 			if($val['status']==2){
-				$val['punish'] -= 30;
+				$val['times'] -= 30;
 			}
 
-			if($val['punish']<=$punish){
-				$_data[] = array($val['ID'],);
+			if($val['times']<=$punish){
+				$_data[] = $val;
 				$status = true;
 			}
 
-			$_name = $val['name_user'];
+			$_name = sobad_user::get_id($val['user_log_'],array('_nickname'));
+
+			$check = array_filter($_name);
+			$_name = empty($check)?$val['name_user']:$_name[0]['_nickname'];
+
 			$_nik = $val['no_induk_user'];
-			$total += $val['punish'];
+			$total += $val['times'];
 		}
 
 		$modal = array(
 			'id' 		=> $_nik,
-			'data' 		=> true,
+			'data' 		=> array(
+				'type' => 1,
+				'date' => $waktu,
+				'note' => 'punishment'
+			),
 			'status' 	=> 0,
 			'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Anda punishment yha, \''.$_name.'\'?</div>
 					<div class="row" style="text-align:center;">
@@ -74,9 +85,34 @@ class absensi{
 						</div>
 					</div>
 				</div>',
+			'absen'		=> true,
 			'modal'		=> true,
 			'timeout'	=> 10 * 1000
 		);
+
+		if($status){
+			//Update Punishment
+			$_actual = explode(',', $_data[0]['date_actual']);
+			$check = array_filter($_actual);
+
+			if(empty($check)){
+				$_actual = array(date('Y-m-d'));
+			}else{
+				$_actual[] = date('Y-m-d');
+			}
+
+			if(($_data[0]['times'] - $punish)<=0){
+				sobad_db::_update_single($_data[0]['ID'],'abs-log-detail',array(
+					'status'		=> 1,
+					'date_actual'	=> implode(',', $_actual)
+				));
+			}else{
+				sobad_db::_update_single($_data[0]['ID'],'abs-log-detail',array(
+					'status'		=> 2,
+					'date_actual'	=> implode(',', $_actual)
+				));
+			}
+		}
 
 		return array(
 			'status'	=> $status,
@@ -121,7 +157,7 @@ class absensi{
 				$worktime = $users[0]['work_time'];
 			}
 
-			$work = sobad_work::get_id($worktime,array('time_in','time_out'),"AND days='$day' AND status='1'");
+			$work = sobad_work::get_id($worktime,array('time_in','time_out','status'),"AND days='$day'");
 			$group = sobad_module::_get_group($users[0]['divisi']);
 		}
 
@@ -162,8 +198,10 @@ class absensi{
 		$group['status'] = self::_status_group($group['status']);
 
 		$punish = 0;
-		if($times>=$work['time_in']){
-			$punish = 1;
+		if($work['status']){
+			if($times>=$work['time_in']){
+				$punish = 1;
+			}
 		}
 
 		if($group['status']['punish']==0){
@@ -175,17 +213,19 @@ class absensi{
 
 		$check = array_filter($user);
 		if(empty($check)){
-			if($times>=$work['time_out']){
-				return array(
-					'id' 		=> $id,
-					'data' 		=> NULL,
-					'status' 	=> 1,
-					'msg' 		=> 'Sudah Jam Pulang!!!'
-				);
+			if($work['status']){
+				if($times>=$work['time_out']){
+					return array(
+						'id' 		=> $id,
+						'data' 		=> NULL,
+						'status' 	=> 1,
+						'msg' 		=> 'Sudah Jam Pulang!!!'
+					);
+				}
 			}
 
 			foreach ($users as $key => $val) {
-				sobad_db::_insert_table('abs-user-log',array(
+				$q = sobad_db::_insert_table('abs-user-log',array(
 						'user' 		=> $val['ID'],
 						'type' 		=> 1,
 						'shift'		=> $worktime,
@@ -197,12 +237,24 @@ class absensi{
 						'history'	=> serialize(array('logs' => array( 0 => array('type' => 1,'time' => $time))))
 					)
 				);
+
+				if($work['status']==0){
+					// Update Lembur
+					sobad_db::_insert_table('abs-log-detail',array(
+						'log_id'		=> $q,
+						'date_schedule'	=> $date,
+						'type_log'		=> 3,
+						'status'		=> 2
+					));
+				}
 			}
 
 			//Check punishment
-			$check = self::_check_punishment($_userid,$work['time_in']);
-			if($check['status']){
-				return $check['modal'];
+			if($work['status']){
+				$check = self::_check_punishment($_userid,$work['time_in']);
+				if($check['status']){
+					return $check['modal'];
+				}
 			}
 
 			$waktu = $time;
@@ -210,8 +262,12 @@ class absensi{
 	//			$waktu = '<span style="color:green;">'.$time.'</span>';
 			}
 
-			if($times>=$work['time_in']){
-				$waktu = '<span style="color:red;">'.$time.'</span>';
+			if($work['status']){
+				if($times>=$work['time_in']){
+					if($punish){
+						$waktu = '<span style="color:red;">'.$time.'</span>';
+					}
+				}
 			}
 
 			return array(
@@ -221,7 +277,8 @@ class absensi{
 						'date' => $waktu
 					),
 					'status' 	=> 1,
-					'msg' 		=> ''
+					'msg' 		=> '',
+					'absen'		=> true
 				);
 
 		}else{
@@ -230,8 +287,12 @@ class absensi{
 
 		switch ($user['type']) {
 			case 0:
-				if($time>=$work['time_in']){
-					$time = '<span style="color:red;">'.$time.'</span>';
+				if($work['status']){
+					if($time>=$work['time_in']){
+						if($punish){
+							$time = '<span style="color:red;">'.$time.'</span>';
+						}
+					}
 				}
 
 				if($group['status']['punish']==0){
@@ -243,6 +304,17 @@ class absensi{
 				$history = unserialize($history['logs']);
 
 				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 1,'punish' => $punish,'time_in' => $times,'history' => $history));
+
+				if($work['status']==0){
+					// Update Lembur
+					sobad_db::_insert_table('abs-log-detail',array(
+						'log_id'		=> $user['id_join'],
+						'date_schedule'	=> $date,
+						'type_log'		=> 3,
+						'status'		=> 2
+					));
+				}
+
 				return array(
 					'id' 		=> $id,
 					'data' 		=> array(
@@ -250,14 +322,70 @@ class absensi{
 						'date' => $time
 					),
 					'status' 	=> 1,
-					'msg' 		=> ''
+					'msg' 		=> '',
+					'absen'		=> true
 				);
 
 				break;
 
 			case 1:
+				if(empty($work['status'])){
+					// Update Lembur Pulang
+					$_userid = $user['id_join'];
+					$_logs = sobad_logDetail::get_all(array('ID','date_schedule'),"AND log_id='$_userid' AND type_log='3'");
+					$check = array_filter($_logs);
+
+					if(!empty($check)){
+						$_logid = $_logs[0]['ID'];
+						$_waktu = _conv_time($_logs[0]['date_schedule'],$times,3);
+						sobad_db::_update_single($_logid,'abs-log-detail',array('times' => $_waktu, 'status' => 1));
+
+						return array(
+							'id' 		=> $id,
+							'data' 		=> array(
+								'type' => 2,
+								'date' => $time
+							),
+							'status' 	=> 1,
+							'msg' 		=> '',
+							'absen'		=> true
+						);
+					}
+				}
+
+
 				if($time>=$work['time_out']){
 					sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times));
+
+					$_out = _calc_time($work['time_out'],'1 hours');
+					// Jika lebih dari 1 jam ---> modal box
+					if($time>=$_out){
+						$_log = sobad_logDetail::get_all(array('ID','times'),"AND _log_id.user='$_userid' AND type_log='2'");
+						$check = array_filter($_log);
+
+						// Jika tidak ada ganti jam
+						if(empty($check)){
+							$label = 'Lembur';
+							$index = 9;
+						}else{
+							$label = 'Ganti Jam';
+							$index = 7;
+						}
+
+						return array(
+							'id' 		=> $id,
+							'data' 		=> true,
+							'status' 	=> 0,
+							'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">'.$label.' ya, \''.$user['_nickname'].'\'?</div>
+											<div class="row" style="text-align:center;">
+												<div class="col-md-12">
+													<button style="width:30%;" type="button" class="btn btn-info" onclick="send_request('.$index.')">Ya</button>
+												</div>
+											</div>',
+							'modal'		=> true
+						);
+					}
+
 					return array(
 						'id' 		=> $id,
 						'data' 		=> array(
@@ -265,7 +393,8 @@ class absensi{
 							'date' => $time
 						),
 						'status' 	=> 1,
-						'msg' 		=> ''
+						'msg' 		=> '',
+						'absen'		=> true
 					);
 				}else{
 					$waktu = date_create($user['time_in']);
@@ -326,7 +455,8 @@ class absensi{
 							'to'	=> $to
 						),
 					'status' 	=> 1,
-					'msg' 		=> ''
+					'msg' 		=> '',
+					'absen'		=> true
 				);
 
 				break;
@@ -337,22 +467,153 @@ class absensi{
 
 	public function _request($args=array()){
 		$date = date('Y-m-d');
+		$times = date('H:i:s');
 		$time = date('H:i');
+		$day = date('w');
 
 		$args = json_decode($args);
 		$data = $args[0];
 		$type = $args[1];
 
-		$user = sobad_user::get_all(array('ID','id_join','history'),"AND no_induk='$data' AND `abs-user-log`._inserted='$date'");
+		$user = sobad_user::get_all(array('ID','work_time','dayOff','_nickname','id_join','history'),"AND no_induk='$data' AND `abs-user-log`._inserted='$date'");
+
+		$_id = $user[0]['ID'];
+		$_worktime = $user[0]['work_time'];
+		$_dayOff = $user[0]['dayOff'];
+		$_nickname = $user[0]['_nickname'];
 		$idx = $user[0]['id_join'];
 
 		$user = unserialize($user[0]['history']);
 		$user['logs'][] = array('type' => $type, 'time' => $time);
 
-		$_args = array('type' => $type,'history' => serialize($user));
+		$_args = array('type' => $type,'time_out' => $times,'history' => serialize($user));
 		if($type==2){
-			$_args['type'] = 4;
-			$_args['time_out'] = $time;
+			
+			// Jika Pilih Pulang
+			return array(
+				'id' 		=> $data,
+				'data' 		=> true,
+				'status' 	=> 0,
+				'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau pilih yang mana, \''.$_nickname.'\'?</div>
+									<div class="row" style="text-align:center;">
+										<div class="col-md-6">
+											<button style="width:60%;" type="button" class="btn btn-info" onclick="send_request(3)">Cuti</button>
+										</div>
+										<div class="col-md-6">
+											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(8)">Ganti Jam</button>
+										</div>
+								</div>',
+				'modal'		=> true
+			);
+		}
+
+		// Check Izin, Luar Kota, Pulang (Ganti Jam atau Cuti )
+		// 3 : Cuti ( type == 2 ) | 4 : Izin | 5 : Luar Kota | 8 : Ganti Jam ( type == 2 )
+
+		$work = sobad_work::get_id($_worktime,array('time_out'),"AND days='$day'");
+		$work = $work[0]['time_out'];
+		
+		if($type==3){
+			if($_dayOff<=0){
+				$type = 8;
+			}
+		}
+
+		switch ($type) {
+			case 3:
+				$_args['type'] = 2;
+				$_dayOff -= 1;
+
+				sobad_db::_update_single($_id,'abs-user',array('ID' => $_id, 'dayOff' => $_dayOff));
+				break;
+
+			case 8:
+				$_args['type'] = 2;
+
+			case 4:
+
+				sobad_db::_insert_table('abs-log-detail',array(
+					'log_id'		=> $idx,
+					'date_schedule'	=> date('Y-m-d'),
+					'times'			=> _conv_time($work , $times, 2),
+					'type_log'		=> 2
+				));
+
+				break;
+
+			case 5:
+				// next
+				break;
+
+			case 7: // Pulang telat --> Ganti Jam
+				$ganti = _conv_time($times, $work, 3);
+				$_logs = sobad_logDetail::get_all(array('ID','times','status','date_actual','log_history'),"AND _log_id.user='$_id' AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1'");
+				foreach ($_logs as $key => $val) {
+					if($ganti<=0){
+						break;
+					}
+
+					$_status = 1;
+					$_times = $val['times'];
+
+				// Tambah data actual
+					$_actual = '';
+					$_actual = explode(',', $val['date_actual']);
+
+					if(empty($_actual)){
+						$_actual = array();
+					}
+
+					$_actual[] = date('Y-m-d');
+					$_actual = implode(',', $_actual);
+
+				// Tambah data history
+					$_history = unserialize($val['log_history']);
+					if(!isset($_history['history'])){
+						$_history = array();
+						$_history['history'] = array();
+					}
+
+					$history['extime'] = 0;
+
+				// Check jam
+					$ganti -= $val['times'];
+
+					if($ganti<=0){
+						$_status = 2;
+						$_times = $val['times'];
+						$history['extime'] = $ganti;
+					}
+
+					$history['history'][] = array(
+						'date'		=> date('Y-m-d'),
+						'time'		=> $_times
+					);
+
+					sobad_db::_update_single($val['ID'],'abs-log-detail',array(
+						'data_actual'	=> $_actual,
+						'log_history'	=> $_history,
+						'status'		=> $_status
+					));
+				}
+
+				return array('id' => $data,'data' => NULL, 'status' => 0);
+			case 9: // Pulang telat --> Lembur
+				$lembur = _conv_time($times, $work, 3);
+				sobad_db::_insert_table('abs-log-detail',array(
+					'log_id'		=> $idx,
+					'date_schedule'	=> date('Y-m-d'),
+					'times'			=> $lembur,
+					'status'		=> 1,
+					'type_log'		=> 3
+				));
+
+				return array('id' => $data,'data' => NULL, 'status' => 0);
+				break;
+			
+			default:
+				return array('id' => $data,'data' => NULL, 'status' => 1, 'msg' => 'Tidak ada Pilihan!!!');
+				break;
 		}
 
 		sobad_db::_update_single($idx,'abs-user-log',$_args);
@@ -365,7 +626,8 @@ class absensi{
 							'to'	=> $type
 						),
 					'status' 	=> 1,
-					'msg' 		=> ''
+					'msg' 		=> '',
+					'absen'		=> true
 				);
 	}
 
@@ -391,6 +653,10 @@ class absensi{
 
 		$_permit = array(0 => 0);
 		foreach ($permit as $key => $val) {
+			if(!in_array($val['type'],array(3,5,6))){
+				$val['type'] = 4;
+			}
+
 			$_permit[$val['user']] = $val['type'];
 		}
 
@@ -406,13 +672,14 @@ class absensi{
 			}
 
 			$idx = $val['ID'];
-			$log = sobad_user::get_all(array('type','id_join','time_in','time_out','note'),"AND `abs-user`.ID='$idx' AND `abs-user-log`._inserted='$date'");
+			$log = sobad_user::get_all(array('type','id_join','shift','time_in','time_out','note'),"AND `abs-user`.ID='$idx' AND `abs-user-log`._inserted='$date'");
 
 			$_log = true;
 			$check = array_filter($log);
 			if(empty($check)){
 				$log[0] = array(
 					'type'		=> NULL,
+					'shift'		=> 0,
 					'time_in'	=> NULL,
 					'time_out'	=> NULL,
 					'note'		=> array(

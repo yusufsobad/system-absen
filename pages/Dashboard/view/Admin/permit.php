@@ -376,11 +376,11 @@ class permit_absen extends _page{
 			array(
 				'id'			=> 'permit_day',
 				'func'			=> 'opt_input',
-				'type'			=> 'number',
+				'type'			=> 'decimal',
 				'key'			=> 'num_day',
 				'label'			=> 'Jumlah Hari',
 				'class'			=> 'input-circle',
-				'value'			=> $vals['num_day'],
+				'value'			=> str_replace('.', ',', $vals['num_day']),
 				'data'			=> $status['num_day']
 			),
 			array(
@@ -495,6 +495,43 @@ class permit_absen extends _page{
 		return array('value' => $data, 'type' => 1);
 	}
 
+	protected static function _callback($args=array()){
+		if($args['type']>6){
+			$idx = $args['type'] - 10;
+			$conv = self::_conv_day_off($idx);
+
+			$args['type'] = $idx + 10;
+			$args['num_day'] = $conv['value'];
+			$args['type_date'] = $conv['type'];
+		}else if($args['type']==3){
+			$args['type_date'] = 1;
+		}
+
+		if(!isset($args['range_date'])){
+			$data['range_date'] = '0000-00-00';
+
+			if(isset($args['type_date'])){
+				if($args['num_day']>0){
+					$_num = $args['num_day'] - 1;
+					switch ($args['type_date']) {
+						case 2:
+							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' months');
+							break;
+
+						case 3:
+							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' years');
+						
+						default:
+							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' days');
+							break;
+					}
+				}
+			}
+		}
+
+		return $args;
+	}
+
 	public function _add_db($_args=array(),$menu='default',$obj=''){
 		$args = sobad_asset::ajax_conv_json($_args);
 		$id = $args['ID'];
@@ -524,12 +561,32 @@ class permit_absen extends _page{
 			$data['type'] = $idx + 10;
 			$data['num_day'] = $conv['value'];
 			$data['type_date'] = $conv['type'];
+		}else if($args['type']==3){
+			$data['type_date'] = 1;
 		}
 
 		if(isset($args['range_date'])){
 			$data['range_date'] = $args['range_date'];
 		}else{
 			$data['range_date'] = '0000-00-00';
+
+			if(isset($data['type_date'])){
+				if($data['num_day']>0){
+					$_num = $data['num_day'] - 1;
+					switch ($data['type_date']) {
+						case 2:
+							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' months');
+							break;
+
+						case 3:
+							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' years');
+						
+						default:
+							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' days');
+							break;
+					}
+				}
+			}
 		}
 
 		if(isset($args['num_day'])){

@@ -739,12 +739,12 @@ class employee_absen extends _file_manager{
 			),
 			array(
 				'func'			=> 'opt_input',
-				'type'			=> 'text',
+				'type'			=> 'decimal',
 				'key'			=> 'dayOff',
 				'label'			=> 'Sisa Cuti',
 				'class'			=> 'input-circle',
 				'value'			=> $vals['dayOff'],
-				'data'			=> 'readonly'
+				'data'			=> ''
 			)
 		);
 			

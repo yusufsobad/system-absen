@@ -68,7 +68,8 @@ abstract class absen_control{
 			}
 
 			if($val['type']==1){
-				$_work = sobad_work::get_id($val['work_time'],array('time_in','time_out'),"AND days='$day' AND status='1'");
+				$_worktime = empty($val['shift'])?$val['work_time']:$val['shift'];
+				$_work = sobad_work::get_id($_worktime,array('time_in','time_out'),"AND days='$day' AND status='1'");
 				$grp = self::_get_group($val['divisi']);
 
 				$check = array_filter($_work);
@@ -216,6 +217,11 @@ abstract class absen_control{
 
 					if("time" in arr){
 						args = ['div',[['class','employee time-content']],arr['time']];
+						ceAppend(a,args);
+					}
+
+					if("note" in arr){
+						args = ['div',[['class','employee note-content']],arr['note']];
 						ceAppend(a,args);
 					}
 				}
@@ -771,7 +777,7 @@ abstract class absen_control{
 
 				function set_absen(data,id){
 					if(data['data']!=null){
-						if(typeof data['modal'] === 'undefined'){
+						if(typeof data['absen'] !== 'undefined'){
 							$('#myModal').modal('hide');
 
 							if(data['data']['type']==1){
@@ -780,7 +786,9 @@ abstract class absen_control{
 							}else{
 								back_animation(data);
 							}
-						}else{
+						}
+
+						if(typeof data['modal'] !== 'undefined'){
 							_request = data['id'];
 							$('#myModal .modal-content>.modal-body').html(data['msg']);
 							$('#myModal').modal('show');

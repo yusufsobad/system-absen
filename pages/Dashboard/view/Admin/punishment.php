@@ -89,10 +89,9 @@ class punishment_absen extends _page{
 		$awal = $date.'-01';
 		$akhir = $date.'-'.sprintf("%02d",$sum);
 
-		$whr = "AND `abs-punishment`.status IN ('0','2') OR (`abs-punishment`.status='1' AND date_punish BETWEEN '$awal' AND '$akhir')";
+		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir')";
 
-		$object = self::$table;
-		$args = sobad_punishment::get_all(array(),$whr);
+		$args = sobad_logDetail::get_punishments(array(),$whr);
 		
 		$data['class'] = 'schedule';
 		$data['table'] = array();
@@ -118,13 +117,13 @@ class punishment_absen extends _page{
 				'Tanggal'		=> array(
 					'left',
 					'25%',
-					format_date_id($val['date_punish']),
+					format_date_id($val['date_schedule']),
 					true
 				),
 				'Waktu'			=> array(
 					'center',
 					'10%',
-					$val['punish'].' menit',
+					$val['times'].' menit',
 					true
 				)
 			);
@@ -385,9 +384,9 @@ class punishment_absen extends _page{
 
 								$_cols[$_k][$_l] = array(
 									'user_log'		=> $val['ID'],
-									'date_punish'	=> $_k,
-									'punish'		=> $val['punishment'],
-									'punish_history'=> serialize(array('history' => array(
+									'date_schedule'	=> $_k,
+									'times'			=> $val['punishment'],
+									'log_history'	=> serialize(array('history' => array(
 											0			=> array(
 												'date'		=> $_k,
 												'periode'	=> 1
@@ -405,10 +404,10 @@ class punishment_absen extends _page{
 				$cols[$_key][$i] = $val['user'];
 
 				$_cols[$_key][$i] = array(
-					'user_log'		=> $val['ID'],
-					'date_punish'	=> $_key,
-					'punish'		=> $val['punishment'],
-					'punish_history'=> serialize(array('history' => array(
+					'log_id'		=> $val['ID'],
+					'date_schedule'	=> $_key,
+					'times'			=> $val['punishment'],
+					'log_history'	=> serialize(array('history' => array(
 							0			=> array(
 								'date'		=> $_key,
 								'periode'	=> 1
@@ -423,13 +422,13 @@ class punishment_absen extends _page{
 		foreach ($_cols as $key => $val) {
 			//check log punishment
 			foreach($val as $ky => $vl){
-				$punish = sobad_punishment::_check_log($vl['user_log']);
+				$punish = sobad_logDetail::_check_log($vl['log_id']);
 				$check = array_filter($punish);
 				if(!empty($check)){
 					continue;
 				}
 
-				$q = sobad_db::_insert_table('abs-punishment',$vl);
+				$q = sobad_db::_insert_table('abs-log-detail',$vl);
 			}
 		}
 

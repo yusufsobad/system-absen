@@ -88,6 +88,10 @@ class create_form{
 					mask_money('.money');
 				});
 
+				$('.decimal').on('keydown',function(){
+					mask_decimal('.decimal');
+				});
+
 				$('.number').on('keydown',function(){
 					mask_quantity('.number');
 				});
@@ -159,6 +163,11 @@ class create_form{
 			case 'price':
 				$val['type'] = 'text';
 				$val['class'] .= ' money';
+				break;
+
+			case 'decimal':
+				$val['type'] = 'text';
+				$val['class'] .= ' decimal';
 				break;
 
 			case 'number':

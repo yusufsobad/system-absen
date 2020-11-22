@@ -1,6 +1,6 @@
 // support jQuery Core
 var system = "system-absen";
-var server = "http://abadi-server/"+system; 
+var server = "http://abadi-server/"+system;
 
 var url_ajax = "include/ajax.php";
 var url_preview = "include/preview.php";
@@ -377,6 +377,10 @@ str = encodeURI(str);
 
 function mask_money(val){
 	$(val).maskMoney({allowNegative: true,thousands:'.', decimal:',',allowZero:true,precision:0,allowEmpty:true});
+}
+
+function mask_decimal(val){
+	$(val).maskMoney({allowNegative: true,thousands:'.', decimal:',',allowZero:true,precision:1,allowEmpty:true});
 }
 
 function mask_quantity(val){

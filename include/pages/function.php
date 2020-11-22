@@ -242,6 +242,45 @@ function _detectDelimiter($csvFile){
     return array_search(max($delimiters), $delimiters);
 }
 
+function _conv_time($awal='00:00:00', $akhir='00:00:00', $conv=1){
+	// conv 1 = detik , 2 = menit , 3 = jam , 4 = Jam : Menit , 5 = Jam : menit : detik
+
+	$waktu_awal		= strtotime($awal);
+	$waktu_akhir	= strtotime($akhir); // bisa juga waktu sekarang now()
+
+	//menghitung selisih dengan hasil detik
+	$diff	= $waktu_akhir - $waktu_awal;
+        
+	//membagi detik menjadi jam
+	$jam	= floor($diff / (60 * 60));
+        
+	//membagi detik menjadi menit
+	$menit 	= floor($diff / 60);;
+
+	switch ($conv) {
+		case 1:
+			return number_format($diff,0,",",".");
+			break;
+
+		case 2:
+			return $menit;
+			break;
+
+		case 3:
+			return $jam;
+			break;
+
+		case 4:
+			$menit = $diff - $jam * (60 * 60);
+			return $jam . ' Jam '. floor($menit/60) . ' Menit';
+			break;
+		
+		default:
+			return number_format($diff,0,",",".");
+			break;
+	}
+}
+
 function _calc_time($time='',$code='1 minutes'){
 	$time = empty($time)?date('H:i:s'):$time;
 
@@ -250,6 +289,15 @@ function _calc_time($time='',$code='1 minutes'){
 	$time = date_format($time,'H:i:s');
 
 	return $time;
+}
+
+function _calc_date($date='',$code='+1 days'){
+	$date = empty($date)?date('Y-m-d'):$date;
+
+	$date = strtotime($date);
+	$date = date('Y-m-d',strtotime($code,$date));
+
+	return $date;
 }
 
 function script_chart(){

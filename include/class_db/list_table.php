@@ -37,7 +37,7 @@ class sobad_table{
 			'abs-module'		=> self::abs_module(),
 			'abs-permit'		=> self::abs_permit(),
 			'abs-post'		=> self::abs_post(),
-			'abs-punishment'		=> self::abs_punishment(),
+			'abs-punishment'		=> self::abs_log_detail(),
 			'abs-university'		=> self::abs_university(),
 			'abs-user'		=> self::abs_user(),
 			'abs-user-log'		=> self::abs_user_log(),
@@ -116,14 +116,15 @@ class sobad_table{
 		return $list;
 	}
 
-	private static function abs_punishment(){
+	private static function abs_log_detail(){
 		$list = array(
 			'log_id'	=> 0,
-			'date_punish'	=> date('Y-m-d'),
-			'punish'	=> 0,
+			'date_schedule'	=> date('Y-m-d'),
+			'times'	=> 0,
 			'status'	=> 0,
 			'date_actual'	=> '',
-			'punish_history'	=> '',	
+			'log_history'	=> '',
+			'type_log'	=> 0
 		);
 		
 		return $list;
