@@ -69,7 +69,7 @@ abstract class absen_control{
 
 			if($val['type']==1){
 				$_worktime = empty($val['shift'])?$val['work_time']:$val['shift'];
-				$_work = sobad_work::get_id($_worktime,array('time_in','time_out'),"AND days='$day' AND status='1'");
+				$_work = sobad_work::get_id($_worktime,array('time_in','time_out','status'),"AND days='$day'");
 				$grp = self::_get_group($val['divisi']);
 
 				$check = array_filter($_work);
@@ -94,9 +94,11 @@ abstract class absen_control{
 				if($pos==1){
 					$waktu = '<span style="color:green;">'.$time.'</span>';
 				}
-*/
-				if($time>=$_work['time_in']){
-					$waktu = '<span style="color:red;">'.$time.'</span>';
+*/				
+				if($_work['status']){
+					if($time>=$_work['time_in']){
+						$waktu = '<span style="color:red;">'.$time.'</span>';
+					}
 				}
 
 				$work[$grp][$val['no_induk']] = array(

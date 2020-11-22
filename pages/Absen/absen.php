@@ -332,12 +332,12 @@ class absensi{
 				if(empty($work['status'])){
 					// Update Lembur Pulang
 					$_userid = $user['id_join'];
-					$_logs = sobad_logDetail::get_all(array('ID','date_schedule'),"AND log_id='$_userid' AND type_log='3'");
+					$_logs = sobad_logDetail::get_all(array('ID'),"AND log_id='$_userid' AND type_log='3'");
 					$check = array_filter($_logs);
 
 					if(!empty($check)){
 						$_logid = $_logs[0]['ID'];
-						$_waktu = _conv_time($_logs[0]['date_schedule'],$times,3);
+						$_waktu = _conv_time($user['time_in'],$times,3);
 						sobad_db::_update_single($_logid,'abs-log-detail',array('times' => $_waktu, 'status' => 1));
 
 						return array(
