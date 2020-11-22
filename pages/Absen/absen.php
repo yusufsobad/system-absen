@@ -273,8 +273,8 @@ class absensi{
 			return array(
 					'id' 		=> $id,
 					'data' 		=> array(
-						'type' => 1,
-						'date' => $waktu
+						'type' 		=> 1,
+						'date' 		=> $waktu,
 					),
 					'status' 	=> 1,
 					'msg' 		=> '',
@@ -301,7 +301,7 @@ class absensi{
 
 				$history = unserialize($user['history']);
 				$history['logs'][] = array('type' => 1,'time' => $times);
-				$history = unserialize($history['logs']);
+				$history = serialize($history['logs']);
 
 				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 1,'punish' => $punish,'time_in' => $times,'history' => $history));
 
@@ -318,8 +318,8 @@ class absensi{
 				return array(
 					'id' 		=> $id,
 					'data' 		=> array(
-						'type' => 1,
-						'date' => $time
+						'type'		=> 1,
+						'date'		=> $time
 					),
 					'status' 	=> 1,
 					'msg' 		=> '',
@@ -340,11 +340,17 @@ class absensi{
 						$_waktu = _conv_time($user['time_in'],$times,3);
 						sobad_db::_update_single($_logid,'abs-log-detail',array('times' => $_waktu, 'status' => 1));
 
+						$history = unserialize($user['history']);
+						$history['logs'][] = array('type' => 2,'time' => $times);
+						$history = serialize($history['logs']);
+
+						sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
+
 						return array(
 							'id' 		=> $id,
 							'data' 		=> array(
-								'type' => 2,
-								'date' => $time
+								'type' 		=> 2,
+								'date' 		=> $time
 							),
 							'status' 	=> 1,
 							'msg' 		=> '',
@@ -355,7 +361,11 @@ class absensi{
 
 
 				if($time>=$work['time_out']){
-					sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times));
+					$history = unserialize($user['history']);
+					$history['logs'][] = array('type' => 2,'time' => $times);
+					$history = serialize($history['logs']);
+
+					sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
 
 					$_out = _calc_time($work['time_out'],'1 hours');
 					// Jika lebih dari 1 jam ---> modal box
@@ -440,19 +450,30 @@ class absensi{
 
 				break;
 
+			case 3:
 			case 4:
 			case 5:
-				$to = 1;
-				if($time>=$work['time_out']){
-					$to = 2;
+				$type = 1;
+				$_label = 'time_in';
+				if($work['status']){
+					if($time>=$work['time_out']){
+						$type = 2;
+						$_label = 'time_out';
+					}
 				}
+
+				$history = unserialize($user['history']);
+				$history['logs'][] = array('type' => $type,'time' => $times);
+				$history = serialize($history['logs']);
+
+				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => $type, $_label => $times, 'history' => $history));
 
 				return array(
 					'id' 		=> $id,
 					'data' 		=> array(
-							'type'	=> $user['type'],
+							'type'	=> $type,
 							'date'	=> $time,
-							'to'	=> $to
+							'from'	=> $user['type']
 						),
 					'status' 	=> 1,
 					'msg' 		=> '',
@@ -694,7 +715,10 @@ class absensi{
 			}
 
 			if(array_key_exists($idx, $_permit)){
-				$log[0]['type'] = $_permit[$idx];
+				$_libur = holiday_absen::_check_holiday();
+				if(!empty($_libur)){
+					$log[0]['type'] = $_permit[$idx];
+				}
 
 				if($_log){
 					sobad_db::_update_single($log[0]['id_join'],'abs-user-log',array(
@@ -703,13 +727,15 @@ class absensi{
 						)
 					);
 				}else{
-					sobad_db::_insert_table('abs-user-log',array(
-							'user' 		=> $idx,
-							'shift' 	=> $val['work_time'],
-							'type'		=> $_permit[$idx],
-							'_inserted'	=> $date
-						)
-					);
+					if(!empty($_libur)){
+						sobad_db::_insert_table('abs-user-log',array(
+								'user' 		=> $idx,
+								'shift' 	=> $val['work_time'],
+								'type'		=> $_permit[$idx],
+								'_inserted'	=> $date,
+							)
+						);
+					}
 				}
 			}
 

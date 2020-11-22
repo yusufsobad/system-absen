@@ -257,7 +257,7 @@ class punishment_absen extends _page{
 		return modal_admin($args);
 	}
 
-	protected static function _check_holiday($date='',$dayoff=array()){
+	public static function _check_holiday($date='',$dayoff=array()){
 
 		$date = date($date);
 		$_date = strtotime($date);

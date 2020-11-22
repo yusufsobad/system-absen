@@ -444,34 +444,55 @@ abstract class absen_control{
 					var idx = document.getElementById("employee-animation");
 					var _idx = data['id'];
 
-					if(typeof notwork[_idx] === 'undefined'){
-						toastr.error("ID tidak terdaftar!!!");
-						return '';
+					if(typeof data['data']['from'] === 'undefined'){
+						data['data']['from'] = "1";
 					}
 
-					switch(data['data']['type']){
-						case 1:
+					switch(data['data']['from']){
+						case "1":
 							var _notwork = notwork;
 							break;
 
-						case 3:
+						case "3":
+							var _docID = 'user-dayoff';
 							var _notwork = dayoff;
 							break;
 
-						case 4:
+						case "4":
+							var _docID = 'user-permit';
 							var _notwork = permit;
 							break;
 
-						case 5:
+						case "5":
+							var _docID = 'user-outcity';
 							var _notwork = outcity;
 							break;
+					}
+
+					if(typeof _notwork[_idx] === 'undefined'){
+						toastr.error("ID tidak terdaftar!!!");
+						return '';
 					}
 
 					var _grp = _notwork[_idx]['group'];
 
 					layout_user(idx,_notwork[_idx]);
 					$('div#employee-animation').css("z-index","10");
-					$('#slider-notwork>div:nth-child(1)').remove();
+
+					if(data['data']['from']!="1"){
+						var _cnt = Object.keys(_notwork).length;
+						var _pos_animate = $('#'+_docID).position();
+						var _width_work = $('#employee-work').width();
+
+						var _top = _pos_animate.top + (Math.floor(_cnt/2) * 90);
+						var _left = (_width_work + _pos_animate.left) + ((_cnt%2) * 78);
+
+						$('#'+_docID+'>div:nth-child('+_cnt+')').remove();
+						$('div#employee-animation>.absen-content').css("top",_top + "px");
+						$('div#employee-animation>.absen-content').css("left",_left+ "px");
+					}else{
+						$('#slider-notwork>div:nth-child(1)').remove();
+					}
 
 					// Check group
 					if(typeof work[_grp] === 'undefined'){
@@ -553,33 +574,33 @@ abstract class absen_control{
 						$('#employee-animation').html('');
 
 					//pause slide to animation
-						switch(data['data']['type']){
-							case 1:
+						switch(data['data']['from']){
+							case "1":
 								delete notwork[_idx];
 								break;
 
-							case 3:
+							case "3":
 								delete dayoff[_idx];
 
-								if(_cnt==0){
+								if(_cnt<=1){
 									$('#title-dayoff').hide();
 									$('#user-dayoff').hide();
 								}
 								break;
 
-							case 4:
+							case "4":
 								delete permit[_idx];
 
-								if(_cnt==0){
+								if(_cnt<=1){
 									$('#title-permit').hide();
 									$('#user-permit').hide();
 								}
 								break;
 
-							case 5:
+							case "5":
 								delete outcity[_idx];
 
-								if(_cnt==0){
+								if(_cnt<=1){
 									$('#title-outcity').hide();
 									$('#user-outcity').hide();
 								}

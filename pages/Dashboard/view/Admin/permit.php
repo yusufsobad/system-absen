@@ -116,8 +116,9 @@ class permit_absen extends _page{
 						break;
 				}
 
-				$range_date = strtotime($val['start_date']);
-				$val['range_date'] = date('Y-m-d',strtotime('+'.$_num,$range_date));
+
+				//$range_date = strtotime($val['start_date']);
+				//$val['range_date'] = date('Y-m-d',strtotime('+'.$_num,$range_date));
 			}
 			
 			$data['table'][$key]['tr'] = array('');
@@ -460,6 +461,28 @@ class permit_absen extends _page{
 		}
 	}
 
+	public static function _calc_dateHoliday($start='',$numDay=1){
+		if($numDay<=0){
+			return '0000-00-00';
+		}
+
+		$_date = empty($start)?date('Y-m-d'):$start;
+		$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday>='$_date'");
+
+		$holiday = array();
+		foreach ($holidays as $key => $val) {
+			$holiday[] = $val['holiday'];
+		}
+
+		for($i=0;$i<=$numDay;$i++){
+			$date = punishment_absen::_check_holiday($_date,$holiday);
+			$_date = strtotime($date);
+			$_date = date('Y-m-d',strtotime('+1 days',$_date));
+		}
+
+		return $date;
+	}
+
 	public function _conv_day_off($idx=0){
 		$data = sobad_module::get_id($idx,array('meta_note'));
 		$data = $data[0]['meta_note'];
@@ -495,6 +518,24 @@ class permit_absen extends _page{
 		return array('value' => $data, 'type' => 1);
 	}
 
+	public function _delete($id=0){
+		$id = str_replace('del_','',$id);
+		intval($id);
+
+		$permit = sobad_permit::get_id($id,array('user','num_day','type'));
+		$permit = $permit[0];
+
+		if($permit['type']==3){
+			$dayOff = sobad_user::get_id($permit['user'],array('dayOff'));
+			$dayOff = $dayOff[0]['dayOff'];
+
+			$dayOff += $permit['num_day'];
+			sobad_db::_update_single($permit['user'],'abs-user',array('ID' => $permit['user'],'dayOff' => $dayOff));
+		}
+
+		return parent::_delete($id);
+	}
+
 	protected static function _callback($args=array()){
 		if($args['type']>6){
 			$idx = $args['type'] - 10;
@@ -522,7 +563,7 @@ class permit_absen extends _page{
 							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' years');
 						
 						default:
-							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' days');
+							$args['range_date'] = self::_calc_dateHoliday($args['start_date'],$_num);
 							break;
 					}
 				}
@@ -551,7 +592,7 @@ class permit_absen extends _page{
 		$data = array(
 			'start_date'	=> $args['start_date'],
 			'type'			=> $args['type'],
-			'note'			=> $args['note']
+			'note'			=> $args['note'],
 		);
 
 		if($args['type']>6){
@@ -563,6 +604,10 @@ class permit_absen extends _page{
 			$data['type_date'] = $conv['type'];
 		}else if($args['type']==3){
 			$data['type_date'] = 1;
+		}
+
+		if(isset($args['num_day'])){
+			$data['num_day'] = $args['num_day'];
 		}
 
 		if(isset($args['range_date'])){
@@ -582,15 +627,11 @@ class permit_absen extends _page{
 							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' years');
 						
 						default:
-							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' days');
+							$data['range_date'] = self::_calc_dateHoliday($data['start_date'],$_num);
 							break;
 					}
 				}
 			}
-		}
-
-		if(isset($args['num_day'])){
-			$data['num_day'] = $args['num_day'];
 		}
 
 		$users = explode(',',$args['user']);

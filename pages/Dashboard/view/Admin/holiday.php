@@ -348,6 +348,23 @@ class holiday_absen extends _page{
 	// Function category to database -----------------------------
 	// ----------------------------------------------------------
 
+	public static function _check_holiday($date=''){
+
+		$date = date($date);
+		$_date = strtotime($date);
+		$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday='$date'");
+
+		if(date('w',$_date)==0){
+			return true;
+		}
+
+		if(in_array($date,$holidays)){
+			return true;
+		}
+
+		return false;
+	}
+
 	public function _synchronize(){
 		$args = self::holiday(date('Y'));
 
