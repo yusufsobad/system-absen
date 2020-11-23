@@ -349,8 +349,7 @@ class holiday_absen extends _page{
 	// ----------------------------------------------------------
 
 	public static function _check_holiday($date=''){
-
-		$date = date($date);
+		$date = empty($date)?date('Y-m-d'):date($date);
 		$_date = strtotime($date);
 		$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday='$date'");
 
@@ -358,8 +357,16 @@ class holiday_absen extends _page{
 			return true;
 		}
 
-		if(in_array($date,$holidays)){
-			return true;
+		$check = array_filter($holidays);
+		if(!empty($check)){
+			$holiday = array();
+			foreach ($holidays as $key => $val) {
+				$holiday[] = $val['holiday'];
+			}
+
+			if(in_array($date,$holiday)){
+				return true;
+			}
 		}
 
 		return false;

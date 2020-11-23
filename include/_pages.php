@@ -287,7 +287,7 @@ abstract class _page{
 	        		}
 	        	}
 
-	        	if(empty($status)){
+	        	if(!$status){
 		        	//Check data
 		        	$data = array();
 		        	$check = static::_check_import($files);

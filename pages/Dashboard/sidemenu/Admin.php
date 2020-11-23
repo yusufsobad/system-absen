@@ -177,8 +177,8 @@ function menu_report(){
 	$args['absen'] = array(
 		'status'	=> '',
 		'icon'		=> '',
-		'label'		=> 'Group',
-		'func'		=> '',//'report_absen',
+		'label'		=> 'Absen',
+		'func'		=> 'report_absen',
 		'child'		=> NULL
 	);
 

@@ -716,7 +716,7 @@ class absensi{
 
 			if(array_key_exists($idx, $_permit)){
 				$_libur = holiday_absen::_check_holiday();
-				if(!empty($_libur)){
+				if(!$_libur){
 					$log[0]['type'] = $_permit[$idx];
 				}
 
@@ -727,7 +727,7 @@ class absensi{
 						)
 					);
 				}else{
-					if(!empty($_libur)){
+					if(!$_libur){
 						sobad_db::_insert_table('abs-user-log',array(
 								'user' 		=> $idx,
 								'shift' 	=> $val['work_time'],

@@ -67,6 +67,20 @@ class formatting extends _error{
 		return date($format,$date);
 	}
 
+	public static function _time($date='',$format='H:i:s'){
+		$date = date($date);
+		$date = strtotime($date);
+
+		return date($format,$date);
+	}
+
+	public static function _datetime($date='',$format='Y-m-d H:i:s'){
+		$date = date($date);
+		$date = strtotime($date);
+
+		return date($format,$date);
+	}
+
 	private static function _price($price=0){	
 		$number = clear_format($price);
 		return intval($number);

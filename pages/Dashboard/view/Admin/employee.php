@@ -1026,6 +1026,11 @@ class employee_absen extends _file_manager{
 			$files['status'] = 'berhenti';
 		}
 
+		return self::_conv_import($files);
+	}
+
+	public function _conv_import($files=array()){
+
 		if(isset($files['no_induk']) && !empty($files['no_induk'])){
 			$check = self::_check_noInduk($files['no_induk']);
 			$files['ID'] = $check['id'];
