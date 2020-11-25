@@ -331,8 +331,8 @@ class absensi{
 			case 1:
 				if(empty($work['status'])){
 					// Update Lembur Pulang
-					$_userid = $user['id_join'];
-					$_logs = sobad_logDetail::get_all(array('ID'),"AND log_id='$_userid' AND type_log='3'");
+					$_logid = $user['id_join'];
+					$_logs = sobad_logDetail::get_all(array('ID'),"AND log_id='$_logid' AND type_log='3'");
 					$check = array_filter($_logs);
 
 					if(!empty($check)){
@@ -344,7 +344,7 @@ class absensi{
 						$history['logs'][] = array('type' => 2,'time' => $times);
 						$history = serialize($history['logs']);
 
-						sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
+						sobad_db::_update_single($_logid,'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
 
 						return array(
 							'id' 		=> $id,
