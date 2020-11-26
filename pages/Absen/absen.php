@@ -384,7 +384,10 @@ class absensi{
 
 						return array(
 							'id' 		=> $id,
-							'data' 		=> true,
+							'data' 		=> array(
+								'type' => 2,
+								'date' => $time
+							),
 							'status' 	=> 0,
 							'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">'.$label.' ya, \''.$user['_nickname'].'\'?</div>
 											<div class="row" style="text-align:center;">
@@ -392,7 +395,8 @@ class absensi{
 													<button style="width:30%;" type="button" class="btn btn-info" onclick="send_request('.$index.')">Ya</button>
 												</div>
 											</div>',
-							'modal'		=> true
+							'modal'		=> true,
+							'absen'		=> true
 						);
 					}
 
