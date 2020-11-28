@@ -1,5 +1,5 @@
 // support jQuery Core
-var system = "system-absen";
+var system = "system-absen"; 
 var server = "http://abadi-server/"+system;
 
 var url_ajax = "include/ajax.php";
@@ -157,6 +157,34 @@ var uploads = '';
 			}
 		});
 	}
+
+	function sobad_button_pre(val){
+		var id = $(val).attr('id');
+		var pre = $(val).attr('data-sobad');
+		var data = "page="+pre+"&object="+object+"&data="+id;
+		
+		sobad_load_togle($(val).attr('href'));
+		
+		sobad_preview(url_preview,data,'','','');
+	}
+
+	function sobad_report(val){
+		var pre = $(val).attr('data-sobad');
+		var tp = $(val).attr('data-type');
+		var data = $("form").serializeArray();
+		data = conv_array_submit(data);
+		data = "page="+pre+"&object="+object+"&data="+data+"&type="+tp;
+
+        sobad_preview(url_preview,data,'');
+    }
+	
+	function sobad_submitLoad(val){
+
+		$(val).html('<i class="fa fa-spinner fa-spin"></i>');
+		$(val).attr('disabled','');
+
+		sobad_submit(val);
+	}
 	
 	// click button submit
 	function sobad_submit(val){
@@ -178,12 +206,15 @@ var uploads = '';
 		if($('input[type=file]').length>0){
 			data = data.concat(sobad_get_fileInput());
 		}
+
+		// loading	
+		var html = $(val).html();
 		
 		var pg = $('#'+id+' #dash_pagination li.disabled a').attr('data-qty');
 		data = conv_array_submit(data);
 		
 		data = "ajax="+ajx+"&object="+object+"&data="+data+"&type="+tp+"&page="+pg+"&filter="+filter;
-		sobad_ajax('#'+id,data,sobad_option_search,true);
+		sobad_ajax('#'+id,data,sobad_option_search,true,val,html);
 	}
 	
 	// get data summernote

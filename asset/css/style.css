@@ -31,6 +31,10 @@
 	padding-top:1px;
 }
 
+.table_flexible {
+    overflow: auto;
+}
+
 #here_modal .tab-content label {
     text-align: left;
 }

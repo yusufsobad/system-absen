@@ -219,7 +219,7 @@ class permit_absen extends _page{
 		return portlet_admin($opt,$box);
 	}
 
-	protected function _conv_type($id=0){
+	public static function _conv_type($id=0){
 		$args = array(3 => 'Cuti', 'Izin', 'Luar Kota', 'Libur');
 		$type = isset($args[$id])?$args[$id]:'';
 

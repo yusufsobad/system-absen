@@ -33,6 +33,10 @@ if(!isset($_GET['page'])){
 	// get Themes
 	sobad_themes();
 
+	if(!class_exists($key)){
+		$key = get_home_func($key);
+	}
+
 	$value = isset($_GET['data']) ? $_GET['data'] : "";
 
 	$data['class'] = $key;

@@ -36,7 +36,9 @@ if(!isset($_POST['ajax'])){
 	// get Themes
 	sobad_themes();
 
-	$key = get_home_func($key);
+	if(!class_exists($key)){
+		$key = get_home_func($key);
+	}
 
 	$value = isset($_POST['data']) ? $_POST['data'] : "";
 

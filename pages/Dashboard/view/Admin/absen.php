@@ -14,65 +14,197 @@ class report_absen extends _page{
 		$date = date('Y-m');
 
 		$object = self::$table;
-		$args = $object::get_all(array('ID','no_induk','_nickname','time_in','time_out','_inserted'),"AND `abs-user`.ID='7'");
+		$users = $object::get_all(array('ID','no_induk','name','work_time'));
 		
 		$data['class'] = 'Absensi';
 		$data['table'] = array();
 
-		foreach($args as $key => $val){
-			$permit = array(
-				'ID'	=> 'permit_'.$val['ID'],
-				'func'	=> '_permit',
-				'color'	=> 'green',
-				'icon'	=> 'fa fa-recycle',
-				'label'	=> 'Izin',
+		$sum_days = sum_days(date('m'),date('Y'));
+
+	// Title Table
+		$data['table'][0]['tr'] = array('');
+		$data['table'][0]['td'] = array(
+			'Tanggal'		=> array(
+				'left',
+				'400px',
+				'Tanggal',
+				true,
+				1,
+				2
+			)
+		);
+
+		foreach($users as $key => $val){
+			$data['table'][0]['td'][$val['no_induk']] = array(
+				'left',
+				'200px',
+				$val['no_induk'],
+				true
 			);
 
-			$data['table'][$key]['tr'] = array('');
-			$data['table'][$key]['td'] = array(
+			$data['table'][0]['td'][$val['name']] = array(
+				'left',
+				'200px',
+				$val['name'],
+				true,
+				3
+			);
+
+			$data['table'][1]['td']['Masuk_'.$val['ID']] = array(
+				'center',
+				'200px',
+				'Masuk',
+				true
+			);
+
+			$data['table'][1]['td']['Pulang_'.$val['ID']] = array(
+				'center',
+				'200px',
+				'Pulang',
+				true
+			);
+
+			$data['table'][1]['td']['Status_'.$val['ID']] = array(
+				'left',
+				'100px',
+				'Status',
+				true
+			);
+
+			$data['table'][1]['td']['Button_'.$val['ID']] = array(
+				'center',
+				'100px',
+				'Button',
+				false
+			);
+		}
+
+
+		for($i=0;$i<$sum_days;$i++){
+			$now = date('Y').'-'.date('m').'-'.sprintf("%02d",$i+1);
+			$tanggal = format_date_id($now);
+
+			$holiday =holiday_absen::_check_holiday($now);
+			if($holiday){
+				$tanggal = '<div style="color:red">'.format_date_id($now).'</div>';
+			}
+
+			$data['table'][$i+2]['tr'] = array('');
+			$data['table'][$i+2]['td'] = array(
 				'Tanggal'		=> array(
 					'left',
-					'15%',
-					$val['_inserted'],
+					'400px',
+					$tanggal,
 					true
-				),
-				'NIK'			=> array(
-					'left',
-					'5%',
-					$val['no_induk'],
-					true
-				),
-				'Nama'			=> array(
-					'left',
-					'auto',
-					$val['_nickname'],
-					true
-				),
-				'Masuk'			=> array(
-					'center',
-					'10%',
-					$val['time_in'],
-					true
-				),
-				'Pulang'		=> array(
-					'center',
-					'10%',
-					$val['time_out'],
-					true
-				),
-				'Status'		=> array(
-					'left',
-					'10%',
-					'',
-					true
-				),
-				'Button'		=> array(
-					'center',
-					'10%',
-					_modal_button($permit),
-					false
 				)
 			);
+
+			foreach($users as $_ky => $_vl){
+				$userid = $_vl['ID'];
+				$id_date = date('Ymd',strtotime($now));
+				$args = $object::get_logs(array('ID','type','time_in','time_out','_inserted'),"user='$userid' AND _inserted='$now'");
+				$check = array_filter($args);
+
+				$val = array(
+					'time_in'	=> '',
+					'time_out'	=> '',
+					'status'	=> '',
+				);
+
+				$permit = array(
+					'ID'	=> 'permit_'.$userid.'_'.$id_date,
+					'func'	=> '_permit',
+					'color'	=> 'green',
+					'icon'	=> 'fa fa-recycle',
+					'label'	=> 'Izin',
+				);
+
+				$button = _modal_button($permit);
+
+				if(!empty($check)){
+					$status = permit_absen::_conv_type($args[0]['type']);
+					if(empty($status)){
+						if($args[0]['type']==0){
+							$status = 'Alpha';
+						}
+
+						if($args[0]['type']==7){
+							$status = 'Tidak Absen';
+						}
+					}
+
+					$val = array(
+						'time_in'	=> $args[0]['time_in'],
+						'time_out'	=> $args[0]['time_out'],
+						'status'	=> $status
+					);		
+
+					$button = '';		
+				}else{
+					//Check Permit
+					$permit = sobad_permit::get_all(array('ID','type','note'),"AND user='$userid' AND type!='9' AND start_date<='$now' AND range_date>='$now' OR user='$userid' AND start_date<='$now' AND range_date='0000-00-00' AND num_day='0.0'");
+
+					$check = array_filter($permit);
+					if(!empty($check)){
+
+						//Check Jam Kerja
+						$shift = sobad_permit::get_all(array('note'),"AND user='$userid' AND type='9' AND start_date<='$now' AND range_date>='$now'");
+							
+						$check = array_filter($shift);
+						if(!empty($check)){
+							$worktime = $shift[0]['note'];
+						}else{
+							$worktime = $_vl['work_time'];
+						}
+
+						sobad_db::_insert_table('abs-user-log',array(
+							'user' 		=> $userid,
+							'type'		=> $permit[0]['type'],
+							'shift'		=> $worktime,
+							'_inserted'	=> $now,
+							'note'		=> serialize(array('permit' => $permit[0]['note']))
+						));
+
+						$val = array(
+							'time_in'	=> '00:00:00',
+							'time_out'	=> '00:00:00',
+							'status'	=> permit_absen::_conv_type($permit[0]['type'])
+						);		
+					}
+				}
+
+				if($holiday){
+					$button = '';
+				}	
+
+				$data['table'][$i+2]['td']['Masuk_'.$userid] = array(
+					'center',
+					'200px',
+					$val['time_in'],
+					true
+				);
+
+				$data['table'][$i+2]['td']['Pulang_'.$userid] = array(
+					'center',
+					'200px',
+					$val['time_out'],
+					true
+				);
+
+				$data['table'][$i+2]['td']['Status_'.$userid] = array(
+					'left',
+					'100px',
+					$val['status'],
+					true
+				);
+
+				$data['table'][$i+2]['td']['Button_'.$userid] = array(
+					'center',
+					'100px',
+					$button,
+					false
+				);		
+			}
 		}
 
 		return $data;
@@ -84,7 +216,7 @@ class report_absen extends _page{
 			'link'	=> array(
 				0	=> array(
 					'func'	=> self::$object,
-					'label'	=> 'punishment'
+					'label'	=> 'absen'
 				)
 			),
 			'date'	=> false
@@ -129,8 +261,16 @@ class report_absen extends _page{
 			'label'	=> 'Import Data Absen',
 			'spin'	=> false
 		);
+
+		$excel = array(
+			'ID'	=> 'excel_0',
+			'func'	=> '_export_excel',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-file-excel-o',
+			'label'	=> 'Export'
+		);
 		
-		return '';//apply_button($import);
+		return print_button($excel);//apply_button($import);
 	}
 
 	// ----------------------------------------------------------
@@ -182,8 +322,10 @@ class report_absen extends _page{
 	}
 
 	public static function _permit($id=0){
-		$id = str_replace('permit_', '', $id);
-		$vals = array($id,'');
+		$data = str_replace('permit_', '', $id);
+		$data = explode('_', $data);
+
+		$vals = array($data[0],$data[1],'');
 		
 		$args = array(
 			'title'		=> 'Alasan Tidak Absen',
@@ -203,6 +345,8 @@ class report_absen extends _page{
 			return '';
 		}
 
+		$user = sobad_user::get_id($vals[0],array('name'));
+
 		$data = array(
 			0 => array(
 				'func'			=> 'opt_hidden',
@@ -210,13 +354,46 @@ class report_absen extends _page{
 				'key'			=> 'ID',
 				'value'			=> $vals[0]
 			),
-			1 => array(
+			array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> '_inserted',
+				'value'			=> $vals[1]
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'name',
+				'label'			=> 'Nama',
+				'class'			=> 'input-circle',
+				'value'			=> $user[0]['name'],
+				'data'			=> 'readonly'
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'date',
+				'label'			=> 'Alasan',
+				'class'			=> 'input-circle',
+				'value'			=> format_date_id($vals[1]),
+				'data'			=> 'readonly'
+			),
+			array(
+				'func'			=> 'opt_select',
+				'data'			=> array(0 => 'Alpha',7 => 'Tidak Absen', 3 => 'Cuti', 'Izin', 'Luar Kota','Libur'),
+				'key'			=> 'type',
+				'label'			=> 'Status',
+				'class'			=> 'input-circle',
+				'select'		=> 0,
+				'status'		=> ''
+			),
+			array(
 				'func'			=> 'opt_input',
 				'type'			=> 'text',
 				'key'			=> 'note',
 				'label'			=> 'Alasan',
 				'class'			=> 'input-circle',
-				'value'			=> $vals[1],
+				'value'			=> '',
 				'data'			=> 'placeholder="Alasan"'
 			)
 		);
@@ -243,38 +420,61 @@ class report_absen extends _page{
 			unset($args['search']);
 			unset($args['words']);
 		}
-
-		$log = sobad_user::get_logs(array('shift','_inserted','note','history'),"ID='$id'");
-		if(empty($log[0]['note'])){
-			$note = array('permit' => $args['note']);
-			$note = serialize($note);
+		
+		//Check Jam Kerja
+		$date = date('Y-m-d',strtotime($args['_inserted']));
+		
+		$users = sobad_user::get_id($id,array('work_time','dayOff'));
+		$shift = sobad_permit::get_all(array('note'),"AND user='$id' AND type='9' AND start_date<='$date' AND range_date>='$date'");
+			
+		$check = array_filter($shift);
+		if(!empty($check)){
+			$worktime = $shift[0]['note'];
 		}else{
-			$note = unserialize($log[0]['note']);
-			$note['permit'] = $args['note'];
-			$note = serialize($note);
+			$worktime = $users[0]['work_time'];
 		}
 
-		$day = date($log[0]['_inserted']);
-		$day = strtotime($day);
-		$day = date('w',$day);
+		if($args['type']==3){
+			$dayoff = $users[0]['dayOff'] - 1;
+			if($dayoff<0){
+				$args['type'] = 4;
 
-		$work = sobad_work::get_id($log[0]['shift'],array('time_in'),"AND days='$day' AND status='1'");
+				$args['note'] = $args['note'].' \r\n ::Sisa Cuti Tidak Cukup';
+			}else{
+				sobad_db::_update_single($id,'abas-user',array('ID' => $id,'dayOff' => $dayoff));
+			}
+		}
 
-		$history = unserialize($log[0]['history']);
-		$history['logs'][] = array('type' => 4,'time' => $work[0]['time_in']);
+		$note = array('absen' => $args['note']);
+		$note = serialize($note);
 
 		$data = array(
+			'user'		=> $id,
+			'shift'		=> $worktime,
+			'type'		=> $args['type'],
 			'note'		=> $note,
-			'punish'	=> 0,
-			'history'	=> serialize($history)
+			'_inserted'	=> $date
 		);
 
-		$q = sobad_db::_update_single($id,'abs-user-log',$data);
+		$q = sobad_db::_insert_table('abs-user-log',$data);
 
 		if($q!==0){
 			$table = self::table();
 			return table_admin($table);
 		}
+	}
+
+	public function _export_excel(){
+		$month = conv_month_id(date('m'));
+		$year = date('Y');
+		$date = $month.' '.$year;
+
+		ob_start();
+		header("Content-type: application/vnd-ms-excel");
+		header("Content-Disposition: attachment; filename=Data Absen ".$date.".xls");
+
+		metronic_layout::sobad_table(self::table());
+		return ob_get_clean();
 	}
 
 	// ----------------------------------------------------------

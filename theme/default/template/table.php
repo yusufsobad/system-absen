@@ -144,8 +144,18 @@ class create_table{
 							if($val[3]==true && isset($val[3])){
 								$att = 'class="sorting"';
 							}
+
+							$colspan = '';
+							if(isset($val[4])){
+								$colspan = 'colspan="'.$val[4].'"';
+							}
+
+							$rowspan = '';
+							if(isset($val[5])){
+								$rowspan = 'rowspan="'.$val[5].'"';
+							}
 							
-							print('<th '.$att.' style="text-align:center;width:'.$val[1].';">'.$key.'</th>');
+							print('<th '.$colspan.' '.$rowspan.' '.$att.' style="text-align:center;width:'.$val[1].';">'.$key.'</th>');
 						}
 					?>
 				</tr>
@@ -177,7 +187,12 @@ private static function tbody($args=array()){
 								$colspan = 'colspan="'.$val[4].'"';
 							}
 
-							echo '<td '.$colspan.' style="text-align:'.$val[0].'">'.$val[2].'</td>';
+							$rowspan = '';
+							if(isset($val[5])){
+								$rowspan = 'rowspan="'.$val[5].'"';
+							}
+
+							echo '<td '.$colspan.' '.$rowspan.' style="text-align:'.$val[0].'">'.$val[2].'</td>';
 						}
 					echo '</tr>';
 				}
