@@ -179,15 +179,15 @@ var uploads = '';
     }
 	
 	function sobad_submitLoad(val){
+		sobad_load_submit(val,true);
+	}
 
-		$(val).html('<i class="fa fa-spinner fa-spin"></i>');
-		$(val).attr('disabled','');
-
-		sobad_submit(val);
+	function sobad_submit(val){
+		sobad_load_submit(val,false);
 	}
 	
 	// click button submit
-	function sobad_submit(val){
+	function sobad_load_submit(val,spin){
 		var ajx = $(val).attr("data-sobad");
 		var id = $(val).attr("data-load");
 		var tp = $(val).attr('data-type');
@@ -209,6 +209,10 @@ var uploads = '';
 
 		// loading	
 		var html = $(val).html();
+		if(spin){
+			$(val).html('<i class="fa fa-spinner fa-spin"></i>');
+			$(val).attr('disabled','');
+		}
 		
 		var pg = $('#'+id+' #dash_pagination li.disabled a').attr('data-qty');
 		data = conv_array_submit(data);

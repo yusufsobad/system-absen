@@ -43,7 +43,7 @@ abstract class _class{
 		return $list;
 	}
 
-	protected static function _check_array($args=array(),$func='list'){
+	protected static function _check_array($args=array(),$func='_list'){
 		$check = array_filter($args);
 		if(empty($check)){
 			$args = self::{$func}();
@@ -166,7 +166,7 @@ abstract class _class{
 				
 				if(isset($val['detail'])){
 					$_detail = $val['detail'];
-					self::_detail("*",$key,$_detail);
+					self::_detail($val['column'],$key,$_detail);
 				}
 				
 				if(isset($val['joined'])){
@@ -201,7 +201,7 @@ abstract class _class{
 		
 		if(isset($joined['detail'])){
 			$_detail = $joined['detail'];
-			self::_detail("*",$tbl,$_detail);
+			self::_detail($args,$tbl,$_detail);
 		}
 
 	}

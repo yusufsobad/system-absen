@@ -159,7 +159,7 @@ abstract class _page{
 		return self::_conv_option($data);	
 	}
 
-	private function _conv_option($args=array()){
+	protected function _conv_option($args=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';

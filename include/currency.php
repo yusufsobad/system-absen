@@ -48,10 +48,12 @@ function clear_format($nominal){
 	return floatval($nominal);
 }
 
-function format_number_currency($current,$nominal){
+function format_number_currency($nominal){
+	$current = get_locale();
+
 	$format = format_currency($current);
 	$format .= '<span class="sobad_currency"> ';
-	$format .= format_nominal($current,$nominal);
+	$format .= format_nominal($nominal);
 	$format .= '</span>';
 	
 	return $format;

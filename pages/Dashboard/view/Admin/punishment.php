@@ -291,6 +291,7 @@ class punishment_absen extends _page{
 
 		$day = date('w');
 		$sum = sum_days(date('m'),date('Y'));
+		$_now = date('Y').'-'.date('m').'-01';
 
 		$sunday = floor(($sum - $day - date('d')) / 7) + 1;
 
@@ -301,7 +302,7 @@ class punishment_absen extends _page{
 		$_total = ($sum - $sunday - $dayoff - date('d'));
 
 		$object = self::$table;
-		$args = $object::get_late();
+		$args = $object::get_late('',"AND _inserted<'$_now'");
 
 		$j = 2;
 		if(count($args)>=($_total*2)){
@@ -383,7 +384,7 @@ class punishment_absen extends _page{
 								$cols[$_k][$_l] = $val['user'];
 
 								$_cols[$_k][$_l] = array(
-									'user_log'		=> $val['ID'],
+									'log_id'		=> $val['ID'],
 									'date_schedule'	=> $_k,
 									'times'			=> $val['punishment'],
 									'log_history'	=> serialize(array('history' => array(
