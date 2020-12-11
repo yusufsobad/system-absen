@@ -13,15 +13,39 @@ function sobad_convToPdf($args = array()){
 
 	ob_start();
 
-	echo get_style($args['style']);
+	if(isset($_SESSION[_prefix.'development']) && $_SESSION[_prefix.'development']==1){
+		echo '<style type="text/css">';
+		foreach($args['style'] as $key => $val){
+			if(is_callable($val)){
+				echo $val();
+			}
+		}
+		echo '</style>';
+	}else{
+		echo get_style($args['style']);
+	}
 
 	if(is_callable($args['html'])){
 		$args['html']($args['data']);
 	}
+
+	if(isset($args['object'])){
+		if(class_exists($args['object'])){
+			$object = $args['object'];
+			
+			if(is_callable(array(new $object(),$args['html']))){
+				$func = $args['html'];
+				$object::{$func}();
+			}
+		}
+	}
 	
 	$content = ob_get_clean();
 
-//return $content;
+	if(isset($_SESSION[_prefix.'development']) && $_SESSION[_prefix.'development']==1){
+		return $content;
+	}
+
 	$pos = $args['setting']['posisi'];
 	$lay = $args['setting']['layout'];
 	$nama = $args['name save'];

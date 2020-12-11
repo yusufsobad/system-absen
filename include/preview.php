@@ -52,6 +52,8 @@ if(!isset($_GET['page'])){
 
 class sobad_preview{
 	public function _get($args=array()){
+		new _libs_(array('createpdf'));
+
 		$func = $args['func'];
 		$data = $args['data'];
 		$_class = $args['class'];

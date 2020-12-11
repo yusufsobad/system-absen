@@ -8,7 +8,8 @@ class option_library{
 			'dompdf'			=> 'autoload.php',
 			'phpmailer'			=> 'class.phpmailer.php',
 			'richtexteditor'	=> 'include_rte.php',
-			'sharedGettext'		=> 'autoload.php'
+			'sharedGettext'		=> 'autoload.php',
+			'createpdf'			=> 'html2pdf/html2pdf.class.php'
 		);
 		
 		return $args;

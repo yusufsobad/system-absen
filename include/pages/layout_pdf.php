@@ -162,6 +162,25 @@ function style_type1(){
 	<?php
 }
 
+function style_type2(){
+	?>
+		table {
+ 			border-spacing: 0;
+ 			border-collapse: collapse;
+		}
+		
+		.table-bordered thead tr th{
+			font-family: calibriBold;
+		}
+
+		.table-bordered thead tr th,
+		.table-bordered tbody tr td {
+			font-size: 14px;
+			border:1px solid #000;
+		}
+	<?php
+}
+
 function heading_type1($title){
 	?>
 		<div class="header_kmi">
