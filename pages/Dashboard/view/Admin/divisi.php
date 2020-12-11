@@ -240,7 +240,7 @@ class divisi_absen extends _page{
 			array(
 				'func'			=> 'opt_input',
 				'type'			=> 'text',
-				'key'			=> 'name',
+				'key'			=> 'meta_value',
 				'label'			=> 'Jabatan',
 				'class'			=> 'input-circle',
 				'value'			=> $vals['meta_value'],
