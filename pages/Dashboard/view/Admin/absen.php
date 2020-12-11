@@ -270,7 +270,7 @@ class report_absen extends _page{
 			'label'	=> 'Export'
 		);
 		
-		return print_button($excel);//apply_button($import);
+		return apply_button($import).' '.print_button($excel);
 	}
 
 	// ----------------------------------------------------------
@@ -491,9 +491,38 @@ class report_absen extends _page{
 			);
 		}
 
-		$files = self::_convert_column($files);	
-		$data = employee_absen::_conv_import($files);
-		return $data['insert'] = true;
+		if(!empty($files['scan masuk'])){
+			$files = self::_convert_column($files);
+			$induk = employee_absen::_check_noInduk($files['no_induk']);
+			$user = sobad_user::get_all(array('ID','work_time'),$induk['where']);
+
+			$check = array_filter($user);
+			if(!empty($check)){
+				// Check user absen
+				$user = $user[0];
+				$_idx = $user['ID'];
+				$_date = $files['_inserted'];
+
+				$_log = sobad_user::get_logs(array('ID','time_in'),"user='$_idx' AND _inserted='$_date'");
+				$check = array_filter($_log);
+
+				if(empty($check)){
+					$args = array(
+						'user'		=> $user['ID'],
+						'shift'		=> $user['work_time'],
+						'type'		=> 1,
+						'_inserted'	=> $files['_inserted'],
+						'time_in'	=> $files['time_in'],
+						'note'		=> serialize(array('note' => 'import absen')),
+						'history'	=> serialize(array(0 => array('type' => 1,'time' => $files['time_in'])))
+					);
+
+					sobad_db::_insert_table('abs-user-log',$args);
+				}
+			}
+		}
+		
+		return array('data' => array(),'status' => false,'insert' => false);
 	}
 
 	private function _convert_column($files=array()){

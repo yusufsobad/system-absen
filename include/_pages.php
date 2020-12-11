@@ -308,11 +308,8 @@ abstract class _page{
 		        $status = false;
 	        }
 			
-			$q = $q['data'];
-			if($q!==0){
-				$pg = isset($_POST['page'])?$_POST['page']:1;
-				return self::_get_table($pg);
-			}
+			$pg = isset($_POST['page'])?$_POST['page']:1;
+			return self::_get_table($pg);
 	    }
 	}
 
