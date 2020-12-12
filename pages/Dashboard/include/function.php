@@ -15,6 +15,10 @@ function style_punishment(){
 			background-color:#a4a4ff;
 		}
 
+		table.sobad-punishment thead tr th{
+			font-size:18px;
+		}
+
 		table.sobad-punishment tbody tr{
 			background-color:#c2c2fb;
 		}
@@ -28,12 +32,17 @@ function style_punishment(){
 		}
 
 		table.sobad-punishment thead tr th, table.sobad-punishment tbody tr td {
-    		padding: 5px;
+    		padding: 3px;
     		text-align:center;
 		}
 
 		ol li{
-			list-style: decimal;
+			list-style-type: decimal;
+		}
+
+		ul li{
+			list-style-type: lower-alpha;
+			padding-left:5px;
 		}
 	<?php
 }

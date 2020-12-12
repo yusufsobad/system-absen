@@ -89,7 +89,7 @@ class punishment_absen extends _page{
 		$awal = $date.'-01';
 		$akhir = $date.'-'.sprintf("%02d",$sum);
 
-		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir')";
+		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
 
 		$args = sobad_logDetail::get_punishments(array(),$whr);
 		
@@ -557,26 +557,26 @@ class punishment_absen extends _page{
 		$awal = $date.'-01';
 		$akhir = $date.'-'.sprintf("%02d",$sum);
 
-		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir')";
+		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
 
 		$args = sobad_logDetail::get_punishments(array(),$whr);
 
 		?>
-		<page backtop="10mm" backbottom="20mm" backleft="15mm" backright="15mm" pagegroup="new">	
+		<page backtop="5mm" backbottom="5mm" backleft="5mm" backright="5mm" pagegroup="new">	
 			<div style="text-align:center;width:100%;">
-				<h1 style="margin-bottom: 0px;"> JADWAL PUNISHMENT KETERLAMBATAN </h1>
+				<h2 style="margin-bottom: 0px;"> JADWAL PUNISHMENT KETERLAMBATAN </h2>
 				<h3 style="margin-top: 0px;">Bulan <u>Absensi</u>: <?php echo conv_month_id(date('m')).' '.date('Y') ;?></h3>
 			</div><br>
 			<table class="table-bordered sobad-punishment" style="width:100%;font-family:calibri;">
 				<thead>
 					<tr>
 						<th rowspan="2" style="width:5%;font-family: calibriBold;">No</th>
-						<th rowspan="2" style="width:20%;font-family: calibriBold;">Nama</th>
+						<th rowspan="2" style="width:10%;font-family: calibriBold;">Nama</th>
 						<th colspan="2" style="width:15%;font-family: calibriBold;">Data</th>
 						<th rowspan="2" style="width:8%;font-family: calibriBold;">Punishment</th>
 						<th rowspan="2" style="width:5%;font-family: calibriBold;">Hari</th>
 						<th rowspan="2" style="width:10%;font-family: calibriBold;">Tanggal</th>
-						<th rowspan="2" style="width:27%;font-family: calibriBold;">Pekerjaan</th>
+						<th rowspan="2" style="width:37%;font-family: calibriBold;">Pekerjaan</th>
 						<th colspan="2" style="width:10%;font-family: calibriBold;">TTD.</th>
 					</tr>
 					<tr>
@@ -589,8 +589,15 @@ class punishment_absen extends _page{
 				<tbody>
 					<?php
 						foreach ($args as $key => $val) {
+							$_user = sobad_user::get_id($val['user_log_'],array('_nickname'));
 							$history = unserialize($val['log_history']);
 							$period = '';
+
+							$_date = strtotime($val['_inserted_log_']);
+							$_date = date('d/m/Y',$_date);
+
+							$_date2 = strtotime($val['date_schedule']);
+							$_date2 = date('d/m/Y',$_date2);
 
 							if(count($history['history'])>1){
 								$period = 'warning';
@@ -600,16 +607,15 @@ class punishment_absen extends _page{
 								}
 							}
 
-
 							?>
 								<tr class="<?php echo $period ;?>">
-									<td style="font-size: 18px;"> <?php print(($key + 1)) ;?> </td>
-									<td style="font-size: 18px;text-align: left;"> <?php print($val['name_user']) ;?> </td>
-									<td style="font-size: 18px;"> <?php print($val['_inserted_log_']) ;?> </td>
-									<td style="font-size: 18px;"> <?php print($val['time_in_log_']) ;?> </td>
-									<td style="font-size: 18px;"> <?php print($val['times']) ;?> Menit</td>
-									<td style="font-size: 18px;"> <?php print(conv_day_id($val['date_schedule'])) ;?></td>
-									<td style="font-size: 18px;"> <?php print($val['date_schedule']) ;?> </td>
+									<td style="font-size: 15px;"> <?php print(($key + 1)) ;?> </td>
+									<td style="font-size: 15px;text-align: left;"> <?php print($_user[0]['_nickname']) ;?> </td>
+									<td style="font-size: 15px;"> <?php print($_date) ;?> </td>
+									<td style="font-size: 15px;"> <?php print($val['time_in_log_']) ;?> </td>
+									<td style="font-size: 15px;"> <?php print($val['times']) ;?> Menit</td>
+									<td style="font-size: 15px;"> <?php print(conv_day_id($val['date_schedule'])) ;?></td>
+									<td style="font-size: 15px;"> <?php print($_date2) ;?> </td>
 									<td> </td>
 									<td> </td>
 									<td> </td>
@@ -627,7 +633,12 @@ class punishment_absen extends _page{
 									</span>
 								</li>
 								<li>
-									Punishment dilakukan <span style="font-family: calibriBold">sebelum</span> jam kerja berlangsung
+									Punishment dilakukan <span style="font-family: calibriBold">sebelum</span> jam kerja berlangsung dengan ketentuan:<br>
+									<i style="padding-left:10px;"></i>a. Untuk Punishment 30 menit : maksimal absen sebelum jam 07.20 WIB <br>
+									<i style="padding-left:10px;"></i>b. Untuk Punishment 60 menit : maksimal absen sebelum jam 06.50 WIB <br>
+									<i style="padding-left:10px;"></i>c. Jika absen punishment di atas jam tersebut, maka secara sistem tidak akan terekam sebagai pelaksanaan punishment <br>
+									<i style="padding-left:10px;"></i>d. Jika absen setelah jam 06.50 WIB dan sebelum jam 07.20 maka akan di hitung telah melaksanakan punishment 30 menit <br>
+									<i style="padding-left:10px;"></i>e. Untuk punishment 60 menit dapat dilakukan 2 x 30 menit (2 hari) <br>
 								</li>
 								<li>
 									Setelah selesai menjalankan Punishment akan dicek dan di tanda tangani Kepala Divisi dan HRD
