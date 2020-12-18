@@ -428,7 +428,7 @@ class absensi{
 						'id' 		=> $id,
 						'data' 		=> true,
 						'status' 	=> 0,
-						'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau Kemana \''.$user['_nickname'].'\'?</div>
+						'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau Kemana \''.$user['_nickname'].'\'? <span id="note-textarea"> </span></div>
 										<div class="row" style="text-align:center;">
 											<div class="col-md-4">
 												<button style="width:80%;" type="button" class="btn btn-info" onclick="send_request(5)">Luar Kota</button>
@@ -438,6 +438,9 @@ class absensi{
 											</div>
 											<div class="col-md-4">
 												<button style="width:80%;" type="button" class="btn btn-danger" onclick="send_request(2)">Pulang</button>
+											</div>
+											<div class="col-md-12">
+												<p style="margin-top: 20px;" id="recording-instructions">Press the <strong>Start Recognition</strong> button and allow access.</p>
 											</div>
 										</div>',
 						'modal'		=> true

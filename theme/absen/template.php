@@ -820,6 +820,10 @@ abstract class absen_control{
 								data['timeout'] = 1 * 60 * 1000;
 							}
 
+							//Aktif Microphone
+							setting_microphone();
+							recognition.start();
+
 							setTimeout(function(){ $('#myModal').modal('hide'); }, data['timeout']);
 						}
 					}
@@ -837,6 +841,62 @@ abstract class absen_control{
 						if(data['msg']!=''){
 							toastr.success(data['msg']);
 						}
+					}
+				}
+
+				function setting_microphone(){
+					var noteTextarea = $('#note-textarea');
+					var instructions = $('#recording-instructions');
+
+					recognition.continuous = true;
+
+					recognition.onresult = function(event) {
+					  // event is a SpeechRecognitionEvent object.
+					  // It holds all the lines we have captured so far. 
+					  // We only need the current one.
+					  var current = event.resultIndex;
+
+					  // Get a transcript of what was said.
+					  var transcript = event.results[current][0].transcript;
+
+					  // Add the current transcript to the contents of our Note.
+					  // There is a weird bug on mobile, where everything is repeated twice.
+					  // There is no official solution so far so we have to handle an edge case.
+					  var mobileRepeatBug = (current == 1 && transcript == event.results[0][0].transcript);
+
+					  if(!mobileRepeatBug) {
+					    noteTextarea.val(transcript);
+					    set_voice_absen(transcript);
+					  }
+					};
+
+					recognition.onstart = function() { 
+					  instructions.text('Voice recognition activated. Try speaking into the microphone.');
+					}
+
+					recognition.onspeechend = function() {
+					  instructions.text('You were quiet for a while so voice recognition turned itself off.');
+					}
+
+					recognition.onerror = function(event) {
+					  if(event.error == 'no-speech') {
+					    instructions.text('No speech was detected. Try again.');  
+					  };
+					}
+				}
+
+				function set_filter_absen(val){
+					val.toLowerCase();
+					if(val=='luar kota'){
+						send_request(5);
+					}
+
+					if(val=='izin'){
+						send_request(4);
+					}
+
+					if(val=='pulang'){
+						send_request(2);
 					}
 				}
 
