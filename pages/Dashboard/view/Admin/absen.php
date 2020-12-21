@@ -10,13 +10,23 @@ class report_absen extends _page{
 	// Layout category  -----------------------------------------
 	// ----------------------------------------------------------
 
-	protected function table(){
+	protected function table($filter=''){
 		$date = date('Y-m');
 
+		$whr = '';$width = '400px';
+		if(!empty($filter)){
+			$whr = "AND `abs-user`.ID IN ($filter)";
+
+			$count = explode(',', $filter);
+			if(count($count)<3){
+				$width = '200px';
+			}
+		}
+
 		$object = self::$table;
-		$users = $object::get_all(array('ID','no_induk','name','work_time'));
+		$users = $object::get_all(array('ID','no_induk','name','work_time'),$whr);
 		
-		$data['class'] = 'Absensi';
+		$data['class'] = 'absensi';
 		$data['table'] = array();
 
 		$sum_days = sum_days(date('m'),date('Y'));
@@ -26,7 +36,7 @@ class report_absen extends _page{
 		$data['table'][0]['td'] = array(
 			'Tanggal'		=> array(
 				'left',
-				'400px',
+				$width,
 				'Tanggal',
 				true,
 				1,
@@ -79,9 +89,17 @@ class report_absen extends _page{
 			);
 		}
 
+		$default = date('Y').'-'.date('m').'-01';
+		$default = strtotime($default);
 
-		for($i=0;$i<$sum_days;$i++){
-			$now = date('Y').'-'.date('m').'-'.sprintf("%02d",$i+1);
+		$before = strtotime('-1 days',$default);
+		$before = date('d',$before);
+		$before = 28 - intval($before);
+
+		$_no = 1;
+		for($i=$before;$i<28;$i++){
+			$_no += 1;
+			$now = date('Y-m-d',strtotime($i.' days',$default));
 			$tanggal = format_date_id($now);
 
 			$holiday =holiday_absen::_check_holiday($now);
@@ -89,8 +107,8 @@ class report_absen extends _page{
 				$tanggal = '<div style="color:red">'.format_date_id($now).'</div>';
 			}
 
-			$data['table'][$i+2]['tr'] = array('');
-			$data['table'][$i+2]['td'] = array(
+			$data['table'][$_no]['tr'] = array('');
+			$data['table'][$_no]['td'] = array(
 				'Tanggal'		=> array(
 					'left',
 					'400px',
@@ -177,28 +195,28 @@ class report_absen extends _page{
 					$button = '';
 				}	
 
-				$data['table'][$i+2]['td']['Masuk_'.$userid] = array(
+				$data['table'][$_no]['td']['Masuk_'.$userid] = array(
 					'center',
 					'200px',
 					$val['time_in'],
 					true
 				);
 
-				$data['table'][$i+2]['td']['Pulang_'.$userid] = array(
+				$data['table'][$_no]['td']['Pulang_'.$userid] = array(
 					'center',
 					'200px',
 					$val['time_out'],
 					true
 				);
 
-				$data['table'][$i+2]['td']['Status_'.$userid] = array(
+				$data['table'][$_no]['td']['Status_'.$userid] = array(
 					'left',
 					'100px',
 					$val['status'],
 					true
 				);
 
-				$data['table'][$i+2]['td']['Button_'.$userid] = array(
+				$data['table'][$_no]['td']['Button_'.$userid] = array(
 					'center',
 					'100px',
 					$button,
@@ -226,14 +244,15 @@ class report_absen extends _page{
 	}
 
 	protected function get_box(){
-		$data = self::table();
+		//$data = self::table();
 		
 		$box = array(
 			'label'		=> 'Data Absen '.conv_month_id(date('m')).' '.date('Y'),
 			'tool'		=> '',
 			'action'	=> self::action(),
-			'func'		=> 'sobad_table',
-			'data'		=> $data
+			'object'	=> self::$object,
+			'func'		=> 'display_absen',
+			'data'		=> ''
 		);
 
 		return $box;
@@ -244,7 +263,7 @@ class report_absen extends _page{
 		
 		$opt = array(
 			'title'		=> self::head_title(),
-			'style'		=> array(),
+			'style'		=> array(self::$object,'_style'),
 			'script'	=> array('')
 		);
 		
@@ -271,6 +290,133 @@ class report_absen extends _page{
 		);
 		
 		return apply_button($import).' '.print_button($excel);
+	}
+
+	public function display_absen(){
+		$user = sobad_user::get_all(array('ID','name'));
+		$user = convToOption($user,'ID','name');
+
+		$button = array(
+			'ID'	=> 'filter_0',
+			'func'	=> '_filter',
+			'class'	=> '',
+			'color'	=> 'green',
+			'icon'	=> 'fa fa-filter',
+			'label'	=> 'Filter',
+			'load'	=> 'table_absensi'
+		);
+
+		$form = array(
+			'cols'	=> array(2,9),
+			0		=> array(
+				'func'			=> 'opt_select_tags',
+				'data'			=> $user,
+				'key'			=> 'user',
+				'label'			=> 'Karyawan',
+				'class'			=> 'input-circle',
+				'select'		=> array(),
+				'button'		=> _click_button($button)
+			)
+		);
+
+		$data = self::table();
+
+		echo '<div class="row">';
+			metronic_layout::sobad_form($form);
+
+			echo '<div id="table_absensi" class="col-md-12">';
+			metronic_layout::sobad_table($data);
+			self::_script();
+			echo '</div>';
+		echo '</div>';
+	}
+
+	public function _filter(){
+		$args = $_POST['args'];
+		$args = sobad_asset::ajax_conv_json($args);
+
+		$data = self::table($args['user']);
+		ob_start();
+		metronic_layout::sobad_table($data);
+		self::_script();
+		return ob_get_clean();
+	}
+
+	public function _style(){
+		?>
+			<style type="text/css">
+				#table_absensi .table_flexible {
+				  height:400px; 
+				  width:100%;
+				  overflow: hidden;
+				}
+
+				#table_absensi table {
+				  position: relative;
+				  table-layout: fixed;
+				  display: flex;
+				  flex-direction: column;
+				  height: 100%;
+				  width: 100%;
+				}
+
+
+				/*thead*/
+				#table_absensi thead {
+				  position: relative;
+				  display: block; /*seperates the header from the body allowing it to be positioned*/
+				}
+
+				#table_absensi thead th {
+				  min-width: 120px;
+				}
+
+				#table_absensi thead th:nth-child(1) {/*first cell in the header*/
+				  position: relative;
+				  background-color: #fff;
+				}
+
+
+				/*tbody*/
+				#table_absensi tbody {
+				  flex: 1;
+				  position: relative;
+				  display: block; /*seperates the tbody from the header*/
+				  overflow: auto;
+				}
+
+				#table_absensi tbody td {
+				  min-width: 130px;
+				}
+
+				#table_absensi thead tr:nth-child(2) td:nth-child(1){
+					position: unset !important;
+				}
+
+				#table_absensi tbody tr td:nth-child(1) {  /*the first cell in each tr*/
+				  position: relative;
+				  background-color: #fff;
+				}
+			</style>
+		<?php
+	}
+
+	public function _script(){
+		?>
+			<script type="text/javascript">
+				$(document).ready(function() {
+				  $('#table_absensi tbody').scroll(function(e) { //detect a scroll event on the tbody
+				  	/*
+				    Setting the thead left value to the negative valule of tbody.scrollLeft will make it track the movement
+				    of the tbody element. Setting an elements left value to that of the tbody.scrollLeft left makes it maintain 			it's relative position at the left of the table.    
+				    */
+				    $('#table_absensi thead').css("left", -$("#table_absensi tbody").scrollLeft()); //fix the thead relative to the body scrolling
+				    $('#table_absensi thead th:nth-child(1)').css("left", $("#table_absensi tbody").scrollLeft()); //fix the first cell of the header
+				    $('#table_absensi tbody tr:not(#table_absensi tbody tr:nth-child(2)) td:nth-child(1)').css("left", $("#table_absensi tbody").scrollLeft()); //fix the first column of tdbody
+				  });
+				});
+			</script>
+		<?php
 	}
 
 	// ----------------------------------------------------------

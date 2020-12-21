@@ -46,3 +46,85 @@ function style_punishment(){
 		}
 	<?php
 }
+
+function get_rule_absen($first='00:00:00',$last='00:00:00'){
+	$waktu = _conv_time($first,$last,2);
+	//Jika Izin kurang dari 1 jam, Tidak ganti Jam
+	if($waktu<60){
+		return array(
+			'time'		=> $waktu,
+			'status'	=> 'Izin',
+			'type'		=> 0
+		);
+	}
+
+	//Jika Izin kurang dari setengah Hari, ganti Jam
+	if($waktu>=60 && $waktu<210){
+		return array(
+			'time'		=> $waktu,
+			'status'	=> 'Ganti Jam',
+			'type'		=> 2
+		);
+	}
+
+	//Jika Izin setengah hari, Ambil Cuti setengah
+	if($waktu>=210 && $waktu<300){
+		return array(
+			'time'		=> $waktu,
+			'hour'		=> $waktu%60,
+			'value'		=> 0.5,
+			'status'	=> 'Cuti',
+			'type'		=> 3
+		);
+	}
+
+	//Jika Izin Full, Cuti 1 hari
+	if($waktu>=300){
+		return array(
+			'time'		=> $waktu,
+			'hour'		=> $waktu%60,
+			'value'		=> 1,
+			'status'	=> 'Cuti',
+			'type'		=> 3
+		);
+	}
+}
+
+function set_rule_absen($first='00:00:00',$last='00:00:00',$args=array()){
+	$status = get_rule_absen($first,$last);
+
+	if($status['type']==3){
+		$user = sobad_user::get_id($args['user'],array('dayOff'));
+		$user = $user[0];
+
+		if($user['dayOff']<$status['value']){
+			$cuti = $user['dayOff'] - $status['value'];
+			sobad_db::_update_single($args['user'],'abs-user',array('ID' => $args['user'], 'dayOff' => $cuti));
+
+			//Set Permit
+			sobad_db::_insert_table('abs-permit',array(
+				'user'			=> $args['user'],
+				'start_date'	=> $args['date'],
+				'range_date'	=> $args['date'],
+				'num_day'		=> $status['value'],
+				'type_date'		=> 1,
+				'type'			=> 3,
+				'note'			=> $args['note']
+			));
+		}else{
+			$status['status'] = 'Ganti Jam';
+			$status['type'] = 2;
+		}
+	}
+
+	if($status['type']==2){
+		sobad_db::_insert_table('abs-log-detail',array(
+			'log_id'		=> $args['id'],
+			'date_schedule'	=> $args['date'],
+			'times'			=> $status['time'],
+			'type_log'		=> 2
+		));
+	}
+
+	return $status;
+}

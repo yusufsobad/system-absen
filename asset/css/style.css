@@ -10,6 +10,12 @@
     position: relative;
 }
 
+/* Frozen Table Head */
+
+.tableFixHead          { overflow-y: auto; height: 400px; }
+.tableFixHead thead th { position: sticky; top: 0;background: #fff !important; }
+
+
 .table-striped>tbody>tr.red {
     background-color: #E02222;
     color: #fff;

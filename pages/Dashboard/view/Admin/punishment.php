@@ -284,7 +284,21 @@ class punishment_absen extends _page{
 				'class'			=> 'input-circle',
 				'value'			=> $vals[1],
 				'data'			=> 'placeholder="Alasan"'
-			)
+			),
+			array(
+				'func'			=> 'opt_box',
+				'type'			=> 'checkbox',
+				'key'			=> 'status',
+				'label'			=> 'Status',
+				'inline'		=> true,
+				'value'			=> '',
+				'data'			=> array(
+					0	=> array(
+						'title'		=> 'Ganti Jam',
+						'value'		=> '1'
+					)
+				)
+			),
 		);
 		
 		$args['func'] = array('sobad_form');
@@ -495,7 +509,7 @@ class punishment_absen extends _page{
 			unset($args['words']);
 		}
 
-		$log = sobad_user::get_logs(array('shift','_inserted','note','history'),"ID='$id'");
+		$log = sobad_user::get_logs(array('user','shift','_inserted','note','history','time_in'),"ID='$id'");
 		if(empty($log[0]['note'])){
 			$note = array('permit' => $args['note']);
 			$note = serialize($note);
@@ -521,6 +535,18 @@ class punishment_absen extends _page{
 		);
 
 		$q = sobad_db::_update_single($id,'abs-user-log',$data);
+
+		//Check ganti Jam
+		if(isset($args['status']) && $args['status']==1){
+			$data = array(
+				'id'	=> $id,
+				'date'	=> $log[0]['_inserted'],
+				'user'	=> $log[0]['user'],
+				'note'	=> $args['note']
+			);
+
+			set_rule_absen($work[0]['time_in'],$log[0]['time_in'],$data);
+		}
 
 		if($q!==0){
 			$table = self::table();

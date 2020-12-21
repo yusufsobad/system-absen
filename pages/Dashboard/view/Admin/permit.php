@@ -570,6 +570,25 @@ class permit_absen extends _page{
 			}
 		}
 
+		//Check type
+		$permit = sobad_permit::get_id($args['ID'],array('user','type','num_day'));
+		$permit = $permit[0];
+
+		if($permit['type']==3){
+			//Reset data
+			$_user = sobad_user::get_id($val,array('ID','dayOff'));
+			$dayOff = $_user[0]['dayOff'];
+
+			$cuti = $permit['num_day'];
+			$dayOff += $cuti;
+
+			sobad_db::_update_single($_user[0]['ID'],'abs-user',array('ID' => $_user[0]['ID'],'dayOff' => $dayOff));
+		}
+
+		if($args['type']==3){
+			self::_check_dayoff($args['ID'],$args['num_day'],$args['start_date']);
+		}
+
 		return $args;
 	}
 
@@ -637,17 +656,7 @@ class permit_absen extends _page{
 		$users = explode(',',$args['user']);
 		foreach ($users as $key => $val) {
 			if($args['type']==3){
-				$_user = sobad_user::get_id($val,array('ID','dayOff'));
-				$dayOff = $_user[0]['dayOff'];
-
-				$cuti = isset($args['num_day'])?$args['num_day']:0;
-				$dayOff -= $cuti;
-
-				if($dayOff<0){
-					die(_error::_alert_db('Sisa Cuti Tidak mencukupi!!!'));
-				}
-
-				sobad_db::_update_single($_user[0]['ID'],'abs-user',array('ID' => $_user[0]['ID'],'dayOff' => $dayOff));
+				self::_check_dayoff($val,$args['num_day'],$data['start_date']);
 			}
 
 			$data['user'] = $val;
@@ -657,6 +666,73 @@ class permit_absen extends _page{
 		if($q!==0){
 			$pg = isset($_POST['page'])?$_POST['page']:1;
 			return parent::_get_table($pg,$src);
+		}
+	}
+
+	protected function _check_dayoff($idx=0,$cuti=0,$start=''){
+		$_user = sobad_user::get_id($idx,array('ID','dayOff','work_time'));
+		$dayOff = $_user[0]['dayOff'];
+
+		//$cuti = isset($args['num_day'])?$args['num_day']:0;
+		$check = $dayOff - $cuti;
+
+		if($check<0){
+			//die(_error::_alert_db('Sisa Cuti Tidak mencukupi!!!'));
+
+			//check permintaan dan sisa cuti
+			if($dayOff>0){
+				//Update cuti
+				sobad_db::_update_single($_user[0]['ID'],'abs-user',array('ID' => $_user[0]['ID'],'dayOff' => 0));
+				$cuti -= $dayOff;
+			}
+
+			//Ganti Jam
+			if($cuti>0){
+				$_date = $start;
+				$_reff = $_user[0]['work_time'];
+
+				$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday>='$_date'");
+
+				$holiday = array();
+				foreach ($holidays as $key => $val) {
+					$holiday[] = $val['holiday'];
+				}
+
+				for($i=0;$i<$cuti;$i++){
+					$date = punishment_absen::_check_holiday($_date,$holiday);
+					$_date = strtotime($date);
+
+					$_day = date('w',strtotime('+1 days',$_date));
+					$_date = date('Y-m-d',strtotime('+1 days',$_date));
+
+					$_work = sobad_work::get_all(array('time_in','time_out'),"AND reff='$_reff' AND days='$_day'");
+					$_work = _conv_time($_work[0]['time_in'],$_work[0]['time_out'],2);
+
+					// Pengurangan Jam Istirahat
+					if(in_array($_day,array(1,2,3,4,5))){
+						$_work -= 60;
+					}
+
+					//Insert Log Absen
+					$_idx = sobad_db::_insert_table('abs-user-log',array(
+								'user' 		=> $_user[0]['ID'],
+								'shift' 	=> $_reff,
+								'type'		=> 4,
+								'_inserted'	=> $_date,
+							)
+						);
+
+					// Insert ganti jam
+					sobad_db::_insert_table('abs-log-detail',array(
+						'log_id'		=> $_idx,
+						'date_schedule'	=> $_date,
+						'times'			=> $_work,
+						'type_log'		=> 2
+					));
+				}
+			}
+		}else{
+			sobad_db::_update_single($_user[0]['ID'],'abs-user',array('ID' => $_user[0]['ID'],'dayOff' => $check));
 		}
 	}
 }

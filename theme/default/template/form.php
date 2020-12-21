@@ -373,7 +373,12 @@ class create_form{
 
 		$_id = str_replace('-', '', $id);
 
+		$btn = '';
 		$cols = self::$col_input;
+		if(isset($val['button'])){
+			$cols -= 1;
+			$btn = '<div class="col-md-1">'.$val['button'].'</div>';
+		}
 
 		// Insert type data --->
 		self::$_types[$val['key']] = "select";
@@ -427,7 +432,7 @@ class create_form{
 		<?php
 		$script = ob_get_clean();
 
-		return $inp.$script;
+		return $inp.$btn.$script;
 	}
 	
 	private static function opt_select($val=array()){

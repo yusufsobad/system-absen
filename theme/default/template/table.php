@@ -5,7 +5,7 @@ class create_table{
 	
 	public static function _table ($args=array()){
 		
-		$class = "table table-striped table-bordered table-hover dataTable no-footer";
+		$class = "table table-striped table-bordered table-hover dataTable no-footer ";
 		if(isset($args['class'])){
 			$class .= $args['class'];
 		}

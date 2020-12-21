@@ -47,7 +47,7 @@ class employee_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date','_resign_date','_resign_status');
+		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date','_resign_date','_resign_status','dayOff');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -219,14 +219,20 @@ class employee_absen extends _file_manager{
 				),
 				'Umur'	=> array(
 					'left',
-					'10%',
+					'8%',
 					$umur,
 					true
 				),
 				'Status'	=> array(
 					'left',
-					'13%',
+					'14%',
 					$status.' : '.$masa.'<br><strong>'.$end_date.'</strong>',
+					true
+				),
+				'Cuti'		=> array(
+					'right',
+					'7%',
+					$val['dayOff'].' hari',
 					true
 				),
 				'Edit'		=> array(
