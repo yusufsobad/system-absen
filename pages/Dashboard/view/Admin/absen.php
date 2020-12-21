@@ -676,7 +676,7 @@ class report_absen extends _page{
 
 		$args = array(
 			'_inserted'		=> array(
-				'data'			=> array('tanggal'),
+				'data'			=> array('scan masuk'),
 				'type'			=> 'date'
 			),
 			'time_in'		=> array(
@@ -704,7 +704,7 @@ class report_absen extends _page{
 					$_data = self::_filter_column($key,$vl,$val['type']);
 					$data = array_merge($data,$_data);
 
-					unset($files[$ky]);
+					//unset($files[$ky]);
 					break;
 				}
 			}
