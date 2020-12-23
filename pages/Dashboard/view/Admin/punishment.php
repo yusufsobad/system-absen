@@ -11,7 +11,7 @@ class punishment_absen extends _page{
 	// ----------------------------------------------------------
 
 	protected function table(){
-		if(parent::$type=='punishment_1'){
+		if(parent::$type!='punishment_0'){
 			return self::table_schedule();
 		}
 
@@ -86,19 +86,72 @@ class punishment_absen extends _page{
 		$date = date('Y-m');
 		$sum = sum_days(date('m'),date('Y'));
 
+		$start = intval(parent::$page);
+		$nLimit = intval(parent::$limit);
+
 		$awal = $date.'-01';
 		$akhir = $date.'-'.sprintf("%02d",$sum);
 
-		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
+		if(parent::$type=='punishment_2'){
+			$limit = 'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
+			$whr = "ORDER BY `abs-log-detail`.date_schedule DESC ".$limit;
+		}else{
+			$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
+		}
 
 		$args = sobad_logDetail::get_punishments(array(),$whr);
+		$sum_data = sobad_logDetail::count("type_log='1'");
 		
 		$data['class'] = 'schedule';
 		$data['table'] = array();
 
-		$no = 0;
+		if(parent::$type=='punishment_2'){
+			$data['page'] = array(
+				'func'	=> '_pagination',
+				'data'	=> array(
+					'start'		=> $start,
+					'qty'		=> $sum_data,
+					'limit'		=> $nLimit,
+					'type'		=> parent::$type
+				)
+			);
+
+			$no = ($start-1) * $nLimit;
+		}else{
+			$no = 0;
+		}
+
 		foreach($args as $key => $val){
 			$no += 1;
+
+			$history = array(
+				'ID'	=> 'history_'.$val['ID'],
+				'func'	=> '_history',
+				'color'	=> 'yellow',
+				'icon'	=> 'fa fa-eye',
+				'label'	=> 'History',
+			);
+
+			$status = '';
+			switch ($val['status']) {
+				case 0:
+					$status = '#666;';
+					break;
+
+				case 1:
+					$status = '#26a69a;';
+					break;
+
+				case 2:
+					$status = '#f5b724;';
+					break;
+				
+				default:
+					$status = '#fff;';
+					break;
+			}
+
+			$status = '<i class="fa fa-circle" style="color:'.$status.'"></i>';
 
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -137,8 +190,25 @@ class punishment_absen extends _page{
 					'15%',
 					format_date_id($val['date_schedule']),
 					true
-				)				
+				),
+				'Status'		=> array(
+					'center',
+					'10%',
+					$status,
+					true
+				),
+				'History'		=> array(
+					'center',
+					'10%',
+					_modal_button($history),
+					true
+				),	
 			);
+
+			if(parent::$type!='punishment_2'){
+				unset($data['table'][$key]['td']['Status']);
+				unset($data['table'][$key]['td']['History']);
+			}
 
 			if($preview){
 				$data['table'][$key]['td']['Pekerjaan'] = array(
@@ -208,6 +278,11 @@ class punishment_absen extends _page{
 				1	=> array(
 					'key'	=> 'punishment_1',
 					'label'	=> 'Jadwal',
+					'qty'	=> ''
+				),
+				2	=> array(
+					'key'	=> 'punishment_2',
+					'label'	=> 'History',
 					'qty'	=> ''
 				)
 			),
@@ -303,6 +378,80 @@ class punishment_absen extends _page{
 		
 		$args['func'] = array('sobad_form');
 		$args['data'] = array($data);
+		
+		return modal_admin($args);
+	}
+
+	public function _history($id=0){
+		$id = str_replace('history_', '', $id);
+		intval($id);
+
+		$args = sobad_logDetail::get_id($id,array('date_actual','log_history'));
+		$history = unserialize($args[0]['log_history']);
+		$history = $history['history'];
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($history as $ky => $vl) {
+
+			if(isset($vl['punishment'])){
+				$type = true;
+				$_args = $vl['punishment'];
+			}else{
+				$type = false;
+				$_args = explode(',', $args[0]['date_actual']);
+			}
+
+			$check = array_filter($_args);
+			if(empty($check)){
+				continue;
+			}
+
+			foreach ($_args as $key => $val) {
+				$no += 1;
+
+				$_date = ($type)?$key:$val;
+				$note = ($type)?'<input type="text" value="'.$val.'">':'Telah melaksanakan punishment';
+
+				$data['table'][$key]['tr'] = array('');
+				$data['table'][$key]['td'] = array(
+					'no'			=> array(
+						'center',
+						'5%',
+						$no,
+						true
+					),
+					'Jadwal'		=> array(
+						'left',
+						'15%',
+						format_date_id($vl['date']),
+						true
+					),
+					'Actual'		=> array(
+						'left',
+						'15%',
+						format_date_id($_date),
+						true
+					),
+					'Keterangan'	=> array(
+						'left',
+						'auto',
+						$note,
+						true
+					)
+				);
+			}
+		}
+
+		$args = array(
+			'title'		=> 'Detail data',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
 		
 		return modal_admin($args);
 	}

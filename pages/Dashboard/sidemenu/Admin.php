@@ -182,6 +182,14 @@ function menu_report(){
 		'child'		=> NULL
 	);
 
+	$args['history'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'History',
+		'func'		=> 'history_absen',
+		'child'		=> NULL
+	);
+
 	$args['punishment'] = array(
 		'status'	=> '',
 		'icon'		=> '',

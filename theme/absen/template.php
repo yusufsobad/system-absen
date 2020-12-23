@@ -821,8 +821,8 @@ abstract class absen_control{
 							}
 
 							//Aktif Microphone
-							setting_microphone();
-							recognition.start();
+							//setting_microphone();
+							//recognition.start();
 
 							setTimeout(function(){ $('#myModal').modal('hide'); }, data['timeout']);
 						}

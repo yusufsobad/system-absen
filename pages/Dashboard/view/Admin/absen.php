@@ -46,15 +46,15 @@ class report_absen extends _page{
 
 		foreach($users as $key => $val){
 			$data['table'][0]['td'][$val['no_induk']] = array(
-				'left',
+				'center',
 				'200px',
 				$val['no_induk'],
 				true
 			);
 
 			$data['table'][0]['td'][$val['name']] = array(
-				'left',
-				'200px',
+				'center',
+				'200px;min-width:416px',
 				$val['name'],
 				true,
 				3
@@ -346,7 +346,7 @@ class report_absen extends _page{
 		?>
 			<style type="text/css">
 				#table_absensi .table_flexible {
-				  height:400px; 
+				  height:350px; 
 				  width:100%;
 				  overflow: hidden;
 				}
@@ -374,6 +374,7 @@ class report_absen extends _page{
 				#table_absensi thead th:nth-child(1) {/*first cell in the header*/
 				  position: relative;
 				  background-color: #fff;
+				  z-index: 10;
 				}
 
 
@@ -389,13 +390,14 @@ class report_absen extends _page{
 				  min-width: 130px;
 				}
 
-				#table_absensi thead tr:nth-child(2) td:nth-child(1){
+				#table_absensi tbody tr:nth-child(2) td:nth-child(1){
 					position: unset !important;
 				}
 
 				#table_absensi tbody tr td:nth-child(1) {  /*the first cell in each tr*/
 				  position: relative;
 				  background-color: #fff;
+				  z-index: 10;
 				}
 			</style>
 		<?php

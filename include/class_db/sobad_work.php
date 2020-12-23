@@ -20,10 +20,10 @@ class sobad_work extends _class{
 		return $args;
 	}
 
-	public static function get_workTime($id=0){
+	public static function get_workTime($id=0,$limit=''){
 		$args =	array('name','days','time_in','time_out','note','status');
 		if($id){
-			return parent::get_id($id,$args);
+			return parent::get_id($id,$args,$limit);
 		}
 
 		return parent::get_all($args);

@@ -46,7 +46,7 @@ class absensi{
 		}
 
 		$where = "AND _log_id.user='$user' AND `abs-log-detail`.status!='1'";
-		$punishment = sobad_logDetail::get_punishments(array('ID','log_id','times','status','date_actual'),$where);
+		$punishment = sobad_logDetail::get_punishments(array('ID','log_id','times','status','date_actual','log_history'),$where);
 
 		$_name = '';$_nik = '';
 		$total = $punish * -1;
@@ -56,7 +56,7 @@ class absensi{
 				$val['times'] -= 30;
 			}
 
-			if($val['times']<=$punish){
+			if($val['times']>=$punish){
 				$_data[] = $val;
 				$status = true;
 			}
@@ -101,15 +101,28 @@ class absensi{
 				$_actual[] = date('Y-m-d');
 			}
 
+			$_index = date('Ymd');
+			$_history = unserialize($data[0]['log_history']);
+			$_history = $_history['history'];
+			
+			$_cnt = count($_history);
+			if(!isset($_history[$_cnt-1]['punishment'])){
+				$_history[$_cnt-1]['punishment'] = array();
+			}
+			
+			$_history[$_cnt-1]['punishment'][$_index] = 'Telah Melakukan Punishment';
+
 			if(($_data[0]['times'] - $punish)<=0){
 				sobad_db::_update_single($_data[0]['ID'],'abs-log-detail',array(
 					'status'		=> 1,
-					'date_actual'	=> implode(',', $_actual)
+					'date_actual'	=> implode(',', $_actual),
+					'log_history'	=> serialize($_history)
 				));
 			}else{
 				sobad_db::_update_single($_data[0]['ID'],'abs-log-detail',array(
 					'status'		=> 2,
-					'date_actual'	=> implode(',', $_actual)
+					'date_actual'	=> implode(',', $_actual),
+					'log_history'	=> serialize($_history)
 				));
 			}
 		}

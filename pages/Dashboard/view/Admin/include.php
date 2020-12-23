@@ -9,6 +9,7 @@ require 'fakultas.php';
 require 'group.php';
 require 'holiday.php';
 require 'internship.php';
+require 'history.php';
 require 'permit.php';
 require 'punishment.php';
 require 'study program.php';
