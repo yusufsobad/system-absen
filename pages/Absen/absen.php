@@ -54,9 +54,16 @@ class absensi{
 		foreach ($punishment as $key => $val) {
 			if($val['status']==2){
 				$val['times'] -= 30;
+			}else{
+				if($val['times']>=60){
+					if($punish==30){
+						$_data[] = $val;
+						$status = true;
+					}
+				}
 			}
 
-			if($val['times']>=$punish){
+			if($val['times']<=$punish){
 				$_data[] = $val;
 				$status = true;
 			}

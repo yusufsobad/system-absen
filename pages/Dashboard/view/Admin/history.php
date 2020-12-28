@@ -101,7 +101,7 @@ class history_absen extends _page{
 				'Pulang'			=> array(
 					'center',
 					'10%',
-					$val['time_in_log_'],
+					$val['time_out_log_'],
 					true
 				),
 				'Waktu'	=> array(
@@ -195,7 +195,7 @@ class history_absen extends _page{
 			'style'		=> array(),
 			'script'	=> array('')
 		);
-		
+
 		return tabs_admin($opt,$tabs);
 	}
 }

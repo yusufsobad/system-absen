@@ -11,7 +11,7 @@ class sobad_logDetail extends _class{
 				'log_id'	=> array(
 					'key'		=> 'ID',
 					'table'		=> 'abs-user-log',
-					'column'	=> array('user','shift','time_in','_inserted'),
+					'column'	=> array('user','shift','time_in','time_out','_inserted'),
 					'detail'	=> array(
 						'user'		=> array(
 							'key'		=> 'ID',

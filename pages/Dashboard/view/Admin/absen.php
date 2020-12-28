@@ -54,7 +54,7 @@ class report_absen extends _page{
 
 			$data['table'][0]['td'][$val['name']] = array(
 				'center',
-				'200px;min-width:416px',
+				'200px;min-width:414px',
 				$val['name'],
 				true,
 				3
