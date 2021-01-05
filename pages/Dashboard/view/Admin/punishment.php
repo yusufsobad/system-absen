@@ -18,7 +18,7 @@ class punishment_absen extends _page{
 		$date = date('Y-m');
 
 		$object = self::$table;
-		$args = $object::get_late($date);
+		$args = $object::get_late();
 		
 		$data['class'] = 'punishment';
 		$data['table'] = array();
@@ -266,6 +266,7 @@ class punishment_absen extends _page{
 	}
 
 	protected function layout(){
+		parent::$type = 'punishment_0';
 		$box = self::get_box();
 
 		$tabs = array(
@@ -287,7 +288,7 @@ class punishment_absen extends _page{
 				)
 			),
 			'func'	=> '_portlet',
-			'data'	=> $box
+			'data'	=> $box,
 		);
 		
 		$opt = array(
@@ -498,11 +499,46 @@ class punishment_absen extends _page{
 		$akhir = date('Y-m').'-'.sprintf("%02d",$sum);
 		$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday BETWEEN '$awal' AND '$akhir'");
 		$dayoff = count($holidays);
-		$_total = ($sum - $sunday - $dayoff - date('d'));
+		$_total = ($sum - $sunday - $dayoff - date('d')); // Jumlah hari kerja
 
+	// Insert Data Punish	
 		$object = self::$table;
 		$args = $object::get_late('',"AND _inserted<'$_now'");
 
+		foreach ($args as $key => $val) {
+			$_detail = array(
+				'log_id'		=> $val['ID'],
+				'times'			=> $val['punishment'],
+				'type_log'		=> 1
+			);
+
+			sobad_db::_update_single($val['ID'],'abs-user-log',array('ID' => $val['ID'], 'punish' => 0));
+			$q = sobad_db::_insert_table('abs-log-detail',$_detail);
+		}
+
+	//Get data punishment
+		$args = sobad_logDetail::get_punishments(array('ID','date_schedule','log_id','status','log_history','times','user'),"AND `abs-log-detail`.status IN ('0','2')");
+
+		// Check 
+		$check = array_filter($args);
+		if(empty($check)){
+			die(_error::_alert_db('Tidak ada jadwal punishment!!!'));
+		}
+
+		$check = strtotime($args[0]['date_schedule']);	
+		$_cy = date('Y',$check);
+		$_cm = date('m',$check);
+		$_cnom = $_cy * 12 + $_cm;
+
+		$_dy = date('Y',$date);
+		$_dm = date('m',$date);
+		$_dnom = $_dy * 12 + $_dm;
+
+		if($_cnom == $_dnom){
+			die(_error::_alert_db('Sudah Terjadwal!!!'));
+		}
+
+		// Calculate jadwal harian
 		$j = 2;
 		if(count($args)>=($_total*2)){
 			$j = ceil(count($args) / $_total);
@@ -518,126 +554,149 @@ class punishment_absen extends _page{
 			$holiday[] = $val['holiday'];
 		}
 
-		$_cols = array();
-		$cols = array();
+	// Insert Data Punishment
+		$_users = array();
+		foreach ($args as $key => $val) {
+			if(array_key_exists($val['user_log_'], $_users)){
+				$_users[$val['user_log_']] = array();
+			}
 
-		$ky = -1;
-		for($h = 0;$h < $_total;$h++){
-			for($i = 0;$i < $j;$i++) {
-				if(($i + 1) == $j){
-					if(($h + 1) > $_a){
-						$_key = date('Y-m-d',strtotime("+1 days",$date));
-						$date = strtotime($_key);
-						continue;
+			$_users[$val['user_log_']][] = array(
+				'index'		=> $key,
+				'status'	=> $val['status'],
+				'times'		=> $val['times']
+			);
+		}
+
+		$_count = count($args);
+		foreach ($_users as $key => $val) {
+			$_status = true;
+			foreach ($val as $ky => $vl) {
+				if($vl['times']<=30){
+					$_status = false;
+					$args[$vl['index']]['times'] = 60;
+					break;
+				}
+
+				if($vl['times']>=60){
+					$_status = false;
+					if($vl['status']==2){
+						$args[$vl['index']]['status'] = 0;
+						break;
 					}
 				}
+			}
 
-				$ky += 1;
-			
-				$val = $args[$ky];
-				$_key = date('Y-m-d',$date);
+			if($_status){
+				$args[$_count] = array(
+					'ID'				=> 0,
+					'log_id'			=> $val['log_id'],
+					'date_schedule'		=> '',
+					'times'				=> 30,
+					'log_history'		=> '',
+					'status'			=> 0
+				);
 
-				if(isset($cols[$_key])){
-					if(count($cols[$_key])==$j){
-						$_key = date('Y-m-d',strtotime("+1 days",$date));
-						$date = strtotime($_key);
-					}
-				}
+				$_count += 1;
+			}
+		}
 
-				if(!isset($cols[$_key])){
-					$_key = self::_check_holiday($_key,$holiday);
-					$cols[$_key] = array();
+	// Create Schedule Punishment
+		$_key = date('Y-m-d',strtotime("+1 days",$date));
+		$_key = self::_check_holiday($_key,$holiday);
+		$date = strtotime($_key);
 
-					$date = strtotime($_key);
-				}
+		$_jadwal = array();
+		foreach ($args as $key => $val) {
+			$_user = $val['user_log_'];
+			$_args = array(
+				'ID'				=> $val['ID'],
+				'log_id'			=> $val['log_id'],
+				'date_schedule'		=> '',
+				'times'				=> $val['times'],
+				'log_history'		=> unserialize($val['log_history']),
+				'status'			=> $val['status']
+			);
 
-				if(isset($cols[$_key][$i])){
-					continue;
-				}
+			if(!array_key_exists($_key, $_jadwal)){
+				$_jadwal[$_key] = array();
+			}
 
-				if($i>0){
-					// Check user dalam satu baris
-					// Jika Ada
-					if(in_array($val['user'],$cols[$_key])){
+			if(array_key_exists($_user, $_jadwal[$_key])){
+				$_sts = true;
+				foreach ($_jadwal as $ky => $vl) {
+					if(count($vl)<$j){
+						if(!array_key_exists($_user, $vl)){
+							$_sts = false;
+							$_dt = strtotime($ky);
 
-						// lakukan pencarian baris yang belum di isi oleh user X
-						for($k = ($key+1);$k < $sum;$k++){
-
-							$_k = date('Y-m').'-'.sprintf("%02d",$k);
-							if(!isset($cols[$_k])){
-								$_key = self::_check_holiday($_k,$holiday);
-								$cols[$_k] = array();
-							}
-
-							if(in_array($val['user'],$cols[$_k])){
-								continue;
-							}else{
-
-								// Jika baris sudah terisi penuh
-								if(count($cols[$_k])==$j){
-									continue;
-								}
-
-								// Pengisian terhadap kolom yang belum di isi user X
-								$_l = count($cols[$_k]) - 1;
-								$cols[$_k][$_l] = $val['user'];
-
-								$_cols[$_k][$_l] = array(
-									'log_id'		=> $val['ID'],
-									'date_schedule'	=> $_k,
-									'times'			=> $val['punishment'],
-									'log_history'	=> serialize(array('history' => array(
-											0			=> array(
-												'date'		=> $_k,
-												'periode'	=> 1
-											)
-										))
-									)
-								);
-
-								break;
-							}
+							$_args['date_schedule'] = $ky;
+							$_jadwal[$ky][$_user] = $_args;
+							break;
 						}
 					}
+
+					$_dt = strtotime($ky);
 				}
 
-				$cols[$_key][$i] = $val['user'];
+				if($_sts){
+					$_dt = date('Y-m-d',strtotime("+1 days",$_dt));
+					$_dt = self::_check_holiday($_dt,$holiday);
 
-				$_cols[$_key][$i] = array(
-					'log_id'		=> $val['ID'],
-					'date_schedule'	=> $_key,
-					'times'			=> $val['punishment'],
-					'log_history'	=> serialize(array('history' => array(
+					$_args['date_schedule'] = $_dt;
+					$_jadwal[$_dt][$_user] = $_args;
+				}
+
+				continue;
+			}else{
+				if(count($_jadwal[$_key])<$j){
+					$_args['date_schedule'] = $_key;
+					$_jadwal[$_key][$_user] = $_args;
+				}else{
+					$_key = date('Y-m-d',strtotime("+1 days",$date));
+					$_key = self::_check_holiday($_key,$holiday);
+					$date = strtotime($_key);
+
+					$_args['date_schedule'] = $_key;
+					$_jadwal[$_key][$_user] = $_args;
+				}
+			}
+		}
+
+		// Update Jadwal Punishment
+		foreach ($_jadwal as $_date => $_user) {
+			foreach ($_user as $key => $val) {
+				$_history = $val['log_history'];
+				if(isset($_history['history'])){
+					$_cnt = count($_history['history']);
+					$_history['history'][$_cnt-1] = array(
+						'date'		=> $_date,
+						'periode'	=> $_cnt
+					);
+				}else{
+					$_history = array(
+						'history' => array(
 							0			=> array(
 								'date'		=> $_key,
 								'periode'	=> 1
 							)
-						))
-					)
-				);
-			}
-		}	
-
-		$q = 0;
-		foreach ($_cols as $key => $val) {
-			//check log punishment
-			foreach($val as $ky => $vl){
-				$punish = sobad_logDetail::_check_log($vl['log_id']);
-				$check = array_filter($punish);
-				if(!empty($check)){
-					continue;
+						)
+					);
 				}
 
-				$vl['type_log'] = 1;
-				$q = sobad_db::_insert_table('abs-log-detail',$vl);
+				$val['log_history'] = serialize($_history);
+				$val['type_log'] = 1;
+				if(!empty($val['ID'])){
+					$q = sobad_db::_update_single($val['ID'],'abs-log-detail',$val);
+				}else{
+					$q = sobad_db::_insert_table('abs-log-detail',$val);
+				}
 			}
 		}
 
 		if($q!==0){
 			$table = self::table_schedule();
 			return table_admin($table);
-		}else{
-			die(_error::_alert_db('Sudah Terjadwal!!!'));
 		}
 	}
 

@@ -490,7 +490,7 @@ class permit_absen extends _page{
 		$data = preg_replace('/\s+/', '', $data);
 		$data = strtolower($data);
 		if($data=='-'){
-			return array('value' => 1, 'type' => 0);
+			return array('value' => 0, 'type' => 0);
 		}
 
 		if(preg_match("/^[0-9]{2,4}(year|tahun|thn|t|y)/", $data)){
