@@ -557,6 +557,10 @@ class punishment_absen extends _page{
 	// Insert Data Punishment
 		$_users = array();
 		foreach ($args as $key => $val) {
+			if(empty($val['date_schedule'])){
+				continue;
+			}
+
 			if(array_key_exists($val['user_log_'], $_users)){
 				$_users[$val['user_log_']] = array();
 			}
