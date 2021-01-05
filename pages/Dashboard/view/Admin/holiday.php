@@ -38,7 +38,7 @@ class holiday_absen extends _page{
 			$cari=$where;
 		}
 	
-		$limit = 'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
+		$limit = 'ORDER BY holiday LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
 		$where .= $limit;
 
 		$object = self::$table;

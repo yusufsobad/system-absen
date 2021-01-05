@@ -517,7 +517,7 @@ class punishment_absen extends _page{
 		}
 
 	//Get data punishment
-		$args = sobad_logDetail::get_punishments(array('ID','date_schedule','log_id','status','log_history','times','user'),"AND `abs-log-detail`.status IN ('0','2')");
+		$args = sobad_logDetail::get_punishments(array('ID','date_schedule','log_id','status','log_history','times','user'),"AND `abs-log-detail`.status !='1'");
 
 		// Check 
 		$check = array_filter($args);
@@ -557,7 +557,7 @@ class punishment_absen extends _page{
 	// Insert Data Punishment
 		$_users = array();
 		foreach ($args as $key => $val) {
-			if(empty($val['date_schedule'])){
+			if(empty($val['log_history'])){
 				continue;
 			}
 
