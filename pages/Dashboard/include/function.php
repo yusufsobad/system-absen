@@ -99,18 +99,7 @@ function set_rule_absen($first='00:00:00',$last='00:00:00',$args=array()){
 
 		if($user['dayOff']<$status['value']){
 			$cuti = $user['dayOff'] - $status['value'];
-			sobad_db::_update_single($args['user'],'abs-user',array('ID' => $args['user'], 'dayOff' => $cuti));
-
-			//Set Permit
-			sobad_db::_insert_table('abs-permit',array(
-				'user'			=> $args['user'],
-				'start_date'	=> $args['date'],
-				'range_date'	=> $args['date'],
-				'num_day'		=> $status['value'],
-				'type_date'		=> 1,
-				'type'			=> 3,
-				'note'			=> $args['note']
-			));
+			set_rule_cuti($status['value'],$cuti,$args);
 		}else{
 			$status['status'] = 'Ganti Jam';
 			$status['type'] = 2;
@@ -127,4 +116,19 @@ function set_rule_absen($first='00:00:00',$last='00:00:00',$args=array()){
 	}
 
 	return $status;
+}
+
+function set_rule_cuti($num_day=0,$cuti=0,$args=array()){
+	sobad_db::_update_single($args['user'],'abs-user',array('ID' => $args['user'], 'dayOff' => $cuti));
+
+	//Set Permit
+	sobad_db::_insert_table('abs-permit',array(
+		'user'			=> $args['user'],
+		'start_date'	=> $args['date'],
+		'range_date'	=> $args['date'],
+		'num_day'		=> $num_day,
+		'type_date'		=> 1,
+		'type'			=> 3,
+		'note'			=> $args['note']
+	));
 }

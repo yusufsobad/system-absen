@@ -544,11 +544,14 @@ class absensi{
 				'status' 	=> 0,
 				'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau pilih yang mana, \''.$_nickname.'\'?</div>
 									<div class="row" style="text-align:center;">
-										<div class="col-md-6">
+										<div class="col-md-4">
 											<button style="width:60%;" type="button" class="btn btn-info" onclick="send_request(3)">Cuti</button>
 										</div>
-										<div class="col-md-6">
+										<div class="col-md-4">
 											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(8)">Ganti Jam</button>
+										</div>
+										<div class="col-md-4">
+											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(8)">Izin Sakit</button>
 										</div>
 								</div>',
 				'modal'		=> true
@@ -570,9 +573,25 @@ class absensi{
 		switch ($type) {
 			case 3:
 				$_args['type'] = 2;
-				$_dayOff -= 1;
+				$_data = array(
+					'id'	=> $idx,
+					'date'	=> $date,
+					'user'	=> $_id,
+					'note'	=> 'Pulang Cepat'
+				);
 
-				sobad_db::_update_single($_id,'abs-user',array('ID' => $_id, 'dayOff' => $_dayOff));
+				$waktu = _conv_time($times,$work,2);
+				if($waktu<=270){
+					$num_day = 0.5;
+				}else{
+					$num_day = 1;
+				}
+
+				$cuti = $_dayOff - $num_day;
+				if($_dayOff<$num_day){
+					set_rule_absen($times,$work,$data);
+				}
+				set_rule_cuti($num_day,$cuti,$data);	
 				break;
 
 			case 8:

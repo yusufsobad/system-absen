@@ -363,15 +363,23 @@ class punishment_absen extends _page{
 			),
 			array(
 				'func'			=> 'opt_box',
-				'type'			=> 'checkbox',
+				'type'			=> 'radio',
 				'key'			=> 'status',
 				'label'			=> 'Status',
 				'inline'		=> true,
-				'value'			=> '',
+				'value'			=> 0,
 				'data'			=> array(
 					0	=> array(
+						'title'		=> 'Tidak Ada',
+						'value'		=> '0'
+					),
+					1	=> array(
 						'title'		=> 'Ganti Jam',
 						'value'		=> '1'
+					),
+					2	=> array(
+						'title'		=> 'Cuti',
+						'value'		=> '2'
 					)
 				)
 			),
@@ -758,6 +766,31 @@ class punishment_absen extends _page{
 			);
 
 			set_rule_absen($work[0]['time_in'],$log[0]['time_in'],$data);
+		}
+
+		if(isset($args['status']) && $args['status']==2){
+			$data = array(
+				'id'	=> $id,
+				'date'	=> $log[0]['_inserted'],
+				'user'	=> $log[0]['user'],
+				'note'	=> $args['note']
+			);
+
+			$user = sobad_user::get_id($data['user'],array('dayOff'));
+			$user = $user[0];
+
+			$waktu = _conv_time($work[0]['time_in'],$log[0]['time_in'],2);
+			if($waktu<=270){
+				$num_day = 0.5;
+			}else{
+				$num_day = 1;
+			}
+
+			$cuti = $user['dayOff'] - $num_day;
+			if($user['dayOff']<$num_day){
+				set_rule_absen($work[0]['time_in'],$log[0]['time_in'],$data);
+			}
+			set_rule_cuti($num_day,$cuti,$data);
 		}
 
 		if($q!==0){
