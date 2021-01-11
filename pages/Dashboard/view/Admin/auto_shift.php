@@ -368,4 +368,39 @@ class shift_absen extends _page{
 		
 		return modal_admin($args);
 	}
+
+	public function _add_db($_args=array(),$menu='default',$obj=''){
+		$args = sobad_asset::ajax_conv_json($_args);
+		$id = $args['ID'];
+		unset($args['ID']);
+	
+		$src = array();
+		if(isset($args['search'])){
+			$src = array(
+				'search'	=> $args['search'],
+				'words'		=> $args['words']
+			);
+
+			unset($args['search']);
+			unset($args['words']);
+		}
+
+		$data = array(
+			'start_date'	=> $args['start_date'],
+			'range_date'	=> $args['range_date'],
+			'type'			=> $args['type'],
+			'note'			=> $args['note'],
+		);
+
+		$users = explode(',',$args['user']);
+		foreach ($users as $key => $val) {
+			$data['user'] = $val;
+			$q = sobad_db::_insert_table('abs-permit',$data);
+		}
+
+		if($q!==0){
+			$pg = isset($_POST['page'])?$_POST['page']:1;
+			return parent::_get_table($pg,$src);
+		}
+	}
 }

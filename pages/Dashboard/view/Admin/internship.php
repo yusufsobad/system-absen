@@ -120,7 +120,7 @@ class internship_absen extends _file_manager{
 				'type'	=> $type
 			);
 
-			$status = "Non Aktif";
+			$status = ($val['status']==0)?"Non Aktif":"Aktif";
 			$no_induk = self::_conv_no_induk($val['no_induk'],$val['inserted']);
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 			
