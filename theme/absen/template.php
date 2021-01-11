@@ -109,7 +109,7 @@ abstract class absen_control{
 					'position'	=> $pos
 				);
 
-				$group[$grp]['position'] = $val['note']['pos_group'];
+				$group[$grp]['position'] = isset($val['note'])?$val['note']['pos_group']:0;
 			}
 
 			if($val['type']==3){
