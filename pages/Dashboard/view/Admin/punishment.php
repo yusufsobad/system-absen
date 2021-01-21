@@ -310,6 +310,15 @@ class punishment_absen extends _page{
 			'type'	=> parent::$type
 		);
 
+		$manual = array(
+			'ID'	=> 'manual_0',
+			'func'	=> '_manual',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-gear',
+			'label'	=> 'Manual',
+			'type'	=> parent::$type
+		);
+
 		$add = array(
 			'ID'	=> 'schedule_0',
 			'func'	=> '_schedule',
@@ -320,8 +329,12 @@ class punishment_absen extends _page{
 			'type'	=> parent::$type
 		);
 		
-		return print_button($print).' '._click_button($add);
+		return print_button($print).' '._modal_button($manual).' '._click_button($add);
 	}
+
+// --------------------------------------------------------------
+// Form Layout --------------------------------------------------
+// --------------------------------------------------------------		
 
 	public static function _permit($id=0){
 		$id = str_replace('permit_', '', $id);
@@ -391,6 +404,97 @@ class punishment_absen extends _page{
 		return modal_admin($args);
 	}
 
+	public function _manual($id=0){
+		$id = str_replace('manual_', '', $id);
+		$vals = array($id,'');
+		
+		$args = array(
+			'title'		=> 'Tambah aktifitas punishment (Manual)',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(
+				'link'		=> '_add_manual',
+				'load'		=> 'sobad_portlet'
+			)
+		);
+		
+		return self::_manual_form($args,$vals);
+	}
+
+	private function _manual_form($args=array(),$vals=array()){
+		$check = array_filter($args);
+		if(empty($check)){
+			return '';
+		}
+
+		$user = sobad_user::get_employees(array('ID','name'));
+		$user = convToOption($user,'ID','name');
+
+		$intern = sobad_user::get_internships(array('ID','name'));
+		$intern = convToOption($intern,'ID','name');
+
+		$group = $user;
+		foreach ($intern as $key => $val) {
+			$group[$key] = $val;
+		}
+
+		$groups = array(
+			'Karyawan'		=> $user,
+			'Internship'	=> $intern
+		);
+
+		$data = array(
+			0 => array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'ID',
+				'value'			=> $vals[0]
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'date',
+				'key'			=> 'date',
+				'label'			=> 'Tanggal',
+				'class'			=> 'input-circle',
+				'value'			=> date('Y-m-d'),
+				'data'			=> 'placeholder="Tanggal"'
+			),
+			array(
+				'func'			=> 'opt_select_tags',
+				'data'			=> $group,
+				'key'			=> 'user',
+				'label'			=> 'Nama',
+				'class'			=> 'input-circle',
+				'select'		=> array()
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'price',
+				'key'			=> 'time',
+				'label'			=> 'Waktu (menit)',
+				'class'			=> 'input-circle',
+				'value'			=> 0,
+				'data'			=> 'placeholder="Waktu"'
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'note',
+				'label'			=> 'Catatan',
+				'class'			=> 'input-circle',
+				'value'			=> '',
+				'data'			=> 'placeholder="ngapain?"'
+			),
+		);
+		
+		$args['func'] = array('sobad_form');
+		$args['data'] = array($data);
+		
+		return modal_admin($args);
+	}	
+
+// --------------------------------------------------------------
+// --------------------------------------------------------------	
+
 	public function _history($id=0){
 		$id = str_replace('history_', '', $id);
 		intval($id);
@@ -422,10 +526,10 @@ class punishment_absen extends _page{
 				$no += 1;
 
 				$_date = ($type)?$key:$val;
-				$note = ($type)?'<input type="text" value="'.$val.'">':'Telah melaksanakan punishment';
+				$note = ($type)?$val:'Telah melaksanakan punishment';
 
-				$data['table'][$key]['tr'] = array('');
-				$data['table'][$key]['td'] = array(
+				$data['table'][$no-1]['tr'] = array('');
+				$data['table'][$no-1]['td'] = array(
 					'no'			=> array(
 						'center',
 						'5%',
@@ -711,6 +815,86 @@ class punishment_absen extends _page{
 			return table_admin($table);
 		}
 	}
+
+// --------------------------------------------------------------
+// Database -----------------------------------------------------
+// --------------------------------------------------------------	
+
+	public function _add_manual($args=array()){
+		$args = sobad_asset::ajax_conv_json($args);
+		$users = explode(',', $args['user']);
+
+		$waktu = date('H:i');
+		$date = $args['date'];
+		$strdate = strtotime($date);
+
+		$punish = $args['time'];
+		foreach ($users as $ky => $vl) {
+			$where = "AND _log_id.user='$vl' AND `abs-log-detail`.status!='1'";
+			$punishment = sobad_logDetail::get_punishments(array('ID','log_id','times','status','date_actual','log_history'),$where);
+
+			foreach ($punishment as $key => $val) {
+				if($val['status']==2){
+					$val['times'] -= 30;
+				}else{
+					if($val['times']>=60){
+						if($punish==30){
+							$status = true;
+						}
+					}
+				}
+
+				if($val['times']<=$punish){
+					$status = true;
+				}
+
+				if($status){
+					//Update Punishment
+					$_actual = explode(',', $val['date_actual']);
+					$check = array_filter($_actual);
+
+					if(empty($check)){
+						$_actual = array($date);
+					}else{
+						$_actual[] = $date;
+					}
+
+					$_index = date('Ymd',$strdate);
+					$_history = unserialize($val['log_history']);
+					$_history = $_history['history'];
+					
+					$_cnt = count($_history);
+					if(!isset($_history[$_cnt-1]['punishment'])){
+						$_history[$_cnt-1]['punishment'] = array();
+					}
+					
+					$_history[$_cnt-1]['punishment'][$_index] = empty($args['note'])?'Telah melaksanakan punishment':$args['note'];
+					$_log = array();
+					$_log['history'] = $_history;
+
+					if(($val['times'] - $punish)<=0){
+						$_status = 1;
+					}else{
+						$_status = 2;
+					}
+
+					$punish -= $val['times'];
+					sobad_db::_update_single($val['ID'],'abs-log-detail',array(
+						'status'		=> $_status,
+						'date_actual'	=> implode(',', $_actual),
+						'log_history'	=> serialize($_log)
+					));
+
+					if($punish<=0){
+						break;
+					}
+				}
+			}
+		}
+
+		$table = self::table_schedule();
+		return table_admin($table);
+	}	
 
 	public function _add_permit($args=array()){
 		$args = sobad_asset::ajax_conv_json($args);

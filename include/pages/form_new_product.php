@@ -383,7 +383,7 @@ abstract class _new_product extends form_product{
 	}
 
 	public function _layout_product($data=array()){
-		$status = false;$image = 'no-image.png';
+		$status = false;$image[0] = 'no-image.png';
 		$args = $data['form'];
 
 		$add = array(

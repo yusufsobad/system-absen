@@ -13,9 +13,9 @@ class report_absen extends _page{
 	protected function table($filter=''){
 		$date = date('Y-m');
 
-		$whr = '';$width = '400px';
+		$whr = "AND `abs-user`.status!='0' ";$width = '400px';
 		if(!empty($filter)){
-			$whr = "AND `abs-user`.ID IN ($filter)";
+			$whr .= "AND `abs-user`.ID IN ($filter)";
 
 			$count = explode(',', $filter);
 			if(count($count)<3){

@@ -31,7 +31,6 @@ class absensi{
 	public static function _check_punishment($user=0,$worktime=''){
 		$punish = 0;
 		$times = date('H:i:s');
-		$waktu = date('H:i');
 
 		$worktime = _calc_time($worktime,'-40 minutes'); // 10 menit adalah waktu briefing
 
@@ -44,6 +43,14 @@ class absensi{
 		if($times<$worktime){
 			$punish = 60;
 		}
+
+		return self::_set_punishment($user,$punish);
+	}
+
+	public static function _set_punishment($user=0,$punish=0,$date=''){
+		$waktu = date('H:i');
+		$date = empty($date)?date('Y-m-d'):$date;
+		$strdate = strtotime($date);
 
 		$where = "AND _log_id.user='$user' AND `abs-log-detail`.status!='1'";
 		$punishment = sobad_logDetail::get_punishments(array('ID','log_id','times','status','date_actual','log_history'),$where);
@@ -103,13 +110,13 @@ class absensi{
 			$check = array_filter($_actual);
 
 			if(empty($check)){
-				$_actual = array(date('Y-m-d'));
+				$_actual = array($date);
 			}else{
-				$_actual[] = date('Y-m-d');
+				$_actual[] = $date;
 			}
 
-			$_index = date('Ymd');
-			$_history = unserialize($data[0]['log_history']);
+			$_index = date('Ymd',$strdate);
+			$_history = unserialize($_data[0]['log_history']);
 			$_history = $_history['history'];
 			
 			$_cnt = count($_history);
@@ -118,18 +125,20 @@ class absensi{
 			}
 			
 			$_history[$_cnt-1]['punishment'][$_index] = 'Telah Melakukan Punishment';
+			$_log = array();
+			$_log['history'] = $_history;
 
 			if(($_data[0]['times'] - $punish)<=0){
 				sobad_db::_update_single($_data[0]['ID'],'abs-log-detail',array(
 					'status'		=> 1,
 					'date_actual'	=> implode(',', $_actual),
-					'log_history'	=> serialize($_history)
+					'log_history'	=> serialize($_log)
 				));
 			}else{
 				sobad_db::_update_single($_data[0]['ID'],'abs-log-detail',array(
 					'status'		=> 2,
 					'date_actual'	=> implode(',', $_actual),
-					'log_history'	=> serialize($_history)
+					'log_history'	=> serialize($_log)
 				));
 			}
 		}
@@ -613,8 +622,16 @@ class absensi{
 				break;
 
 			case 7: // Pulang telat --> Ganti Jam
-				$ganti = _conv_time($times, $work, 3);
+				$ganti = _conv_time($times, $work, 2);
 				$_logs = sobad_logDetail::get_all(array('ID','times','status','date_actual','log_history'),"AND _log_id.user='$_id' AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1'");
+
+				$_check = $ganti % 30;
+				if($check<=20){
+					$ganti -= $_check;
+				}else{
+					$ganti += (30 - $_check);
+				}
+
 				foreach ($_logs as $key => $val) {
 					if($ganti<=0){
 						break;

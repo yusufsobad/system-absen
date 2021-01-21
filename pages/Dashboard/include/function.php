@@ -60,6 +60,13 @@ function get_rule_absen($first='00:00:00',$last='00:00:00'){
 
 	//Jika Izin kurang dari setengah Hari, ganti Jam
 	if($waktu>=60 && $waktu<210){
+		$_check = $waktu % 30;
+		if($_check<=10){
+			$waktu -= $_check;
+		}else{
+			$waktu += (30 - $_check);
+		}
+
 		return array(
 			'time'		=> $waktu,
 			'status'	=> 'Ganti Jam',
