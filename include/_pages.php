@@ -46,6 +46,22 @@ abstract class _page{
 		if(property_exists(new static, 'table')){
 			$object = static::$table;
 			$meta = $object::list_meta();
+
+			$post = '';
+			if(property_exists(new static, 'post')){
+				$post = static::$post;
+			}
+
+			$blueprint = $object::blueprint($post);
+			if(isset($blueprint['detail'])){
+				foreach ($blueprint['detail'] as $key => $val) {
+					if(in_array($key, $args)){
+						foreach ($val['column'] as $ky => $vl) {
+							$args[] = '_'.$key.'.'.$vl;
+						}
+					}
+				}
+			}
 		}
 		
 		if(!empty($cari['words'])){

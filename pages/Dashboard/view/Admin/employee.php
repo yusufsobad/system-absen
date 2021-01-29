@@ -178,6 +178,19 @@ class employee_absen extends _file_manager{
 					$end_date = format_date_id($val['_resign_date']);
 				}
 			}
+
+			if($val['status']>3){
+				$status .= ': <br> Masa Bakti ';
+
+				$bakti = date($val['_entry_date']);
+				$bakti = strtotime($bakti);
+				$bakti = $now - $bakti;
+				$bTahun = floor($bakti / (60 * 60 * 24 * 365));
+				
+				$bBulan = floor($bakti / (60 * 60 * 24 * 30.416667));
+				$bBulan -= ($bTahun * 12);
+				$end_date = $bTahun . ' Tahun ' . $bBulan .' Bulan';
+			}
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(

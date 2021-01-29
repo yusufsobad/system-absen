@@ -32,9 +32,14 @@ class permit_absen extends _page{
 		$start = intval(parent::$page);
 		$nLimit = intval(parent::$limit);
 		
-		$kata = '';$where = "AND type NOT IN (9) ORDER BY start_date DESC ";
+		$kata = '';$where = "AND type NOT IN (9)";
 		if(parent::$search){
-			$src = parent::like_search($args,$where);	
+			$_args = array(
+				'ID',
+				'user'
+			);
+
+			$src = parent::like_search($_args,$where);	
 			$cari = $src[0];
 			$where = $src[0];
 			$kata = $src[1];
@@ -42,12 +47,12 @@ class permit_absen extends _page{
 			$cari=$where;
 		}
 	
-		$limit = 'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
+		$limit = ' ORDER BY start_date DESC LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
 		$where .= $limit;
 
 		$object = self::$table;
 		$args = $object::get_all($args,$where);
-		$sum_data = $object::count("1=1 ".$cari);
+		$sum_data = $object::count("1=1 ".$cari,$args);
 		
 		$data['data'] = array('data' => $kata);
 		$data['search'] = array('Semua','nama');
@@ -95,30 +100,41 @@ class permit_absen extends _page{
 				$range = $val['num_day']-1;
 				
 				switch ($val['type_date']) {
-					case 1:
-						$sts_day = 'hari';
-						$_num = $range.' days';
-						break;
 
 					case 2:
 						$sts_day = 'bulan';
 						$_num = $range.' months';
+						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' months');
 						break;
 
 					case 3:
 						$sts_day = 'tahun';
 						$_num = $range.' years';
+						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' years');
 						break;
 
 					default:
-						$sts_day = 'hari';
+						$sts_day = 'hari kerja';
+						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' days');
+
 						$_num = $range.' days';
 						break;
 				}
 
-
 				//$range_date = strtotime($val['start_date']);
 				//$val['range_date'] = date('Y-m-d',strtotime('+'.$_num,$range_date));
+			}
+
+			if($val['type_date']<2){
+				$_num = $range;
+				$_date = strtotime($val['start_date']);
+				for($i=0;$i<$_num;$i++){
+					$_date = strtotime("+".$i." days",$_date);
+					$_check = holiday_absen::_check_holiday(date('Y-m-d',$_date));
+					if($_check){
+						$range -= 1;
+					}
+				}
 			}
 			
 			$data['table'][$key]['tr'] = array('');
@@ -462,11 +478,12 @@ class permit_absen extends _page{
 	}
 
 	public static function _calc_dateHoliday($start='',$numDay=1){
-		if($numDay<=0){
+		if($numDay<0){
 			return '0000-00-00';
 		}
 
 		$_date = empty($start)?date('Y-m-d'):$start;
+		$date = $_date;
 		$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday>='$_date'");
 
 		$holiday = array();

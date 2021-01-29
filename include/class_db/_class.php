@@ -52,18 +52,29 @@ abstract class _class{
 		return $args;
 	}
 
-	public static function count($limit='1=1 '){
+	public static function count($limit='1=1 ',$args=array()){
 		$inner = '';$meta = false;
 		$limit = empty($limit)?"1=1 ":$limit;
 
+		$blueprint = self::schema();
+		$table = $blueprint['table'];
+		if(isset($blueprint['detail'])){
+			$check = array_filter($blueprint['detail']);
+			if(!empty($check)){
+				self::_detail($args,$table,$blueprint['detail']);
+				$inner = self::$_inner;
+				self::$_inner = '';
+			}
+		}
+
 		$check = array_filter(self::list_meta());
 		if(!empty($check)){
-			$inner = "LEFT JOIN `".static::$tbl_meta."` ON `".static::$table."`.ID = `".static::$tbl_meta."`.meta_id ";
+			$inner .= "LEFT JOIN `".static::$tbl_meta."` ON `".static::$table."`.ID = `".static::$tbl_meta."`.meta_id ";
 			$limit .= static::$group;
 			$meta = true;
 		}
 
-		$count = self::_get_data($inner." WHERE ".$limit,array("COUNT('ID') AS count"));
+		$count = self::_get_data($inner." WHERE ".$limit,array("COUNT('`$table`.ID') AS count"));
 		
 		if($meta){
 			return count($count);
@@ -146,6 +157,7 @@ abstract class _class{
 		}
 
 		$where = self::$_inner.self::$_where;
+		self::$_inner = '';self::$_where = '';
 		return self::_get_data($where,$args);
 	}
 

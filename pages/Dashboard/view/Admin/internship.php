@@ -42,7 +42,9 @@ class internship_absen extends _file_manager{
 			'_classes',
 			'status',
 			'work_time',
-			'inserted'
+			'inserted',
+			'_resign_date',
+			'_entry_date'
 		);
 
 		return $args;
@@ -50,7 +52,7 @@ class internship_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','name','no_induk','_address','phone_no','picture','status','inserted');
+		$args = array('ID','name','no_induk','_address','phone_no','picture','status','inserted','_entry_date','_resign_date');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -123,6 +125,8 @@ class internship_absen extends _file_manager{
 			$status = ($val['status']==0)?"Non Aktif":"Aktif";
 			$no_induk = self::_conv_no_induk($val['no_induk'],$val['inserted']);
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
+
+			$masa = format_date_id($val['_entry_date']).'<br> - <br>'.format_date_id($val['_resign_date']);
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -158,8 +162,14 @@ class internship_absen extends _file_manager{
 				),
 				'No HP'		=> array(
 					'left',
-					'10%',
+					'15%',
 					$val['phone_no'],
+					true
+				),
+				'Magang'	=> array(
+					'center',
+					'15%',
+					$masa,
 					true
 				),
 				'Status'	=> array(
@@ -261,7 +271,7 @@ class internship_absen extends _file_manager{
 		$year = date('Y');
 		$no = sobad_user::get_maxNIM();
 
-		$vals = array(0,0,'','',$no+1,'male','','',0,0,0,0,'',0,0,0,0,0,0,7,0,date('Y-m-d'));
+		$vals = array(0,0,'','',$no+1,'male','','',0,0,0,0,'',0,0,0,0,0,0,7,0,date('Y-m-d'),date('Y-m-d'),date('Y-m-d'));
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
@@ -473,7 +483,7 @@ class internship_absen extends _file_manager{
 				'class'			=> 'input-circle',
 				'select'		=> $vals['_postcode'],
 				'status'		=> ''
-			)
+			),
 		);
 
 		$add_univ = array(
@@ -570,6 +580,24 @@ class internship_absen extends _file_manager{
 				'searching'		=> true,
 				'select'		=> $vals['_study_program'],
 				'status'		=> ''
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'date',
+				'key'			=> '_entry_date',
+				'label'			=> 'Tanggal Mulai',
+				'class'			=> 'input-circle',
+				'value'			=> $vals['_entry_date'],
+				'data'			=> 'placeholder="Masuk Magang"'
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'date',
+				'key'			=> '_resign_date',
+				'label'			=> 'Akhir Magang',
+				'class'			=> 'input-circle',
+				'value'			=> $vals['_resign_date'],
+				'data'			=> 'placeholder="Sampai tanggal?"'
 			),
 		);
 		
@@ -692,5 +720,16 @@ class internship_absen extends _file_manager{
 		}
 
 		return $opt;
+	}
+
+	public function _status($id=0){
+		$id = str_replace("status_", '', $id);
+
+		$q = sobad_db::_update_single($id,'abs-user',array('ID' => $id,'status' => 0,'end_status' => 7));
+		
+		if($q!==0){
+			$pg = isset($_POST['page'])?$_POST['page']:1;
+			return self::_get_table($pg);
+		}
 	}
 }

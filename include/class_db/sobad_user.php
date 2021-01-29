@@ -18,7 +18,7 @@ class sobad_user extends _class{
 		
 		if($type=='internship'){
 			self::$list_meta = array(
-				'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode','_nickname'
+				'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode','_nickname','_entry_date','_resign_date'
 			);
 		}else{
 			self::$list_meta = array(
