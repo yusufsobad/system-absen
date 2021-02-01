@@ -96,7 +96,7 @@ class permit_absen extends _page{
 			$range = strtotime($val['range_date']) - strtotime($val['start_date']);
 			$range = floor($range / (60 * 60 * 24));
 
-			if($val['num_day']>=1){
+			if($val['num_day']>0){
 				$range = $val['num_day']-1;
 				
 				switch ($val['type_date']) {
@@ -114,8 +114,13 @@ class permit_absen extends _page{
 						break;
 
 					default:
+						$_range = $range;
+						if($val['num_day']==0.5){
+							$_range = 0;
+						}
+
 						$sts_day = 'hari kerja';
-						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' days');
+						$val['range_date'] = _calc_date($val['start_date'],'+'.$_range.' days');
 
 						$_num = $range.' days';
 						break;
@@ -397,7 +402,7 @@ class permit_absen extends _page{
 				'key'			=> 'num_day',
 				'label'			=> 'Jumlah Hari',
 				'class'			=> 'input-circle',
-				'value'			=> str_replace('.', ',', $vals['num_day']),
+				'value'			=> number_format($vals['num_day'],1,',','.'),
 				'data'			=> $status['num_day']
 			),
 			array(
