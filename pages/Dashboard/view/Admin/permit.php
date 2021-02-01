@@ -10,7 +10,7 @@ class permit_absen extends _page{
 	// Layout category  ------------------------------------------
 	// ----------------------------------------------------------
 
-	protected function _array(){
+	protected static function _array(){
 		$args = array(
 			'ID',
 			'user',
@@ -52,7 +52,7 @@ class permit_absen extends _page{
 
 		$object = self::$table;
 		$args = $object::get_all($args,$where);
-		$sum_data = $object::count("1=1 ".$cari,$args);
+		$sum_data = $object::count("1=1 ".$cari,self::_array());
 		
 		$data['data'] = array('data' => $kata);
 		$data['search'] = array('Semua','nama');
@@ -96,7 +96,7 @@ class permit_absen extends _page{
 			$range = strtotime($val['range_date']) - strtotime($val['start_date']);
 			$range = floor($range / (60 * 60 * 24));
 
-			if($val['num_day']>0){
+			if($val['num_day']>=1){
 				$range = $val['num_day']-1;
 				
 				switch ($val['type_date']) {
@@ -126,7 +126,7 @@ class permit_absen extends _page{
 			}
 
 			if($val['type_date']<2){
-				$_num = $range;
+				$_num = ceil($range);
 				$_date = strtotime($val['start_date']);
 				for($i=0;$i<$_num;$i++){
 					$_date = strtotime("+".$i." days",$_date);

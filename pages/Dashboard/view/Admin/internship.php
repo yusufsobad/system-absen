@@ -582,23 +582,14 @@ class internship_absen extends _file_manager{
 				'status'		=> ''
 			),
 			array(
-				'func'			=> 'opt_input',
-				'type'			=> 'date',
+				'func'			=> 'opt_datepicker',
 				'key'			=> '_entry_date',
-				'label'			=> 'Tanggal Mulai',
+				'label'			=> 'Magang',
 				'class'			=> 'input-circle',
 				'value'			=> $vals['_entry_date'],
-				'data'			=> 'placeholder="Masuk Magang"'
-			),
-			array(
-				'func'			=> 'opt_input',
-				'type'			=> 'date',
-				'key'			=> '_resign_date',
-				'label'			=> 'Akhir Magang',
-				'class'			=> 'input-circle',
-				'value'			=> $vals['_resign_date'],
-				'data'			=> 'placeholder="Sampai tanggal?"'
-			),
+				'to'			=> '_resign_date',
+				'data'			=> $vals['_resign_date']
+			)
 		);
 		
 		$data = array(

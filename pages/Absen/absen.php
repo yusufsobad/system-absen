@@ -755,7 +755,6 @@ class absensi{
 				$user[$key]['no_induk'] = internship_absen::_conv_no_induk($val['no_induk'],$val['inserted']);
 
 				if(isset($val['_resign_date'])){
-					var_dump($val['_resign_date']>$date);
 					if($date>$val['_resign_date']){
 						sobad_db::_update_single($val['ID'],'abs-user',array('ID' => $val['ID'],'status' => 0,'end_status' => 7));
 						unset($user[$key]);

@@ -94,13 +94,15 @@ class punishment_absen extends _page{
 
 		if(parent::$type=='punishment_2'){
 			$limit = 'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
-			$whr = "ORDER BY `abs-log-detail`.date_schedule DESC ".$limit;
+			$lmt = "AND `abs-log-detail`.status='2' OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ";
+			$whr = $lmt."ORDER BY `abs-log-detail`.date_schedule DESC ".$limit;
 		}else{
-			$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
+			$lmt = '';
+			$whr = "AND `abs-log-detail`.status IN ('0','2') ORDER BY `abs-log-detail`.date_schedule ASC";
 		}
 
 		$args = sobad_logDetail::get_punishments(array(),$whr);
-		$sum_data = sobad_logDetail::count("type_log='1'");
+		$sum_data = sobad_logDetail::count("type_log='1' ".$lmt);
 		
 		$data['class'] = 'schedule';
 		$data['table'] = array();
