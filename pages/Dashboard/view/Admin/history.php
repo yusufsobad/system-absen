@@ -10,7 +10,9 @@ class history_absen extends _page{
 	// Layout category  ------------------------------------------
 	// ----------------------------------------------------------
 
-	protected function table(){
+	protected function table($now=''){
+		$now = empty($now)?date('Y-m'):$now;
+
 		$data = array();
 		$args = array();
 
@@ -21,8 +23,12 @@ class history_absen extends _page{
 		intval($status);
 
 		$status = $status==0?1:$status;
+		$whr = '';
+		if($status==1){
+			$whr = "AND (`abs-log-detail`.log_history LIKE '%$now%') ";
+		}
 
-		$kata = '';$where = "AND `abs-log-detail`.type_log='$status' ORDER BY date_schedule DESC ";
+		$kata = '';$where = "AND `abs-log-detail`.type_log='$status' $whr";
 		if(parent::$search){
 			$src = parent::like_search($args,$where);	
 			$cari = $src[0];
@@ -32,17 +38,18 @@ class history_absen extends _page{
 			$cari=$where;
 		}
 	
-		$limit = 'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
+		$limit = 'ORDER BY date_schedule DESC ';//'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
 		$where .= $limit;
 
 		$object = self::$table;
 		$args = $object::get_all($args,$where);
-		$sum_data = $object::count("1=1 ".$cari);
+		//$sum_data = $object::count("1=1 ".$cari);
 		
 		$data['data'] = array('data' => $kata, 'type' => parent::$type);
 		$data['search'] = array('Semua','nama');
 		$data['class'] = '';
 		$data['table'] = array();
+	/*	
 		$data['page'] = array(
 			'func'	=> '_pagination',
 			'data'	=> array(
@@ -52,6 +59,7 @@ class history_absen extends _page{
 				'type'		=> parent::$type
 			)
 		);
+	*/
 
 		$no = ($start-1) * $nLimit;
 		foreach($args as $key => $val){
@@ -65,6 +73,29 @@ class history_absen extends _page{
 
 			$work = sobad_work::get_workTime($val['ID_shif'],"AND `abs-work-normal`.days='$days'");
 			$worktime = format_time_id($work[0]['time_in']).' - '.format_time_id($work[0]['time_out']);
+
+			$masuk = 'Masuk';$pulang = 'Pulang';
+			if(self::$type=='history_2'){
+				$masuk = 'Keluar';$pulang = 'Kembali';
+				$history = unserialize($val['history_log_']);
+
+				$val['time_in_log_'] = '-';
+				$val['time_out_log_'] = '-';
+
+				if(isset($history['logs'])){
+					foreach ($history['logs'] as $ky => $vl) {
+						if($vl['type']=='4'){
+							$val['time_in_log_'] = $vl['time'];
+							$_idx = $ky;
+							break;
+						}
+					}
+
+					if(isset($history['logs'][$_idx + 1])){
+						$val['time_out_log_'] = $history['logs'][$_idx + 1]['time'];
+					}
+				}
+			}
 
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -92,13 +123,13 @@ class history_absen extends _page{
 					$worktime,
 					true
 				),
-				'Masuk'			=> array(
+				$masuk			=> array(
 					'center',
 					'10%',
 					$val['time_in_log_'],
 					true
 				),
-				'Pulang'			=> array(
+				$pulang			=> array(
 					'center',
 					'10%',
 					$val['time_out_log_'],
@@ -157,7 +188,7 @@ class history_absen extends _page{
 		$box = array(
 			'label'		=> 'History '.$label,
 			'tool'		=> '',
-			'action'	=> '',
+			'action'	=> $action = $type==1?self::action():'',
 			'func'		=> 'sobad_table',
 			'data'		=> $data
 		);
@@ -166,6 +197,7 @@ class history_absen extends _page{
 	}
 
 	protected function layout(){
+		self::$type = 'history_1';
 		$box = self::get_box();
 
 		$tabs = array(
@@ -192,10 +224,44 @@ class history_absen extends _page{
 		
 		$opt = array(
 			'title'		=> self::head_title(),
-			'style'		=> array(),
+			'style'		=> array(''),
 			'script'	=> array('')
 		);
 
 		return tabs_admin($opt,$tabs);
+	}
+
+	protected function action(){
+		$type = self::$type;
+		$date = date('Y-m');
+		ob_start();
+		?>
+			<div class="input-group input-medium date date-picker" data-date-format="yyyy-mm" data-date-viewmode="months">
+				<input id="monthpicker" type="text" class="form-control" value="<?php print($date); ?>" data-sobad="_filter" data-load="sobad_portlet" data-type="<?php print($type) ;?>" name="filter_date" onchange="sobad_filtering(this)">
+			</div>
+			<script type="text/javascript">
+				if(jQuery().datepicker) {
+		            $("#monthpicker").datepicker( {
+					    format: "yyyy-mm",
+					    viewMode: "months", 
+					    minViewMode: "months",
+					    rtl: Metronic.isRTL(),
+			            orientation: "right",
+			            autoclose: true
+					});
+		        };
+			</script>
+		<?php
+		$date = ob_get_clean();		
+		
+		return $date;
+	}
+
+	public function _filter($date=''){
+		ob_start();
+		self::$type = $_POST['type'];
+		$table = self::table($date);
+		metronic_layout::sobad_table($table);
+		return ob_get_clean();
 	}
 }

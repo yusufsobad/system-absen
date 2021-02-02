@@ -606,14 +606,15 @@ class absensi{
 			case 8:
 				$_args['type'] = 2;
 
-			case 4:
-
 				sobad_db::_insert_table('abs-log-detail',array(
 					'log_id'		=> $idx,
 					'date_schedule'	=> date('Y-m-d'),
-					'times'			=> _conv_time($work , $times, 2),
+					'times'			=> _conv_time($times, $work, 2),
 					'type_log'		=> 2
 				));
+				break;
+
+			case 4:
 
 				break;
 

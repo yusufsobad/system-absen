@@ -94,7 +94,7 @@ class punishment_absen extends _page{
 
 		if(parent::$type=='punishment_2'){
 			$limit = 'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
-			$lmt = "AND `abs-log-detail`.status='2' OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ";
+			$lmt = "AND (`abs-log-detail`.status IN ('1','2') AND date_schedule BETWEEN '$awal' AND '$akhir') ";
 			$whr = $lmt."ORDER BY `abs-log-detail`.date_schedule DESC ".$limit;
 		}else{
 			$lmt = '';

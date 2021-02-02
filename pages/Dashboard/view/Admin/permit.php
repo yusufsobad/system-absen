@@ -585,6 +585,9 @@ class permit_absen extends _page{
 							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' years');
 						
 						default:
+							if($data['num_day']==0.5){
+								$_num = 0;
+							}
 							$args['range_date'] = self::_calc_dateHoliday($args['start_date'],$_num);
 							break;
 					}
@@ -668,6 +671,9 @@ class permit_absen extends _page{
 							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' years');
 						
 						default:
+							if($data['num_day']==0.5){
+								$_num = 0;
+							}
 							$data['range_date'] = self::_calc_dateHoliday($data['start_date'],$_num);
 							break;
 					}

@@ -607,7 +607,7 @@ class internship_absen extends _file_manager{
 				2	=> array(
 					'key'	=> '',
 					'icon'	=> 'fa fa-university',
-					'label'	=> 'Unviversity'
+					'label'	=> 'University'
 				),
 			),
 			'content'	=> array(

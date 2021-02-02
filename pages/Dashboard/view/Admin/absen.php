@@ -10,8 +10,9 @@ class report_absen extends _page{
 	// Layout category  -----------------------------------------
 	// ----------------------------------------------------------
 
-	protected function table($filter=''){
-		$date = date('Y-m');
+	protected function table($filter='',$date=''){
+		$date = empty($date)?date('Y-m'):$date;
+		$date = strtotime($date);
 
 		$whr = "AND `abs-user`.status!='0' ";$width = '400px';
 		if(!empty($filter)){
@@ -89,7 +90,7 @@ class report_absen extends _page{
 			);
 		}
 
-		$default = date('Y').'-'.date('m').'-01';
+		$default = date('Y',$date).'-'.date('m',$date).'-01';
 		$default = strtotime($default);
 
 		$before = strtotime('-1 days',$default);
@@ -140,6 +141,12 @@ class report_absen extends _page{
 				$button = _modal_button($permit);
 
 				if(!empty($check)){
+					$_permit = sobad_permit::get_all(array('type'),"AND (start_date>='$now' AND range_date<='$now')");
+					$check = array_filter($_permit);
+					if(!empty($check)){
+						$args[0]['type'] = $_permit[0]['type'];
+					}
+
 					$status = permit_absen::_conv_type($args[0]['type']);
 					if(empty($status)){
 						if($args[0]['type']==0){
@@ -308,7 +315,17 @@ class report_absen extends _page{
 
 		$form = array(
 			'cols'	=> array(2,9),
-			0		=> array(
+			0 => array(
+				'id'			=> 'monthpicker',
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'date',
+				'label'			=> 'Tanggal',
+				'class'			=> 'input-circle',
+				'value'			=> date('Y-m'),
+				'data'			=> ''
+			),
+			array(
 				'func'			=> 'opt_select_tags',
 				'data'			=> $user,
 				'key'			=> 'user',
@@ -335,7 +352,7 @@ class report_absen extends _page{
 		$args = $_POST['args'];
 		$args = sobad_asset::ajax_conv_json($args);
 
-		$data = self::table($args['user']);
+		$data = self::table($args['user'],$args['date']);
 		ob_start();
 		metronic_layout::sobad_table($data);
 		self::_script();
@@ -417,6 +434,17 @@ class report_absen extends _page{
 				    $('#table_absensi tbody tr:not(#table_absensi tbody tr:nth-child(2)) td:nth-child(1)').css("left", $("#table_absensi tbody").scrollLeft()); //fix the first column of tdbody
 				  });
 				});
+
+				if(jQuery().datepicker) {
+		            $("#monthpicker").datepicker( {
+					    format: "yyyy-mm",
+					    viewMode: "months", 
+					    minViewMode: "months",
+					    rtl: Metronic.isRTL(),
+			            orientation: "left",
+			            autoclose: true
+					});
+		        };
 			</script>
 		<?php
 	}
@@ -612,16 +640,20 @@ class report_absen extends _page{
 		}
 	}
 
-	public function _export_excel(){
-		$month = conv_month_id(date('m'));
-		$year = date('Y');
-		$date = $month.' '.$year;
+	public function _export_excel($data=array()){
+		$args = sobad_asset::ajax_conv_json($data);
+		$date = $args['date'];
+		$_date = strtotime($date);
+
+		$month = conv_month_id(date('m',$_date));
+		$year = date('Y',$_date);
+		$_date = $month.' '.$year;
 
 		ob_start();
 		header("Content-type: application/vnd-ms-excel");
-		header("Content-Disposition: attachment; filename=Data Absen ".$date.".xls");
+		header("Content-Disposition: attachment; filename=Data Absen ".$_date.".xls");
 
-		metronic_layout::sobad_table(self::table());
+		metronic_layout::sobad_table(self::table('',$date));
 		return ob_get_clean();
 	}
 
