@@ -560,7 +560,7 @@ class absensi{
 		$idx = $user[0]['id_join'];
 
 		$user = unserialize($user[0]['history']);
-		$user['logs'][] = array('type' => $type, 'time' => $time);
+		$user['logs'][] = array('type' => $type, 'time' => $times);
 
 		$_args = array('type' => $type,'time_out' => $times,'history' => serialize($user));
 		if($type==2){

@@ -125,6 +125,15 @@ class history_absen extends _page{
 
 			$status = '<i class="fa fa-circle" style="color:'.$status.'"></i>';
 
+			$_history = array(
+				'ID'	=> 'history_'.$val['ID'],
+				'func'	=> '_history',
+				'color'	=> 'yellow',
+				'icon'	=> 'fa fa-eye',
+				'label'	=> 'History',
+				'type'	=> self::$type
+			);
+
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
 				'No'			=> array(
@@ -181,10 +190,17 @@ class history_absen extends _page{
 					$status,
 					true
 				),
+				'History'		=> array(
+					'center',
+					'10%',
+					_modal_button($_history),
+					true
+				),
 			);
 
 			if(self::$type=='history_3'){
 				unset($data['table'][$key]['td']['Status']);
+				unset($data['table'][$key]['td']['History']);
 			}
 
 			if(self::$type!='history_2'){
@@ -347,6 +363,80 @@ class history_absen extends _page{
 // --------------------------------------------------------------
 // Database -----------------------------------------------------
 // --------------------------------------------------------------	
+
+	public function _history($id=0){
+		$id = str_replace('history_', '', $id);
+		intval($id);
+
+		$type = $_POST['type'];
+		if($type=='history_1'){
+			return punishment_absen::_history($id);
+		}
+
+		//View Ganti Jam
+		$args = sobad_logDetail::get_id($id,array('times','log_history'));
+		$history = unserialize($args[0]['log_history']);
+
+		if(isset($history['history'])){
+			$history = $history['history'];
+		}else{
+			$history = array();
+		}
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($history as $key => $val) {
+			$no += 1;
+
+			$_date = $val['date'];
+			$note = isset($val['note']) || !empty($val['note'])?$val['note']:'Telah mengganti jam';
+
+			$data['table'][$no-1]['tr'] = array('');
+			$data['table'][$no-1]['td'] = array(
+				'no'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Actual'		=> array(
+					'left',
+					'15%',
+					format_date_id($_date),
+					true
+				),
+				'Waktu'		=> array(
+					'left',
+					'15%',
+					$val['time'].' Menit',
+					true
+				),
+				'Keterangan'	=> array(
+					'left',
+					'auto',
+					$note,
+					true
+				)
+			);
+		}
+
+		$extime = $args[0]['times'];
+		if(isset($history['extime'])){
+			$extime = $history['extime'];
+		}
+
+		$args = array(
+			'title'		=> 'History (masih : '.$extime.' Menit )',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
 
 	public function _add_manual($args=array()){
 		$args = sobad_asset::ajax_conv_json($args);
