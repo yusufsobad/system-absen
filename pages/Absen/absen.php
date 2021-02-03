@@ -388,7 +388,6 @@ class absensi{
 					}
 				}
 
-
 				if($time>=$work['time_out']){
 					$history = unserialize($user['history']);
 					$history['logs'][] = array('type' => 2,'time' => $times);
@@ -488,6 +487,26 @@ class absensi{
 
 			case 3:
 			case 4:
+				$timeB = $times;
+				if($work['status']){
+					if($time>=$work['time_out']){
+						$timeB = $work['time_out'];
+					}
+				}
+
+				$timeA = unserialize($user['history']);
+
+				$cnt = count($timeA);
+				$timeA = $timeA['logs'][$cnt-1]['time'];
+
+				$ganti = get_rule_absen($timeA,$timeB);
+				sobad_db::_insert_table('abs-log-detail',array(
+					'log_id'		=> $user['id_join'],
+					'date_schedule'	=> date('Y-m-d'),
+					'times'			=> $ganti['time'],
+					'type_log'		=> 2
+				));
+
 			case 5:
 				$type = 1;
 				$_label = 'time_in';
@@ -605,11 +624,13 @@ class absensi{
 
 			case 8:
 				$_args['type'] = 2;
+				$type = 2;
 
+				$ganti = get_rule_absen($times,$work);
 				sobad_db::_insert_table('abs-log-detail',array(
 					'log_id'		=> $idx,
 					'date_schedule'	=> date('Y-m-d'),
-					'times'			=> _conv_time($times, $work, 2),
+					'times'			=> $ganti['time'],
 					'type_log'		=> 2
 				));
 				break;
@@ -624,63 +645,7 @@ class absensi{
 
 			case 7: // Pulang telat --> Ganti Jam
 				$ganti = _conv_time($times, $work, 2);
-				$_logs = sobad_logDetail::get_all(array('ID','times','status','date_actual','log_history'),"AND _log_id.user='$_id' AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1'");
-
-				$_check = $ganti % 30;
-				if($check<=20){
-					$ganti -= $_check;
-				}else{
-					$ganti += (30 - $_check);
-				}
-
-				foreach ($_logs as $key => $val) {
-					if($ganti<=0){
-						break;
-					}
-
-					$_status = 1;
-					$_times = $val['times'];
-
-				// Tambah data actual
-					$_actual = '';
-					$_actual = explode(',', $val['date_actual']);
-
-					if(empty($_actual)){
-						$_actual = array();
-					}
-
-					$_actual[] = date('Y-m-d');
-					$_actual = implode(',', $_actual);
-
-				// Tambah data history
-					$_history = unserialize($val['log_history']);
-					if(!isset($_history['history'])){
-						$_history = array();
-						$_history['history'] = array();
-					}
-
-					$history['extime'] = 0;
-
-				// Check jam
-					$ganti -= $val['times'];
-
-					if($ganti<=0){
-						$_status = 2;
-						$_times = $val['times'];
-						$history['extime'] = $ganti;
-					}
-
-					$history['history'][] = array(
-						'date'		=> date('Y-m-d'),
-						'time'		=> $_times
-					);
-
-					sobad_db::_update_single($val['ID'],'abs-log-detail',array(
-						'data_actual'	=> $_actual,
-						'log_history'	=> $_history,
-						'status'		=> $_status
-					));
-				}
+				history_absen::_calc_gantiJam($_id,$ganti);
 
 				return array('id' => $data,'data' => NULL, 'status' => 0);
 			case 9: // Pulang telat --> Lembur

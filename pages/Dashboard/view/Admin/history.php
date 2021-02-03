@@ -74,8 +74,15 @@ class history_absen extends _page{
 			$work = sobad_work::get_workTime($val['ID_shif'],"AND `abs-work-normal`.days='$days'");
 			$worktime = format_time_id($work[0]['time_in']).' - '.format_time_id($work[0]['time_out']);
 
-			$masuk = 'Masuk';$pulang = 'Pulang';
+			$masuk = 'Masuk';$pulang = 'Pulang';$extime = $val['times'].' menit';
 			if(self::$type=='history_2'){
+				//Check kekurangan
+				$history = unserialize($val['log_history']);
+				if(isset($history['extime'])){
+					$extime = $history['extime'].' menit';
+				}
+
+				//Check history time
 				$masuk = 'Keluar';$pulang = 'Kembali';
 				$history = unserialize($val['history_log_']);
 
@@ -84,7 +91,7 @@ class history_absen extends _page{
 
 				if(isset($history['logs'])){
 					foreach ($history['logs'] as $ky => $vl) {
-						if($vl['type']=='4'){
+						if(in_array($vl['type'],array('4','8'))){
 							$val['time_in_log_'] = $vl['time'];
 							$_idx = $ky;
 							break;
@@ -96,6 +103,27 @@ class history_absen extends _page{
 					}
 				}
 			}
+
+			$status = '';
+			switch ($val['status']) {
+				case 0:
+					$status = '#666;';
+					break;
+
+				case 1:
+					$status = '#26a69a;';
+					break;
+
+				case 2:
+					$status = '#f5b724;';
+					break;
+				
+				default:
+					$status = '#fff;';
+					break;
+			}
+
+			$status = '<i class="fa fa-circle" style="color:'.$status.'"></i>';
 
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -113,7 +141,7 @@ class history_absen extends _page{
 				),
 				'Tanggal'		=> array(
 					'left',
-					'25%',
+					'15%',
 					format_date_id($val['date_schedule']),
 					true
 				),
@@ -135,13 +163,33 @@ class history_absen extends _page{
 					$val['time_out_log_'],
 					true
 				),
-				'Waktu'	=> array(
+				'Total'	=> array(
 					'left',
 					'10%',
 					$val['times'] .' '. $note,
 					true
-				)
+				),
+				'Waktu'	=> array(
+					'left',
+					'8%',
+					$extime,
+					true
+				),
+				'Status'		=> array(
+					'center',
+					'7%',
+					$status,
+					true
+				),
 			);
+
+			if(self::$type=='history_3'){
+				unset($data['table'][$key]['td']['Status']);
+			}
+
+			if(self::$type!='history_2'){
+				unset($data['table'][$key]['td']['Waktu']);
+			}
 		}
 
 		return $data;
@@ -184,11 +232,13 @@ class history_absen extends _page{
 				break;
 		}
 
+		$action = $type==1?self::action():'';
+		$action = $type==2?self::action2():$action;
 
 		$box = array(
 			'label'		=> 'History '.$label,
 			'tool'		=> '',
-			'action'	=> $action = $type==1?self::action():'',
+			'action'	=> $action,
 			'func'		=> 'sobad_table',
 			'data'		=> $data
 		);
@@ -257,6 +307,19 @@ class history_absen extends _page{
 		return $date;
 	}
 
+	protected function action2(){
+		$manual = array(
+			'ID'	=> 'manual_0',
+			'func'	=> '_manual',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-gear',
+			'label'	=> 'Manual',
+			'type'	=> parent::$type
+		);
+
+		return _modal_button($manual);
+	}
+
 	public function _filter($date=''){
 		ob_start();
 		self::$type = $_POST['type'];
@@ -264,4 +327,107 @@ class history_absen extends _page{
 		metronic_layout::sobad_table($table);
 		return ob_get_clean();
 	}
+
+	public function _manual($id=0){
+		$id = str_replace('manual_', '', $id);
+		$vals = array($id,'');
+		
+		$args = array(
+			'title'		=> 'Tambah aktifitas ganti jam (Manual)',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(
+				'link'		=> '_add_manual',
+				'load'		=> 'sobad_portlet'
+			)
+		);
+		
+		return punishment_absen::_manual_form($args,$vals);
+	}
+
+// --------------------------------------------------------------
+// Database -----------------------------------------------------
+// --------------------------------------------------------------	
+
+	public function _add_manual($args=array()){
+		$args = sobad_asset::ajax_conv_json($args);
+		$users = explode(',', $args['user']);
+
+		$waktu = date('H:i');
+		$date = $args['date'];
+		$strdate = strtotime($date);
+
+		self::$type = 'history_2';
+		$punish = $args['time'];
+		foreach ($users as $ky => $vl) {
+			self::_calc_gantiJam($vl,$punish,$args['note']);
+		}
+
+		$table = self::table();
+		return table_admin($table);
+	}
+
+	public static function _calc_gantiJam($_id=0,$ganti=0,$note='Telah mengganti Jam'){
+		$_logs = sobad_logDetail::get_all(array('ID','log_id','times','status','date_actual','log_history'),"AND _log_id.user='$_id' AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1'");
+
+		$_check = $ganti % 30;
+		if($_check<=20){
+			$ganti -= $_check;
+		}else{
+			$ganti += (30 - $_check);
+		}
+
+		foreach ($_logs as $key => $val) {
+			if($ganti<=0){
+				break;
+			}
+
+			// Tambah data history
+			$history = unserialize($val['log_history']);
+			if(!isset($history['history'])){
+				$history = array();
+				$history['history'] = array();
+			}
+
+			if(isset($history['extime'])){
+				$val['times'] = $history['extime'];
+			}
+
+			$_status = 1;
+			$_times = $val['times'];
+
+		// Tambah data actual
+			$_actual = '';
+			$_actual = explode(',', $val['date_actual']);
+
+			if(empty($_actual)){
+				$_actual = array();
+			}
+
+			$_actual[] = date('Y-m-d');
+			$_actual = implode(',', $_actual);
+
+		// Check jam
+			$ganti -= $val['times'];
+
+			if($ganti<=0){
+				$_status = 2;
+				$_times = $val['times'];
+				$history['extime'] = $ganti * -1;
+			}else{
+				$history['extime'] = 0;
+			}
+
+			$history['history'][] = array(
+				'date'		=> date('Y-m-d'),
+				'time'		=> $_times,
+				'note'		=> $note
+			);
+
+			sobad_db::_update_single($val['ID'],'abs-log-detail',array(
+				'date_actual'	=> $_actual,
+				'log_history'	=> serialize($history),
+				'status'		=> $_status
+			));
+		}
+	}	
 }

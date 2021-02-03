@@ -141,7 +141,7 @@ class report_absen extends _page{
 				$button = _modal_button($permit);
 
 				if(!empty($check)){
-					$_permit = sobad_permit::get_all(array('type'),"AND (start_date>='$now' AND range_date<='$now')");
+					$_permit = sobad_permit::get_all(array('type'),"AND user='$userid' AND (start_date<='$now' AND range_date>='$now')");
 					$check = array_filter($_permit);
 					if(!empty($check)){
 						$args[0]['type'] = $_permit[0]['type'];

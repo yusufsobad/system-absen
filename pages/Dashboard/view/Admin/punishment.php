@@ -422,7 +422,7 @@ class punishment_absen extends _page{
 		return self::_manual_form($args,$vals);
 	}
 
-	private function _manual_form($args=array(),$vals=array()){
+	public function _manual_form($args=array(),$vals=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
@@ -492,7 +492,7 @@ class punishment_absen extends _page{
 		$args['data'] = array($data);
 		
 		return modal_admin($args);
-	}	
+	}
 
 // --------------------------------------------------------------
 // --------------------------------------------------------------	
