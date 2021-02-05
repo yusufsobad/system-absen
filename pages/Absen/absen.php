@@ -487,23 +487,25 @@ class absensi{
 
 			case 3:
 			case 4:
-				$timeB = $times;
-				if($work['status']){
-					if($time>=$work['time_out']){
-						$timeB = $work['time_out'];
+				if($user['time_out']!='00:00:00'){
+					$timeB = $times;
+					if($work['status']){
+						if($time>=$work['time_out']){
+							$timeB = $work['time_out'];
+						}
 					}
-				}
 
-				$timeA = $user['time_out'];
+					$timeA = $user['time_out'];
 
-				$ganti = get_rule_absen($timeA,$timeB,$worktime,$day);
-				if($ganti['type']!=0){
-					sobad_db::_insert_table('abs-log-detail',array(
-						'log_id'		=> $user['id_join'],
-						'date_schedule'	=> date('Y-m-d'),
-						'times'			=> $ganti['time'],
-						'type_log'		=> 2
-					));
+					$ganti = get_rule_absen($timeA,$timeB,$worktime,$day);
+					if($ganti['type']!=0){
+						sobad_db::_insert_table('abs-log-detail',array(
+							'log_id'		=> $user['id_join'],
+							'date_schedule'	=> date('Y-m-d'),
+							'times'			=> $ganti['time'],
+							'type_log'		=> 2
+						));
+					}
 				}
 
 			case 5:
