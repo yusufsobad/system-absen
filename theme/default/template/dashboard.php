@@ -7,7 +7,7 @@ class admin_dashboard{
 		if(empty($check)){
 			return '';
 		}
-		
+
 		foreach($args as $key => $val){	
 			if(is_callable(array(new self(),$val['func']))){
 				$func = $val['func'];
@@ -32,9 +32,7 @@ class admin_dashboard{
 						<div class="number"> <?php print($args['qty']) ;?> </div>
 						<div class="desc"> <?php print($args['desc']) ;?> </div>
 					</div>
-					<a id="sobad_<?php print($args['func']) ;?>" class="more" href="javascript:;">
-						View more <i class="m-icon-swapright m-icon-white"></i>
-					</a>
+					<?php print($args['button']) ;?> 
 				</div>
 			</div>
 		<?php

@@ -948,7 +948,9 @@ class punishment_absen extends _page{
 				'id'	=> $id,
 				'date'	=> $log[0]['_inserted'],
 				'user'	=> $log[0]['user'],
-				'note'	=> $args['note']
+				'note'	=> $args['note'],
+				'work'	=> $log[0]['shift'],
+				'day'	=> $day
 			);
 
 			set_rule_absen($work[0]['time_in'],$log[0]['time_in'],$data);
@@ -959,7 +961,9 @@ class punishment_absen extends _page{
 				'id'	=> $id,
 				'date'	=> $log[0]['_inserted'],
 				'user'	=> $log[0]['user'],
-				'note'	=> $args['note']
+				'note'	=> $args['note'],
+				'work'	=> $log[0]['shift'],
+				'day'	=> $day
 			);
 
 			$user = sobad_user::get_id($data['user'],array('dayOff'));

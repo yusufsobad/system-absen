@@ -247,7 +247,13 @@ abstract class _class{
 	}
 
 	protected static function _get_data($where='',$args=array()){
+		global $DB_NAME;
 		$data = array();
+
+		$_database = $DB_NAME;
+		if(property_exists(new static,'database')){
+			$DB_NAME = static::$database;
+		}
 
 		$q = sobad_db::_select_table($where,static::$table,$args);
 		if($q!==0){
@@ -261,6 +267,7 @@ abstract class _class{
 			}
 		}
 		
+		$DB_NAME = $_database;
 		return $data;
 	}
 }

@@ -1,68 +1,77 @@
 <?php
 class dash_head1{
 	public static function _layout(){
-		metronic_layout::sobad_chart(self::_data());
+		metronic_layout::sobad_dashboard(self::_data());
 	}
 
 	public static function _data(){
-		$chart[] = array(
-			'func'	=> '_site_load',
-			'data'	=> array(
-				'id'		=> 'dash-punishment',
-				'func'		=> 'dash_punishment',
-				'status'	=> '',
-				'col'		=> 8,
-				'label'		=> 'Data Punishment',
-				'type'		=> ''
-			),
-		);
-		
-		return $chart;
-	}
-
-	public static function _statistic(){
-		$date = date('Y-m');
-		$start_date = $date.'-01';
-		$end_date = $date.'-'.sum_days(date('m'),date('Y'));
-
-		$label = array();
-
-		$data = array();
-		$data[0]['label'] = 'Punishment';
-		$data[0]['type'] = '';
-
-		$data[0]['bgColor'] = array();
-		$data[0]['brdColor'] = 'rgba(256,256,256,1)';
-
-		$data[0]['data'] = array();
-
-		$user = sobad_user::get_all(array('ID','name'));
-		foreach ($user as $key => $val) {
-			$log = sobad_user::count_log($val['ID'],"AND time_in>'07:59:59' AND punish='1' AND _inserted BETWEEN '$start_date' AND '$end_date'");
-
-			$color = 0;
-			if($log>0){
-				if($log>2){
-					$color = 1; // orange
-				}
-
-				if($log>4){
-					$color = 2; // merah
-				}
-
-				$label[] = $val['name'];
-				$data[0]['data'][] = $log;
-				$data[0]['bgColor'][] = dash_absensi::get_color($color,0.8);
-			}
-		}
-
 		$args = array(
-			'type'		=> 'horizontalBar',
-			'label'		=> $label,
-			'data'		=> $data,
-			'option'	=> '_option_bar'
+			'total'		=> absensi::_employees(),
+			'intern'	=> absensi::_internship(),
+			'masuk'		=> absensi::_inWork(),
+			'pulang'	=> absensi::_outWork(),
+			'izin'		=> absensi::_permitWork(),
+			'cuti'		=> absensi::_holidayWork(),
+			'luar kota'	=> absensi::_outCity(),
+		);
+
+		$notAbsen = ($args['total'] + $args['intern']) - ($args['masuk'] + $args['pulang'] + $args['izin'] + $args['cuti'] + $args['luar kota']);
+
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'grey-intense',
+				'qty'		=> $notAbsen,
+				'desc'		=> 'Tidak Absen',
+				'button'	=> button_toggle_block(array('ID' => 'absen_0','func' => '_view_block'))
+			)
 		);
 		
-		return $args;
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'green-haze',
+				'qty'		=> $args['masuk'],
+				'desc'		=> 'Absen',
+				'button'	=> button_toggle_block(array('ID' => 'absen_1','func' => '_view_block'))
+			)
+		);
+		
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'purple-plum',
+				'qty'		=> $args['cuti'],
+				'desc'		=> 'Cuti',
+				'button'	=> button_toggle_block(array('ID' => 'absen_3','func' => '_view_block'))
+			)
+		);
+		
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'blue-madison',
+				'qty'		=> $args['izin'],
+				'desc'		=> 'Izin',
+				'button'	=> button_toggle_block(array('ID' => 'absen_4','func' => '_view_block'))
+			)
+		);
+		
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'red-intense',
+				'qty'		=> $args['luar kota'],
+				'desc'		=> 'Luar Kota',
+				'button'	=> button_toggle_block(array('ID' => 'absen_5','func' => '_view_block'))
+			)
+		);
+		
+		return $dash;
 	}
 }

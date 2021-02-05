@@ -65,3 +65,20 @@ ul.dropdown-menu li a.btn_data_malika {
 .checkbox-list {
     margin-left: 20px;
 }
+
+/* Dashboard */
+.dashboard-stat.grey-intense .more {
+    color: #fff;
+    background-color: #666;
+}
+
+.dashboard-stat.grey-intense .visual > i {
+    color: #FFFFFF;
+    opacity: 0.1;
+    filter: alpha(opacity=10);
+}
+
+.dashboard-stat.grey-intense {
+    color:#fff;
+    background-color: #888;
+}

@@ -173,9 +173,9 @@ class sobad_absen extends absen_control{
 
 		$args = array(
 		//	'Masuk' 	=> $masuk,
-			'Cuti'		=> $cuti,
-			'Izin'		=> $izin,
-			'Luar Kota'	=> $luar_kota
+			'absen-dayoff'	=> array('Cuti', $cuti),
+			'absen-permit'	=> array('Izin', $izin),
+			'absen-outcity'	=> array('Luar Kota', $luar_kota)
 		);
 
 		?>
@@ -234,9 +234,9 @@ class sobad_absen extends absen_control{
 		                		    		foreach ($args as $key => $val) {
 		                    					echo '
 		                    						<tr>
-		                    							<td style="width:75%;">'.$key.'</td>
+		                    							<td style="width:75%;">'.$val[0].'</td>
 		                    							<td style="width:10%;">:</td>
-		                    							<td style="width:15%;"> '.$val.'</td>
+		                    							<td id="'.$key.'" style="width:15%;"> '.$val[1].'</td>
 		                    						</tr>
 		                    					';
 		                    				}

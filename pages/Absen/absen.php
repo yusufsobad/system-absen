@@ -371,7 +371,7 @@ class absensi{
 
 						$history = unserialize($user['history']);
 						$history['logs'][] = array('type' => 2,'time' => $times);
-						$history = serialize($history['logs']);
+						$history = serialize($history);
 
 						sobad_db::_update_single($_logid,'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
 
@@ -391,7 +391,7 @@ class absensi{
 				if($time>=$work['time_out']){
 					$history = unserialize($user['history']);
 					$history['logs'][] = array('type' => 2,'time' => $times);
-					$history = serialize($history['logs']);
+					$history = serialize($history);
 
 					sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
 
@@ -494,22 +494,20 @@ class absensi{
 					}
 				}
 
-				$timeA = unserialize($user['history']);
+				$timeA = $user['time_out'];
 
-				$cnt = count($timeA);
-				$timeA = $timeA['logs'][$cnt-1]['time'];
-
-				$ganti = get_rule_absen($timeA,$timeB);
-				sobad_db::_insert_table('abs-log-detail',array(
-					'log_id'		=> $user['id_join'],
-					'date_schedule'	=> date('Y-m-d'),
-					'times'			=> $ganti['time'],
-					'type_log'		=> 2
-				));
+				$ganti = get_rule_absen($timeA,$timeB,$worktime,$day);
+				if($ganti['type']!=0){
+					sobad_db::_insert_table('abs-log-detail',array(
+						'log_id'		=> $user['id_join'],
+						'date_schedule'	=> date('Y-m-d'),
+						'times'			=> $ganti['time'],
+						'type_log'		=> 2
+					));
+				}
 
 			case 5:
 				$type = 1;
-				$_label = 'time_in';
 				if($work['status']){
 					if($time>=$work['time_out']){
 						$type = 2;
@@ -519,15 +517,16 @@ class absensi{
 
 				$history = unserialize($user['history']);
 				$history['logs'][] = array('type' => $type,'time' => $times);
-				$history = serialize($history['logs']);
+				$history = serialize($history);
 
-				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => $type, $_label => $times, 'history' => $history));
+				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => $type, 'history' => $history));
 
+				$u_time = substr($user['time_in'], 0,5);
 				return array(
 					'id' 		=> $id,
 					'data' 		=> array(
 							'type'	=> $type,
-							'date'	=> $time,
+							'date'	=> $u_time,
 							'from'	=> $user['type']
 						),
 					'status' 	=> 1,
@@ -626,13 +625,15 @@ class absensi{
 				$_args['type'] = 2;
 				$type = 2;
 
-				$ganti = get_rule_absen($times,$work);
-				sobad_db::_insert_table('abs-log-detail',array(
-					'log_id'		=> $idx,
-					'date_schedule'	=> date('Y-m-d'),
-					'times'			=> $ganti['time'],
-					'type_log'		=> 2
-				));
+				$ganti = get_rule_absen($times,$work,$_worktime,$day);
+				if($ganti['type']!=0){
+					sobad_db::_insert_table('abs-log-detail',array(
+						'log_id'		=> $idx,
+						'date_schedule'	=> date('Y-m-d'),
+						'times'			=> $ganti['time'],
+						'type_log'		=> 2
+					));
+				}
 				break;
 
 			case 4:
@@ -836,6 +837,12 @@ class absensi{
 	public static function _inWork(){
 		$date = date('Y-m-d');
 		$work = sobad_user::go_work(array('id_join'),"AND `abs-user-log`._inserted='$date'");
+		return count($work);
+	}
+
+	public static function _outWork(){
+		$date = date('Y-m-d');
+		$work = sobad_user::go_home(array('id_join'),"AND `abs-user-log`._inserted='$date'");
 		return count($work);
 	}
 

@@ -181,20 +181,22 @@ class report_absen extends _page{
 						}else{
 							$worktime = $_vl['work_time'];
 						}
-					/*
-						sobad_db::_insert_table('abs-user-log',array(
-							'user' 		=> $userid,
-							'type'		=> $permit[0]['type'],
-							'shift'		=> $worktime,
-							'_inserted'	=> $now,
-							'note'		=> serialize(array('permit' => $permit[0]['note']))
-						));
-					*/
-						$val = array(
-							'time_in'	=> '00:00:00',
-							'time_out'	=> '00:00:00',
-							'status'	=> permit_absen::_conv_type($permit[0]['type'])
-						);		
+	
+						if($now<=date('Y-m-d')){
+							sobad_db::_insert_table('abs-user-log',array(
+								'user' 		=> $userid,
+								'type'		=> $permit[0]['type'],
+								'shift'		=> $worktime,
+								'_inserted'	=> $now,
+								'note'		=> serialize(array('permit' => $permit[0]['note']))
+							));
+						
+							$val = array(
+								'time_in'	=> '00:00:00',
+								'time_out'	=> '00:00:00',
+								'status'	=> permit_absen::_conv_type($permit[0]['type'])
+							);
+						}		
 					}
 				}
 

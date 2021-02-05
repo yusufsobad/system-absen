@@ -466,7 +466,8 @@ class worktime_absen extends _page{
 			$data2 = array(
 				'time_in'	=> $args['time_in'][$i],
 				'time_out'	=> $args['time_out'][$i],
-				'status'	=> isset($args['days_'.$i])?$args['days_'.$i][0]:0
+				'status'	=> isset($args['days_'.$i])?$args['days_'.$i][0]:0,
+				'note'		=> $args['note'][$i]
 			);
 
 			$q = sobad_db::_update_multiple("reff='$id' AND days='$i'",'abs-work-normal',$data2);
@@ -508,7 +509,8 @@ class worktime_absen extends _page{
 				'days'		=> $i,
 				'time_in'	=> $args['time_in'][$i],
 				'time_out'	=> $args['time_out'][$i],
-				'status'	=> isset($args['days_'.$i])?$args['days_'.$i][0]:0
+				'status'	=> isset($args['days_'.$i])?$args['days_'.$i][0]:0,
+				'note'		=> $args['note'][$i]
 			);
 
 			$q = sobad_db::_insert_table('abs-work-normal',$data2);

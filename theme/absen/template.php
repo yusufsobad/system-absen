@@ -184,6 +184,33 @@ abstract class absen_control{
 					}
 
 					$("#total-work-absen").text(m);
+
+					m = 0;
+					for(g in dayoff){
+						for(w in dayoff[g]){
+							m += 1;
+						}
+					}
+
+					$("#absen-dayoff").text(m);
+
+					m = 0;
+					for(g in permit){
+						for(w in permit[g]){
+							m += 1;
+						}
+					}
+
+					$("#absen-permit").text(m);
+
+					m = 0;
+					for(g in outcity){
+						for(w in outcity[g]){
+							m += 1;
+						}
+					}
+
+					$("#absen-outcity").text(m);
 				}
 
 				function launchIntoFullscreen(element) {
@@ -378,7 +405,10 @@ abstract class absen_control{
 					idx = ceAppend(idx,args);
 
 					for(var i in outcity){
-						layout_user(idx,outcity[i]);
+						args = ['div',[['id','absen-outcity-'+i],['class','item'],['data-induk',i]],''];
+						a = ceAppend(idx,args);
+
+						layout_user(a,outcity[i]);
 					}
 				}
 
@@ -401,7 +431,10 @@ abstract class absen_control{
 					idx = ceAppend(idx,args);
 
 					for(var i in dayoff){
-						layout_user(idx,dayoff[i]);
+						args = ['div',[['id','absen-dayoff-'+i],['class','item'],['data-induk',i]],''];
+						a = ceAppend(idx,args);
+
+						layout_user(a,dayoff[i]);
 					}
 				}
 
@@ -424,7 +457,10 @@ abstract class absen_control{
 					idx = ceAppend(idx,args);
 
 					for(var i in permit){
-						layout_user(idx,permit[i]);
+						args = ['div',[['id','absen-permit-'+i],['class','item'],['data-induk',i]],''];
+						a = ceAppend(idx,args);
+
+						layout_user(a,permit[i]);
 					}
 				}
 
@@ -455,16 +491,19 @@ abstract class absen_control{
 
 						case "3":
 							var _docID = 'user-dayoff';
+							var _idxcls = 'absen-dayoff-'+_idx;
 							var _notwork = dayoff;
 							break;
 
 						case "4":
 							var _docID = 'user-permit';
+							var _idxcls = 'absen-permit-'+_idx;
 							var _notwork = permit;
 							break;
 
 						case "5":
 							var _docID = 'user-outcity';
+							var _idxcls = 'absen-outcity-'+_idx;
 							var _notwork = outcity;
 							break;
 					}
@@ -481,13 +520,20 @@ abstract class absen_control{
 
 					if(data['data']['from']!="1"){
 						var _cnt = Object.keys(_notwork).length;
+						for(var k = 1; k <= _cnt; k++){
+							if($('#'+_docID+'>.item:nth-child('+k+')').attr('id') == _idxcls){
+								_cnt = k;
+								break;
+							}
+						}
+
 						var _pos_animate = $('#'+_docID).position();
 						var _width_work = $('#employee-work').width();
 
 						var _top = _pos_animate.top + (Math.floor(_cnt/2) * 90);
 						var _left = (_width_work + _pos_animate.left) + ((_cnt%2) * 78);
 
-						$('#'+_docID+'>div:nth-child('+_cnt+')').remove();
+						$('#'+_docID+'>.item:nth-child('+_cnt+')').remove();
 						$('div#employee-animation>.absen-content').css("top",_top + "px");
 						$('div#employee-animation>.absen-content').css("left",_left+ "px");
 					}else{
@@ -710,6 +756,7 @@ abstract class absen_control{
 						case 3:
 							dayoff[_idx] = _dt_user;
 							var _docID = 'user-dayoff';
+							var _idxcls = 'absen-dayoff' + _idx;
 							var _cnt = Object.keys(dayoff).length;
 
 							if(_cnt==1){
@@ -722,6 +769,7 @@ abstract class absen_control{
 						case 4:
 							permit[_idx] = _dt_user;
 							var _docID = 'user-permit';
+							var _idxcls = 'absen-permit-' + _idx;
 							var _cnt = Object.keys(permit).length;
 
 							if(_cnt==1){
@@ -734,6 +782,7 @@ abstract class absen_control{
 						case 5:
 							outcity[_idx] = _dt_user;
 							var _docID = 'user-outcity';
+							var _idxcls = 'absen-outcity-' + _idx;
 							var _cnt = Object.keys(outcity).length;
 
 							if(_cnt==1){
@@ -757,6 +806,9 @@ abstract class absen_control{
 
 						//Add user
 						var a = document.getElementById(_docID);
+						var _args = ['div',[['id',_idxcls],['class','item'],['data-induk',_idx]],''];
+						a = ceAppend(a,_args);
+
 						layout_user(a,_dt_user);
 
 						back_user_animation(_idx,_grp);
