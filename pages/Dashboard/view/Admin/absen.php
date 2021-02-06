@@ -140,8 +140,9 @@ class report_absen extends _page{
 
 				$button = _modal_button($permit);
 
+				$whr_permit = "AND user='$userid' AND type!='9' AND start_date<='$now' AND range_date>='$now' OR user='$userid' AND start_date<='$now' AND range_date='0000-00-00' AND num_day='0.0'";
 				if(!empty($check)){
-					$_permit = sobad_permit::get_all(array('type'),"AND user='$userid' AND (start_date<='$now' AND range_date>='$now')");
+					$_permit = sobad_permit::get_all(array('type'),$whr_permit);
 					$check = array_filter($_permit);
 					if(!empty($check)){
 						$args[0]['type'] = $_permit[0]['type'];
@@ -167,7 +168,7 @@ class report_absen extends _page{
 					$button = '';		
 				}else{
 					//Check Permit
-					$permit = sobad_permit::get_all(array('ID','type','note'),"AND user='$userid' AND type!='9' AND start_date<='$now' AND range_date>='$now' OR user='$userid' AND start_date<='$now' AND range_date='0000-00-00' AND num_day='0.0'");
+					$permit = sobad_permit::get_all(array('ID','type','note'),$whr_permit);
 
 					$check = array_filter($permit);
 					if(!empty($check)){
@@ -190,13 +191,13 @@ class report_absen extends _page{
 								'_inserted'	=> $now,
 								'note'		=> serialize(array('permit' => $permit[0]['note']))
 							));
-						
-							$val = array(
-								'time_in'	=> '00:00:00',
-								'time_out'	=> '00:00:00',
-								'status'	=> permit_absen::_conv_type($permit[0]['type'])
-							);
-						}		
+						}
+
+						$val = array(
+							'time_in'	=> '00:00:00',
+							'time_out'	=> '00:00:00',
+							'status'	=> permit_absen::_conv_type($permit[0]['type'])
+						);
 					}
 				}
 
@@ -256,7 +257,7 @@ class report_absen extends _page{
 		//$data = self::table();
 		
 		$box = array(
-			'label'		=> 'Data Absen '.conv_month_id(date('m')).' '.date('Y'),
+			'label'		=> 'Data Absen',
 			'tool'		=> '',
 			'action'	=> self::action(),
 			'object'	=> self::$object,

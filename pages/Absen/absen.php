@@ -521,7 +521,12 @@ class absensi{
 				$history['logs'][] = array('type' => $type,'time' => $times);
 				$history = serialize($history);
 
-				sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => $type, 'history' => $history));
+				$_args = array('type' => $type, 'history' => $history);
+				if(empty($user['history'])){
+					$_args['time_in'] = $times;
+				}
+
+				sobad_db::_update_single($user['id_join'],'abs-user-log',$_args);
 
 				$u_time = substr($user['time_in'], 0,5);
 				return array(
@@ -647,7 +652,7 @@ class absensi{
 				break;
 
 			case 7: // Pulang telat --> Ganti Jam
-				$ganti = _conv_time($times, $work, 2);
+				$ganti = _conv_time($work, $times, 2);
 				history_absen::_calc_gantiJam($_id,$ganti);
 
 				return array('id' => $data,'data' => NULL, 'status' => 0);

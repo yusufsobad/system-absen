@@ -378,7 +378,7 @@ class history_absen extends _page{
 		$history = unserialize($args[0]['log_history']);
 
 		if(isset($history['history'])){
-			$history = $history['history'];
+			$history = $history;
 		}else{
 			$history = array();
 		}
@@ -387,7 +387,7 @@ class history_absen extends _page{
 		$data['table'] = array();
 
 		$no = 0;
-		foreach ($history as $key => $val) {
+		foreach ($history['history'] as $key => $val) {
 			$no += 1;
 
 			$_date = $val['date'];
@@ -497,22 +497,26 @@ class history_absen extends _page{
 			$_actual = implode(',', $_actual);
 
 		// Check jam
-			$ganti -= $val['times'];
+			$_check = $ganti - $val['times'];
 
-			if($ganti<=0){
+			if($_check<=0){
 				$_status = 2;
 				$_times = $val['times'];
-				$history['extime'] = $ganti * -1;
+				$history['extime'] = $_check * -1;
+				$waktu = $ganti;
 			}else{
 				$history['extime'] = 0;
+				$waktu = $val['times'];
 			}
 
 			$history['history'][] = array(
 				'date'		=> date('Y-m-d'),
-				'time'		=> $_times,
+				'extime'	=> $_times,
+				'time'		=> $waktu,
 				'note'		=> $note
 			);
 
+			$ganti -= $val['times'];
 			sobad_db::_update_single($val['ID'],'abs-log-detail',array(
 				'date_actual'	=> $_actual,
 				'log_history'	=> serialize($history),

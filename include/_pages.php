@@ -335,6 +335,10 @@ abstract class _page{
 
 	protected function _schema($_args=array(),$add=false){
 		$args = sobad_asset::ajax_conv_json($_args);
+		if(is_callable(array(new static(), '_callback'))){
+			$args = static::_callback($args,$_args);
+		}
+		
 		$id = $args['ID'];
 		unset($args['ID']);
 	
@@ -347,10 +351,6 @@ abstract class _page{
 
 			unset($args['search']);
 			unset($args['words']);
-		}
-
-		if(is_callable(array(new static(), '_callback'))){
-			$args = static::_callback($args,$_args);
 		}
 
 		$post = '';

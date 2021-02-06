@@ -195,6 +195,7 @@ class dash_absensi{
 
 		$no = 0;
 		foreach ($args as $key => $val) {
+			$userid = $val['ID'];
 			if(in_array($val['ID'], $_logs)){
 				continue;
 			}
@@ -202,6 +203,18 @@ class dash_absensi{
 
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 			$status = employee_absen::_conv_status($val['status']);
+
+			$permit = '';
+			if($id==4){
+				$whr_permit = "AND user='$userid' AND type!='9' AND start_date<='$date' AND range_date>='$date' OR user='$userid' AND start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'";
+				$_permit = sobad_permit::get_all(array('type'),$whr_permit);
+				$check = array_filter($_permit);
+				if(!empty($check)){
+					$val['type'] = $_permit[0]['type'];
+				}
+
+				$permit = permit_absen::_conv_type($val['type']);					
+			}
 
 			$data['table'][$no-1]['tr'] = array('');
 			$data['table'][$no-1]['td'] = array(
@@ -241,7 +254,17 @@ class dash_absensi{
 					$status,
 					true
 				),
+				'Note'		=> array(
+					'left',
+					'15%',
+					$permit,
+					true
+				),
 			);
+
+			if($id!=4){
+				unset($data['table'][$no-1]['td']['Note']);
+			}
 		}
 
 		$args = array(

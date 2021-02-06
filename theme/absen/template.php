@@ -187,27 +187,21 @@ abstract class absen_control{
 
 					m = 0;
 					for(g in dayoff){
-						for(w in dayoff[g]){
-							m += 1;
-						}
+						m += 1;
 					}
 
 					$("#absen-dayoff").text(m);
 
 					m = 0;
 					for(g in permit){
-						for(w in permit[g]){
-							m += 1;
-						}
+						m += 1;
 					}
 
 					$("#absen-permit").text(m);
 
 					m = 0;
 					for(g in outcity){
-						for(w in outcity[g]){
-							m += 1;
-						}
+						m += 1;
 					}
 
 					$("#absen-outcity").text(m);
@@ -953,6 +947,10 @@ abstract class absen_control{
 				}
 
 				function send_request(val){
+					if(val==7 || val==9){
+						$('#myModal').modal('hide');
+					}
+
 					data = [_request,val];
 					data = "ajax=_request&object=absensi&data="+JSON.stringify(data);
 

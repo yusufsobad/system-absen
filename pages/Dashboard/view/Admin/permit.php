@@ -571,7 +571,7 @@ class permit_absen extends _page{
 		}
 
 		if(!isset($args['range_date'])){
-			$data['range_date'] = '0000-00-00';
+			$args['range_date'] = '0000-00-00';
 
 			if(isset($args['type_date'])){
 				if($args['num_day']>0){
@@ -585,7 +585,7 @@ class permit_absen extends _page{
 							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' years');
 						
 						default:
-							if($data['num_day']==0.5){
+							if($args['num_day']==0.5){
 								$_num = 0;
 							}
 							$args['range_date'] = self::_calc_dateHoliday($args['start_date'],$_num);
@@ -601,7 +601,7 @@ class permit_absen extends _page{
 
 		if($permit['type']==3){
 			//Reset data
-			$_user = sobad_user::get_id($val,array('ID','dayOff'));
+			$_user = sobad_user::get_id($args['user'],array('ID','dayOff'));
 			$dayOff = $_user[0]['dayOff'];
 
 			$cuti = $permit['num_day'];
@@ -611,7 +611,7 @@ class permit_absen extends _page{
 		}
 
 		if($args['type']==3){
-			self::_check_dayoff($args['ID'],$args['num_day'],$args['start_date']);
+			self::_check_dayoff($args['user'],$args['num_day'],$args['start_date']);
 		}
 
 		return $args;

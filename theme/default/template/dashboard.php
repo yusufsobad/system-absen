@@ -32,7 +32,11 @@ class admin_dashboard{
 						<div class="number"> <?php print($args['qty']) ;?> </div>
 						<div class="desc"> <?php print($args['desc']) ;?> </div>
 					</div>
-					<?php print($args['button']) ;?> 
+					<?php 
+						if(isset($args['button'])){
+							print($args['button']);
+						}
+					?>
 				</div>
 			</div>
 		<?php
