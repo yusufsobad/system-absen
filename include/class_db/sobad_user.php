@@ -11,24 +11,30 @@ class sobad_user extends _class{
 
 	protected static $group = " GROUP BY `abs-user-meta`.meta_id";
 
-	protected static $list_meta = '';
+	protected static $list_meta = array();
 
-	public function __construct(){
+	public static function set_listmeta(){
 		$type = parent::$_type;
-		
-		if($type=='internship'){
-			self::$list_meta = array(
-				'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode','_nickname','_entry_date','_resign_date'
-			);
-		}else{
-			self::$list_meta = array(
-				'_address','_email','_sex','_entry_date','_place_date','_birth_date','_resign_date','_province','_city','_subdistrict','_postcode','_marital','_religion','_nickname','_resign_status'
-			);
-		}
+		$type = strtolower($type);
 
+		switch ($type) {
+			case 'internship':
+				self::$list_meta = array(
+					'_address','_email','_university','_education','_study_program','_faculty','_semester','_classes','_sex','_province','_city','_subdistrict','_postcode','_nickname','_entry_date','_resign_date'
+				);
+				break;
+			
+			default:
+				self::$list_meta = array(
+					'_address','_email','_sex','_entry_date','_place_date','_birth_date','_resign_date','_province','_city','_subdistrict','_postcode','_marital','_religion','_nickname','_resign_status'
+				);
+				break;
+		}
 	}
 
 	public static function blueprint($type='employee'){
+		self::set_listmeta();
+
 		$args = array(
 			'type'		=> 'employee',
 			'table'		=> self::$table,

@@ -39,7 +39,11 @@ abstract class _class{
 
 	public static function list_meta($type=''){
 		self::$_type = $type;
-		$list = property_exists(new static,'list_meta')?static::$list_meta:array();
+		$list = array();
+		if(property_exists(new static,'list_meta')){
+			static::set_listmeta();
+			$list = static::$list_meta;
+		}
 		return $list;
 	}
 

@@ -220,7 +220,7 @@ class history_absen extends _page{
 					'label'	=> 'history'
 				)
 			),
-			'date'	=> false
+			'date'	=> false,
 		); 
 		
 		return $args;
@@ -361,6 +361,150 @@ class history_absen extends _page{
 	}
 
 // --------------------------------------------------------------
+// Form Ganti Jam -----------------------------------------------
+// --------------------------------------------------------------
+	public function _editGantiJam($_data=0){
+		$_data = str_replace('edit_', '', $_data);
+		$_data = explode('_', $_data);
+		
+		$args = array(
+			'title'		=> 'Edit ganti jam',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(
+				'link'		=> '_update_gantiJam',
+				'load'		=> 'here_modal'
+			)
+		);
+		
+		return self::_gantiJam_form($args,$_data);
+	}
+
+	protected static function _gantiJam_form($args=array(),$vals=array()){
+		$check = array_filter($args);
+		if(empty($check)){
+			return '';
+		}
+
+		$logs = sobad_logDetail::get_id($vals[0],array('log_history'));
+		$logs = unserialize($logs[0]['log_history']);
+		$logs = $logs['history'];
+
+		$_data = $logs[$vals[1]];
+
+		$data = array(
+			0 => array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> '_ID',
+				'value'			=> $vals[0]
+			),
+			array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> '_key',
+				'value'			=> $vals[1]
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'date',
+				'key'			=> 'date',
+				'label'			=> 'Tanggal',
+				'class'			=> 'input-circle',
+				'value'			=> $_data['date'],
+				'data'			=> 'placeholder="Tanggal"'
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'price',
+				'key'			=> 'time',
+				'label'			=> 'Waktu (menit)',
+				'class'			=> 'input-circle',
+				'value'			=> $_data['time'],
+				'data'			=> 'placeholder="Waktu"'
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'note',
+				'label'			=> 'Catatan',
+				'class'			=> 'input-circle',
+				'value'			=> $_data['note'],
+				'data'			=> 'placeholder="ngapain?"'
+			),
+		);
+		
+		$args['func'] = array('sobad_form');
+		$args['data'] = array($data);
+		
+		return modal_admin($args);
+	}
+
+	public function _update_gantiJam($args=array()){
+		$args = sobad_asset::ajax_conv_json($args);
+		$_idx = $args['_ID'];
+		$_key = $args['_key'];
+
+		$logs = sobad_logDetail::get_id($args['_ID'],array('times','date_actual','log_history'));
+		$history = unserialize($logs[0]['log_history']);
+		$actual = explode(',', $logs[0]['date_actual']);
+	
+	//Update tanggal aktual		
+		$count = count($actual);
+		$count2 = count($history['history']);
+
+		$i = $count - $count2;
+		$actual[$_key+$i] = $args['date'];
+
+	//Calculasi waktu
+		$extime = $history['extime'];
+		$waktuA = $history['history'][$_key]['time'];
+		$waktuB = $args['time'];
+
+		$reset = $waktuA + $extime;
+		$waktuT = $waktuB - $waktuA;
+		$extime -= $waktuT;
+
+		if($extime<=0){
+			$extime = 0;
+			$status = 1;
+
+			$args['time'] = $reset;
+		}else{
+			$status = 2;
+		}
+
+
+	//Update History
+		$history['history'][$_key]['date'] = $args['date']; //tanggal
+		$history['history'][$_key]['time'] = $args['time']; //waktu
+		$history['history'][$_key]['note'] = $args['note']; //kerjaan
+
+		$history['extime'] = $extime;
+
+	//Update extime tiap history
+		$_times = $logs[0]['times'];
+		foreach ($history['history'] as $key => $val) {
+			$_waktu = $val['time'];
+			$_times -= $_waktu;
+
+			$history['history'][$key]['extime'] = $_times;
+		}	
+
+		$history = serialize($history);
+		$actual = implode(',', $actual);
+
+		$q = sobad_db::_update_single($_idx,'abs-log-detail',array(
+			'date_actual'		=> $actual,
+			'log_history'		=> $history,
+			'status'			=> $status
+		));
+
+		if($q!==0){
+			return self::_history($_idx);
+		}
+	}
+
+// --------------------------------------------------------------
 // Database -----------------------------------------------------
 // --------------------------------------------------------------	
 
@@ -390,6 +534,15 @@ class history_absen extends _page{
 		foreach ($history['history'] as $key => $val) {
 			$no += 1;
 
+			$_edit = array(
+				'ID'	=> 'edit_'.$id.'_'.$key,
+				'func'	=> '_editGantiJam',
+				'color'	=> 'blue',
+				'icon'	=> 'fa fa-edit',
+				'label'	=> 'Edit',
+				'type'	=> self::$type
+			);
+
 			$_date = $val['date'];
 			$note = isset($val['note']) || !empty($val['note'])?$val['note']:'Telah mengganti jam';
 
@@ -418,7 +571,13 @@ class history_absen extends _page{
 					'auto',
 					$note,
 					true
-				)
+				),
+				'Edit'	=> array(
+					'center',
+					'10%',
+					_modal_button($_edit,2),
+					true
+				),
 			);
 		}
 
@@ -442,21 +601,22 @@ class history_absen extends _page{
 		$args = sobad_asset::ajax_conv_json($args);
 		$users = explode(',', $args['user']);
 
-		$waktu = date('H:i');
 		$date = $args['date'];
-		$strdate = strtotime($date);
+		$date = strtotime($date);
+		$date = date('Y-m-d',$date);
 
 		self::$type = 'history_2';
 		$punish = $args['time'];
 		foreach ($users as $ky => $vl) {
-			self::_calc_gantiJam($vl,$punish,$args['note']);
+			self::_calc_gantiJam($vl,$punish,$date,$args['note']);
 		}
 
 		$table = self::table();
 		return table_admin($table);
 	}
 
-	public static function _calc_gantiJam($_id=0,$ganti=0,$note='Telah mengganti Jam'){
+	public static function _calc_gantiJam($_id=0,$ganti=0,$dateActual='',$note='Telah mengganti Jam'){
+		$dateActual = empty($dateActual)?date('Y-m-d'):$dateActual;
 		$_logs = sobad_logDetail::get_all(array('ID','log_id','times','status','date_actual','log_history'),"AND _log_id.user='$_id' AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1'");
 
 		$_check = $ganti % 30;
@@ -493,13 +653,13 @@ class history_absen extends _page{
 				$_actual = array();
 			}
 
-			$_actual[] = date('Y-m-d');
+			$_actual[] = $dateActual;
 			$_actual = implode(',', $_actual);
 
 		// Check jam
 			$_check = $ganti - $val['times'];
 
-			if($_check<=0){
+			if($_check<0){
 				$_status = 2;
 				$_times = $val['times'];
 				$history['extime'] = $_check * -1;
@@ -510,7 +670,7 @@ class history_absen extends _page{
 			}
 
 			$history['history'][] = array(
-				'date'		=> date('Y-m-d'),
+				'date'		=> $dateActual,
 				'extime'	=> $_times,
 				'time'		=> $waktu,
 				'note'		=> $note
