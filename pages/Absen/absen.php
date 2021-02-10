@@ -657,7 +657,7 @@ class absensi{
 
 				return array('id' => $data,'data' => NULL, 'status' => 0);
 			case 9: // Pulang telat --> Lembur
-				$lembur = _conv_time($times, $work, 3);
+				$lembur = _conv_time($work, $times, 3);
 				sobad_db::_insert_table('abs-log-detail',array(
 					'log_id'		=> $idx,
 					'date_schedule'	=> date('Y-m-d'),

@@ -104,6 +104,11 @@ class history_absen extends _page{
 				}
 			}
 
+			if(self::$type=='history_3'){
+				$masuk = 'Mulai';
+				$val['time_in_log_'] = $work[0]['time_out']=='00:00:00'?$val['time_in_log_']:format_time_id($work[0]['time_out']);
+			}
+
 			$status = '';
 			switch ($val['status']) {
 				case 0:
