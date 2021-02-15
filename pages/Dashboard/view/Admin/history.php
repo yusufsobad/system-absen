@@ -32,6 +32,10 @@ class history_absen extends _page{
 			$whr = "AND (`abs-log-detail`.log_history LIKE '%$now%') ";
 		}
 
+		if($status==3){
+			$whr = "AND (`abs-log-detail`.date_schedule LIKE '%$now%') ";
+		}
+
 		$kata = '';$where = "AND `abs-log-detail`.type_log='$status' $whr";
 		if(parent::$search){
 			$src = parent::like_search($args,$where);	
@@ -151,6 +155,22 @@ class history_absen extends _page{
 				'type'	=> self::$type
 			);
 
+			if(self::$type=='history_3'){
+				if(empty($val['name_user'])){
+					$hist = unserialize($val['log_history']);
+					if(isset($hist['user'])){
+						$guser = sobad_user::get_id($hist['user'],array('name'));
+						$val['name_user'] = $guser[0]['name'];
+					}
+				}
+			}
+
+			$tanggal = format_date_id($val['date_schedule']);
+			$holiday = holiday_absen::_check_holiday($val['date_schedule']);
+			if($holiday){
+				$tanggal = '<span style="color:red;">'.$tanggal.'</span>';
+			}
+
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
 				'No'			=> array(
@@ -168,7 +188,7 @@ class history_absen extends _page{
 				'Tanggal'		=> array(
 					'left',
 					'15%',
-					format_date_id($val['date_schedule']),
+					$tanggal,
 					true
 				),
 				'Jam Kerja'		=> array(
@@ -217,7 +237,7 @@ class history_absen extends _page{
 
 			if(self::$type=='history_3'){
 				unset($data['table'][$key]['td']['Status']);
-				unset($data['table'][$key]['td']['History']);
+				//unset($data['table'][$key]['td']['History']);
 			}
 
 			if(self::$type!='history_2'){
@@ -228,11 +248,13 @@ class history_absen extends _page{
 		return $data;
 	}
 
-		protected function table_reward($now=''){
+	protected function table_reward($now=''){
 		$now = empty($now)?date('Y-m'):$now;
+		$now = strtotime($now);
+		$now = date('Y-m',$now);
 
 		$data = array();
-		$args = array('ID','name','divisi');
+		$args = array('ID','name','divisi','work_time');
 
 		$start = intval(parent::$page);
 		$nLimit = intval(parent::$limit);
@@ -260,29 +282,60 @@ class history_absen extends _page{
 		$data['search'] = array('Semua','nama');
 		$data['class'] = '';
 		$data['table'] = array();
-	/*	
-		$data['page'] = array(
-			'func'	=> '_pagination',
-			'data'	=> array(
-				'start'		=> $start,
-				'qty'		=> $sum_data,
-				'limit'		=> $nLimit,
-				'type'		=> parent::$type
-			)
-		);
-	*/
+
 		$_users = array();$users = array();
 		foreach($args as $key => $val){
 			$_users[] = $val['ID'];
 			$users[$val['ID']] = array(
 				'name'		=> $val['name'],
-				'divisi'	=> $val['meta_value_divi']
+				'divisi'	=> $val['meta_value_divi'],
+				'worktime'	=> $val['name_work'],
 			);
 		}
 
+		$default = $now.'-01';
+		$default = strtotime($default);
+		$rangeD = report_absen::get_range($now);
+		for($i=$rangeD['number_day'];$i<$rangeD['finish_day'];$i++){
+			$_now = date('Y-m-d',strtotime($i.' days',$default));
+			$_day = date('w',strtotime($i.' days',$default));
+			$holiday = holiday_absen::_check_holiday($_now);
+			if($holiday){
+				continue;
+			}
+
+			// Check absen masuk
+			$user = implode(',', $_users);
+			$_users = array();
+
+			if(empty($user)){
+				break;
+			}
+
+			$check = sobad_user::get_logs(array('user','shift','type','time_in'),"_inserted='$_now' AND user IN ($user)");
+			foreach ($check as $key => $val) {
+				$work = sobad_work::get_id($val['shift'],array('time_in'),"AND days='$_day'");
+				$work = $work[0]['time_in'];
+				$time_in = _calc_time($work,'-15 minutes');
+
+				if(in_array($val['type'],array('1','2')) && $val['time_in']<=$time_in){
+					$_users[] = $val['user'];
+				}
+			}
+		}
+
 		$no = ($start-1) * $nLimit;
-		foreach($args as $key => $val){
+		foreach($_users as $key => $val){
 			$no += 1;
+
+			$_history = array(
+				'ID'	=> 'history_'.$val,
+				'func'	=> '_historyReward',
+				'color'	=> 'yellow',
+				'icon'	=> 'fa fa-eye',
+				'label'	=> 'History',
+				'type'	=> self::$type
+			);
 
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -295,49 +348,19 @@ class history_absen extends _page{
 				'Name'			=> array(
 					'left',
 					'auto',
-					$val['name_user'],
+					$users[$val]['name'],
 					true
 				),
-				'Tanggal'		=> array(
-					'left',
+				'Jabatan'		=> array(
+					'center',
 					'15%',
-					format_date_id($val['date_schedule']),
+					$users[$val]['divisi'],
 					true
 				),
 				'Jam Kerja'		=> array(
 					'center',
 					'15%',
-					$worktime,
-					true
-				),
-				$masuk			=> array(
-					'center',
-					'10%',
-					$val['time_in_log_'],
-					true
-				),
-				$pulang			=> array(
-					'center',
-					'10%',
-					$val['time_out_log_'],
-					true
-				),
-				'Total'	=> array(
-					'left',
-					'10%',
-					$val['times'] .' '. $note,
-					true
-				),
-				'Waktu'	=> array(
-					'left',
-					'8%',
-					$extime,
-					true
-				),
-				'Status'		=> array(
-					'center',
-					'7%',
-					$status,
+					$users[$val]['worktime'],
 					true
 				),
 				'History'		=> array(
@@ -389,8 +412,8 @@ class history_absen extends _page{
 				break;
 		}
 
-		$action = in_array($type,array('1','4'))?self::action():'';
-		$action = $type==2?self::action2():$action;
+		$action = in_array($type,array('1','4','3'))?self::action():'';
+		$action .= in_array($type,array('2','3'))?self::action2():'';
 
 		$box = array(
 			'label'		=> 'History '.$label,
@@ -448,7 +471,7 @@ class history_absen extends _page{
 		$date = date('Y-m');
 		ob_start();
 		?>
-			<div class="input-group input-medium date date-picker" data-date-format="yyyy-mm" data-date-viewmode="months">
+			<div style="display: inline-flex;" class="input-group input-medium date date-picker" data-date-format="yyyy-mm" data-date-viewmode="months">
 				<input id="monthpicker" type="text" class="form-control" value="<?php print($date); ?>" data-sobad="_filter" data-load="sobad_portlet" data-type="<?php print($type) ;?>" name="filter_date" onchange="sobad_filtering(this)">
 			</div>
 			<script type="text/javascript">
@@ -493,17 +516,138 @@ class history_absen extends _page{
 	public function _manual($id=0){
 		$id = str_replace('manual_', '', $id);
 		$vals = array($id,'');
+
+		if($_POST['type']=='history_3'){
+			return self::_manual_lembur($id);
+		}
 		
 		$args = array(
 			'title'		=> 'Tambah aktifitas ganti jam (Manual)',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_add_manual',
-				'load'		=> 'sobad_portlet'
+				'load'		=> 'sobad_portlet',
+				'type'		=> $_POST['type']
 			)
 		);
 		
 		return punishment_absen::_manual_form($args,$vals);
+	}
+
+	public function _manual_lembur($id=0){
+		$vals = array($id,date('Y-m-d'),0,0,'');
+		if($id!=0){
+			$logs = sobad_logDetail::get_id($id,array('log_id','date_schedule','times','log_history'));
+			$logs = $logs[0];
+
+			$history = unserialize($logs['log_history']);
+			if(isset($history['note'])){
+				$vals[4] = $history['note'];
+			}
+
+			$vals[1] = $logs['date_schedule'];
+			$vals[2] = $logs['name_user'];
+			$vals[3] = $logs['times'];
+			$vals[5] = $logs['user_log_'];
+
+			if(empty($vals[2])){
+				if(isset($history['user'])){
+					$guser = sobad_user::get_id($history['user'],array('name'));
+					$vals[2] = $guser[0]['name'];
+					$vals[5] = $history['user'];
+				}
+			}
+		}
+
+		$args = array(
+			'title'		=> 'Tambah aktifitas Lembur (Manual)',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(
+				'link'		=> '_add_lembur',
+				'load'		=> 'sobad_portlet',
+				'type'		=> $_POST['type']
+			)
+		);
+		
+		return self::_lembur_form($args,$vals);
+	}
+
+	public function _lembur_form($args=array(),$vals=array()){
+		$check = array_filter($args);
+		if(empty($check)){
+			return '';
+		}
+
+		$user = sobad_user::get_employees(array('ID','name'));
+		$user = convToOption($user,'ID','name');
+
+		$data = array(
+			0 => array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'ID',
+				'value'			=> $vals[0]
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'date',
+				'key'			=> 'date',
+				'label'			=> 'Tanggal',
+				'class'			=> 'input-circle',
+				'value'			=> $vals[1],
+				'data'			=> 'placeholder="Tanggal"'
+			),
+			array(
+				'func'			=> 'opt_select_tags',
+				'data'			=> $user,
+				'key'			=> 'user',
+				'label'			=> 'Nama',
+				'class'			=> 'input-circle',
+				'select'		=> array()
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'price',
+				'key'			=> 'time',
+				'label'			=> 'Waktu (Jam)',
+				'class'			=> 'input-circle',
+				'value'			=> $vals[3],
+				'data'			=> 'placeholder="Waktu"'
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'note',
+				'label'			=> 'Catatan',
+				'class'			=> 'input-circle',
+				'value'			=> $vals[4],
+				'data'			=> 'placeholder="ngapain?"'
+			),
+		);
+
+		if($vals[0]!=0){
+			$data[2] = array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'name',
+				'label'			=> 'Name',
+				'class'			=> 'input-circle',
+				'value'			=> $vals[2],
+				'data'			=> 'placeholder="Name" disabled'
+			);
+
+			$data[5] = array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'user',
+				'value'			=> $vals[5]
+			);
+		}
+		
+		$args['func'] = array('sobad_form');
+		$args['data'] = array($data);
+		
+		return modal_admin($args);
 	}
 
 // --------------------------------------------------------------
@@ -663,6 +807,10 @@ class history_absen extends _page{
 			return punishment_absen::_history($id);
 		}
 
+		if($type=='history_3'){
+			return self::_manual_lembur($id);
+		}
+
 		//View Ganti Jam
 		$args = sobad_logDetail::get_id($id,array('times','log_history'));
 		$history = unserialize($args[0]['log_history']);
@@ -743,6 +891,72 @@ class history_absen extends _page{
 		return modal_admin($args);
 	}
 
+	public function _historyReward($id=0){
+		$id = str_replace('history_', '', $id);
+		intval($id);
+
+		$filter = isset($_POST['filter'])?$_POST['filter']:date('Y-m');
+		$filter = strtotime($filter);
+		$filter = date('Y-m',$filter);
+
+		$args = sobad_user::get_id($id,array('name','shift','time_in','time_out'));
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($args as $key => $val) {
+			$no += 1;
+
+			$work = sobad_work::get_workTime($val['shift'],"AND `abs-work-normal`.days='$days'");
+			$worktime = format_time_id($work[0]['time_in']).' - '.format_time_id($work[0]['time_out']);
+
+			$data['table'][$no-1]['tr'] = array('');
+			$data['table'][$no-1]['td'] = array(
+				'no'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Tanggal'		=> array(
+					'left',
+					'auto',
+					format_date_id($val['_inserted']),
+					true
+				),
+				'Jam Kerja'		=> array(
+					'left',
+					'20%',
+					format_date_id($val['_inserted']),
+					true
+				),
+				'Masuk'		=> array(
+					'left',
+					'15%',
+					$val['time_in'],
+					true
+				),
+				'Pulang'		=> array(
+					'left',
+					'10%',
+					$val['time_out'],
+					true
+				)
+			);
+		}
+
+		$args = array(
+			'title'		=> 'Absen "'.$args[0]['name'].'" - '.format_date_id($m).' '.$y,
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
+
 	public function _add_manual($args=array()){
 		$args = sobad_asset::ajax_conv_json($args);
 		$users = explode(',', $args['user']);
@@ -755,6 +969,49 @@ class history_absen extends _page{
 		$punish = $args['time'];
 		foreach ($users as $ky => $vl) {
 			self::_calc_gantiJam($vl,$punish,$date,$args['note']);
+		}
+
+		$table = self::table();
+		return table_admin($table);
+	}
+
+	public function _add_lembur($args=array()){
+		$args = sobad_asset::ajax_conv_json($args);
+		$users = explode(',', $args['user']);
+
+		$date = $args['date'];
+		$date = strtotime($date);
+		$date = date('Y-m-d',$date);
+
+		self::$type = 'history_3';
+		foreach ($users as $key => $val) {
+			$logid = 0;
+			$logs = sobad_user::get_logs(array('ID'),"_inserted='$date' AND user='$val'");
+			
+			$check = array_filter($logs);
+			if(!empty($check)){
+				$logid = $logs[0]['ID'];
+			}
+
+			$history = array(
+				'user'		=> $val,
+				'note'		=> $args['note']
+			);
+
+			$data = array(
+				'log_id'		=> $logid,
+				'date_schedule'	=> $date,
+				'times'			=> $args['time'],
+				'status'		=> 1,
+				'log_history'	=> serialize($history),
+				'type_log'		=> 3
+			);
+
+			if($args['ID']==0){
+				sobad_db::_insert_table('abs-log-detail',$data);
+			}else{
+				sobad_db::_update_single($args['ID'],'abs-log-detail',$data);
+			}
 		}
 
 		$table = self::table();

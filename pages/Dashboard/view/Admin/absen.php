@@ -90,15 +90,19 @@ class report_absen extends _page{
 			);
 		}
 
+		$rangeD = self::get_range(date('Y-m',$date));
+		$startD = $rangeD['start_day'] - 1;
+		$finishD = $rangeD['finish_day'];
+
 		$default = date('Y',$date).'-'.date('m',$date).'-01';
 		$default = strtotime($default);
 
 		$before = strtotime('-1 days',$default);
 		$before = date('d',$before);
-		$before = 28 - intval($before);
+		$before = $startD - intval($before);
 
 		$_no = 1;
-		for($i=$before;$i<28;$i++){
+		for($i=$before;$i<$finishD;$i++){
 			$_no += 1;
 			$now = date('Y-m-d',strtotime($i.' days',$default));
 			$tanggal = format_date_id($now);
@@ -300,6 +304,75 @@ class report_absen extends _page{
 		);
 		
 		return apply_button($import).' '.print_button($excel);
+	}
+
+	public function get_range($date=''){
+		$date = empty($date)?date('Y-m'):$date;
+		$date = strtotime($date);
+
+		$y = date('Y',$date);
+		$m = date('m',$date);
+
+		// Jika Februari sampai tgl 26 or 27 jika 28 or 29 bukan tanggal merah
+		$sDate = 29;
+		$fDate = 28;
+
+		if($m==2 || $m=='02'){
+			$sum_days = sum_days($m,$y);
+			$rDate = 0;
+			for($i=$sum_days;$i>=($sum_days-7);$i--){
+				$now = $y.'-'.$m.'-'.$i;
+				$holiday = holiday_absen::_check_holiday($now);
+
+				if(!$holiday){
+					$rDate += 1;
+				}
+
+				if($rDate>=2){
+					$fDate = $i - 1;
+					break;
+				}
+			}
+		}
+
+		if($m==3 || $m=='03'){
+			$_m = $m - 1;
+			$sum_days = sum_days($_m,$y);
+			$rDate = 0;
+			for($i=$sum_days;$i>=($sum_days-7);$i--){
+				$now = $y.'-'.$_m.'-'.$i;
+				$holiday = holiday_absen::_check_holiday($now);
+
+				if(!$holiday){
+					$rDate += 1;
+				}
+
+				if($rDate>=2){
+					$sDate = $i;
+					break;
+				}
+			}
+		}
+
+		$default = date('Y',$date).'-'.date('m',$date).'-01';
+		$default = strtotime($default);
+
+		$before = strtotime('-1 days',$default);
+		$mb = date('m',$before);
+		$my = date('Y',$before);
+
+		$before = date('d',$before);
+		$before = ($sDate - 1) - intval($before);
+
+		return array(
+			'start_day'		=> $sDate,
+			'start_month'	=> $mb,
+			'start_year'	=> $my,
+			'finish_day'	=> $fDate,
+			'finish_month'	=> $m,
+			'finish_year'	=> $y,
+			'number_day'	=> $before
+		);
 	}
 
 	public function display_absen(){
