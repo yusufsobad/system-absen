@@ -373,15 +373,17 @@ abstract class _page{
 
 		if($add){
 			
-			$q = sobad_db::_insert_table($schema['table'],$data);
-			$q = self::_add_meta_db($q,$args,$schema);
+			$idx = sobad_db::_insert_table($schema['table'],$data);
+			$q = self::_add_meta_db($idx,$args,$schema);
+
+			$id = $idx;
 		}else{
 
 			$q = sobad_db::_update_single($id,$schema['table'],$data);
 			$q = self::_update_meta_db($id,$args,$schema);
 		}
 
-		return array('data' => $q,'search' => $src);
+		return array('index' => $id, 'data' => $q,'search' => $src);
 	}	
 
 	public function _update_db($args=array()){

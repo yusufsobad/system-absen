@@ -932,7 +932,18 @@ class punishment_absen extends _page{
 		$work = sobad_work::get_id($log[0]['shift'],array('time_in'),"AND days='$day' AND status='1'");
 
 		$history = unserialize($log[0]['history']);
-		$history['logs'][] = array('type' => 4,'time' => $work[0]['time_in']);
+		// Set izin jam masuk
+		$count = $history['logs'];
+
+		$_type = 0;
+		if($args['status']==1){
+			$_type = 4;
+		}else if($args['status']==2){
+			$_type = 3;
+		}
+
+		$history['logs'][$count - 1]['type'] = $_type; // Change type
+		$history['logs'][] = array('type' => 1,'time' => $work[0]['time_in']);
 
 		$data = array(
 			'note'		=> $note,
@@ -942,7 +953,7 @@ class punishment_absen extends _page{
 
 		$q = sobad_db::_update_single($id,'abs-user-log',$data);
 
-		//Check ganti Jam
+		// Check ganti Jam
 		if(isset($args['status']) && $args['status']==1){
 			$data = array(
 				'id'	=> $id,
@@ -956,6 +967,7 @@ class punishment_absen extends _page{
 			set_rule_absen($work[0]['time_in'],$log[0]['time_in'],$data);
 		}
 
+		// Set Cuti
 		if(isset($args['status']) && $args['status']==2){
 			$data = array(
 				'id'	=> $id,

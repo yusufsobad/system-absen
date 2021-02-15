@@ -47,7 +47,7 @@ class employee_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date','_resign_date','_resign_status','dayOff');
+		$args = array('ID','no_induk','name','_address','phone_no','status','picture','end_status','_birth_date','_entry_date','_resign_date','_resign_status','dayOff','_province','_city','_subdistrict','_postcode');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -192,6 +192,14 @@ class employee_absen extends _file_manager{
 				$bBulan -= ($bTahun * 12);
 				$end_date = $bTahun . ' Tahun ' . $bBulan .' Bulan';
 			}
+
+			$_address = sobad_wilayah::_conv_address($val['_address'],array(
+				'province'		=> $val['_province'],
+				'city'			=> $val['_city'],
+				'subdistrict'	=> $val['_subdistrict'],
+				'postcode'		=> $val['_postcode'],
+			));
+			$_address = $_address['result'];
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -222,7 +230,7 @@ class employee_absen extends _file_manager{
 				'Alamat'	=> array(
 					'left',
 					'20%',
-					$val['_address'],
+					$_address,
 					true
 				),
 				'No HP'		=> array(

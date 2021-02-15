@@ -528,7 +528,12 @@ class absensi{
 
 				sobad_db::_update_single($user['id_join'],'abs-user-log',$_args);
 
-				$u_time = substr($user['time_in'], 0,5);
+				if($user['time_in']!='00:00:00'){
+					$u_time = substr($user['time_in'], 0,5);
+				}else{
+					$u_time = $time;
+				}
+
 				return array(
 					'id' 		=> $id,
 					'data' 		=> array(

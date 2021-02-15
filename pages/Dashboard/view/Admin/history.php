@@ -13,6 +13,10 @@ class history_absen extends _page{
 	protected function table($now=''){
 		$now = empty($now)?date('Y-m'):$now;
 
+		if(parent::$type=='history_4'){
+			return self::table_reward($now);
+		}
+
 		$data = array();
 		$args = array();
 
@@ -92,14 +96,22 @@ class history_absen extends _page{
 				if(isset($history['logs'])){
 					foreach ($history['logs'] as $ky => $vl) {
 						if(in_array($vl['type'],array('4','8'))){
-							$val['time_in_log_'] = $vl['time'];
-							$_idx = $ky;
+							if($ky==0){
+								$val['time_out_log_'] = $vl['time'];
+							}else{
+								$val['time_in_log_'] = $vl['time'];
+								$_idx = $ky;
+							}
 							break;
 						}
 					}
 
 					if(isset($history['logs'][$_idx + 1])){
-						$val['time_out_log_'] = $history['logs'][$_idx + 1]['time'];
+						if($_idx==0){
+							$val['time_in_log_'] = '-';
+						}else{
+							$val['time_out_log_'] = $history['logs'][$_idx + 1]['time'];
+						}
 					}
 				}
 			}
@@ -216,6 +228,130 @@ class history_absen extends _page{
 		return $data;
 	}
 
+		protected function table_reward($now=''){
+		$now = empty($now)?date('Y-m'):$now;
+
+		$data = array();
+		$args = array('ID','name','divisi');
+
+		$start = intval(parent::$page);
+		$nLimit = intval(parent::$limit);
+		
+		$status = str_replace('history_', '', parent::$type);
+		intval($status);
+
+		$kata = '';$where = "AND status NOT IN ('0','7')";
+		if(parent::$search){
+			$src = parent::like_search($args,$where);	
+			$cari = $src[0];
+			$where = $src[0];
+			$kata = $src[1];
+		}else{
+			$cari=$where;
+		}
+	
+		$limit = '';
+		$where .= $limit;
+
+		$args = sobad_user::get_all($args,$where);
+		//$sum_data = $object::count("1=1 ".$cari);
+		
+		$data['data'] = array('data' => $kata, 'type' => parent::$type);
+		$data['search'] = array('Semua','nama');
+		$data['class'] = '';
+		$data['table'] = array();
+	/*	
+		$data['page'] = array(
+			'func'	=> '_pagination',
+			'data'	=> array(
+				'start'		=> $start,
+				'qty'		=> $sum_data,
+				'limit'		=> $nLimit,
+				'type'		=> parent::$type
+			)
+		);
+	*/
+		$_users = array();$users = array();
+		foreach($args as $key => $val){
+			$_users[] = $val['ID'];
+			$users[$val['ID']] = array(
+				'name'		=> $val['name'],
+				'divisi'	=> $val['meta_value_divi']
+			);
+		}
+
+		$no = ($start-1) * $nLimit;
+		foreach($args as $key => $val){
+			$no += 1;
+
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'No'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Name'			=> array(
+					'left',
+					'auto',
+					$val['name_user'],
+					true
+				),
+				'Tanggal'		=> array(
+					'left',
+					'15%',
+					format_date_id($val['date_schedule']),
+					true
+				),
+				'Jam Kerja'		=> array(
+					'center',
+					'15%',
+					$worktime,
+					true
+				),
+				$masuk			=> array(
+					'center',
+					'10%',
+					$val['time_in_log_'],
+					true
+				),
+				$pulang			=> array(
+					'center',
+					'10%',
+					$val['time_out_log_'],
+					true
+				),
+				'Total'	=> array(
+					'left',
+					'10%',
+					$val['times'] .' '. $note,
+					true
+				),
+				'Waktu'	=> array(
+					'left',
+					'8%',
+					$extime,
+					true
+				),
+				'Status'		=> array(
+					'center',
+					'7%',
+					$status,
+					true
+				),
+				'History'		=> array(
+					'center',
+					'10%',
+					_modal_button($_history),
+					true
+				),
+			);
+		}
+
+		return $data;
+	}
+
 	private function head_title(){
 		$args = array(
 			'title'	=> 'History <small>data history</small>',
@@ -253,7 +389,7 @@ class history_absen extends _page{
 				break;
 		}
 
-		$action = $type==1?self::action():'';
+		$action = in_array($type,array('1','4'))?self::action():'';
 		$action = $type==2?self::action2():$action;
 
 		$box = array(
@@ -286,6 +422,11 @@ class history_absen extends _page{
 				2	=> array(
 					'key'	=> 'history_3',
 					'label'	=> 'Lembur',
+					'qty'	=> ''
+				),
+				3	=> array(
+					'key'	=> 'history_4',
+					'label'	=> 'Reward',
 					'qty'	=> ''
 				)
 			),

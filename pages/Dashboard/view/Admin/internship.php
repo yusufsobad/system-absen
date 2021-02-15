@@ -52,7 +52,7 @@ class internship_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','name','no_induk','_address','phone_no','picture','status','inserted','_entry_date','_resign_date');
+		$args = array('ID','name','no_induk','_address','phone_no','picture','status','inserted','_entry_date','_resign_date','_province','_city','_subdistrict','_postcode');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -127,6 +127,14 @@ class internship_absen extends _file_manager{
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 
 			$masa = format_date_id($val['_entry_date']).'<br> - <br>'.format_date_id($val['_resign_date']);
+
+			$_address = sobad_wilayah::_conv_address($val['_address'],array(
+				'province'		=> $val['_province'],
+				'city'			=> $val['_city'],
+				'subdistrict'	=> $val['_subdistrict'],
+				'postcode'		=> $val['_postcode'],
+			));
+			$_address = $_address['result'];
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -157,7 +165,7 @@ class internship_absen extends _file_manager{
 				'Alamat'	=> array(
 					'left',
 					'30%',
-					$val['_address'],
+					$_address,
 					true
 				),
 				'No HP'		=> array(
