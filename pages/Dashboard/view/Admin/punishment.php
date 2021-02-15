@@ -1025,12 +1025,16 @@ class punishment_absen extends _page{
 
 	public function _html(){
 		$date = date('Y-m');
+		$strdate = strtotime($date);
+		$dateY = date('Y',strtotime("-1 month",$strdate));
+		$dateM = date('m',strtotime("-1 month",$strdate));
+
 		$sum = sum_days(date('m'),date('Y'));
 
 		$awal = $date.'-01';
 		$akhir = $date.'-'.sprintf("%02d",$sum);
 
-		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
+		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.type_log='1' AND `abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
 
 		$args = sobad_logDetail::get_punishments(array(),$whr);
 
@@ -1038,7 +1042,7 @@ class punishment_absen extends _page{
 		<page backtop="5mm" backbottom="5mm" backleft="5mm" backright="5mm" pagegroup="new">	
 			<div style="text-align:center;width:100%;">
 				<h2 style="margin-bottom: 0px;"> JADWAL PUNISHMENT KETERLAMBATAN </h2>
-				<h3 style="margin-top: 0px;">Bulan <u>Absensi</u>: <?php echo conv_month_id(date('m')).' '.date('Y') ;?></h3>
+				<h3 style="margin-top: 0px;">Bulan <u>Absensi</u>: <?php echo conv_month_id($dateM).' '.$dateY ;?></h3>
 			</div><br>
 			<table class="table-bordered sobad-punishment" style="width:100%;font-family:calibri;">
 				<thead>

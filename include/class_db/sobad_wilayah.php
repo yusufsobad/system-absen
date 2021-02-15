@@ -3,92 +3,102 @@
 class sobad_wilayah{
 	private static $table = 'tbl_wilayah';
 	
-	private function list(){
+	private static function _list(){
 		$_list = new sobad_table();
 		$list = $_list->_get_list(self::$table);
 		$list[] = 'no';
 
 		return $list;
 	}
+
+	public static function get_all($args=array(),$limit="1=1"){
+		$check = array_filter($args);
+		if(empty($check)){
+			$args = self::_list();
+		}
+
+		$where = "WHERE $limit";
+		return self::_get_wilayah($where,$args);
+	}
 	
-	public function get_province($id=0){
+	public static function get_province($id=0){
 		$args = array('id_prov','provinsi');
 		
 		$where = "WHERE id_prov='$id' GROUP BY id_prov";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_city($id=0){
+	public static function get_city($id=0){
 		$args = array('id_kab','kabupaten','tipe');
 		
 		$where = "WHERE id_kab='$id' GROUP BY id_kab";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_subdistrict($id=0){
+	public static function get_subdistrict($id=0){
 		$args = array('id_kec','kecamatan');
 		
 		$where = "WHERE id_kec='$id' GROUP BY id_kec";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_village($id=0){
+	public static function get_village($id=0){
 		$args = array('no','kelurahan','kodepos');
 		
 		$where = "WHERE no='$id'";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_id_by_subdistrict($id=0){
+	public static function get_id_by_subdistrict($id=0){
 		$args = array('id_prov','id_kab','id_kec');
 		
 		$where = "WHERE id_kec='$id'";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_id_by_village($val=''){
+	public static function get_id_by_village($val=''){
 		$args = array('no','kelurahan','kodepos');
 		
 		$where = "WHERE kelurahan='$val'";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_postcode($id_prov=0,$id_kab=0,$id_kec=0){
+	public static function get_postcode($id_prov=0,$id_kab=0,$id_kec=0){
 		$args = array('no','kodepos');
 		
 		$where = "WHERE id_prov='$id_prov' AND id_kab='$id_kab' AND id_kec='$id_kec' GROUP BY kodepos";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_provinces(){
+	public static function get_provinces(){
 		$args = array('id_prov','provinsi');
 		
 		$where = "WHERE 1=1 GROUP BY id_prov";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_cities($id=0){
+	public static function get_cities($id=0){
 		$args = array('id_kab','kabupaten','tipe');
 		
 		$where = "WHERE id_prov='$id' GROUP BY id_kab";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_subdistricts($id=0){
+	public static function get_subdistricts($id=0){
 		$args = array('id_kec','kecamatan');
 		
 		$where = "WHERE id_kab='$id' GROUP BY id_kec";
 		return self::_get_wilayah($where,$args);
 	}
 	
-	public function get_villages($id=0){
+	public static function get_villages($id=0){
 		$args = array('no','kelurahan','kodepos');
 		
 		$where = "WHERE no='$id'";
 		return self::_get_wilayah($where,$args);
 	}
 
-	public function _conv_address($address='',$args=array()){
+	public static function _conv_address($address='',$args=array()){
 		$data = array();
 		$keys = array(
 			'village'		=> 'kelurahan',
@@ -135,7 +145,7 @@ class sobad_wilayah{
 		return $data;
 	}
 	
-	private function _get_wilayah($where='',$args=array()){
+	private static function _get_wilayah($where='',$args=array()){
 		$wilayah = array();
 		
 		$db = new sobad_db();
