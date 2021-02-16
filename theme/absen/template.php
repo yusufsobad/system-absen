@@ -622,7 +622,7 @@ abstract class absen_control{
 							case "3":
 								delete dayoff[_idx];
 
-								if(_cnt<=1){
+								if(Object.keys(dayoff).length<=0){
 									$('#title-dayoff').hide();
 									$('#user-dayoff').hide();
 								}
@@ -631,7 +631,7 @@ abstract class absen_control{
 							case "4":
 								delete permit[_idx];
 
-								if(_cnt<=1){
+								if(Object.keys(permit).length<=0){
 									$('#title-permit').hide();
 									$('#user-permit').hide();
 								}
@@ -640,7 +640,7 @@ abstract class absen_control{
 							case "5":
 								delete outcity[_idx];
 
-								if(_cnt<=1){
+								if(Object.keys(outcity).length<=0){
 									$('#title-outcity').hide();
 									$('#user-outcity').hide();
 								}

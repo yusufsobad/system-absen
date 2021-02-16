@@ -64,9 +64,10 @@ class internship_absen extends _file_manager{
 			$where = "AND status='0' AND end_status='7'";
 		}
 		
-		$kata = '';
+		$kata = '';$_args = array();
 		if(self::$search){
-			$src = self::like_search($args,$where);
+			$_args = array('ID','no_induk','name','_address');
+			$src = self::like_search($_args,$where);
 			$cari = $src[0];
 			$where = $src[0];
 			$kata = $src[1];
@@ -78,7 +79,7 @@ class internship_absen extends _file_manager{
 		$where .= $limit;
 
 		$args = sobad_user::get_all($args,$where,self::$post);
-		$sum_data = sobad_user::count("1=1 ".$cari);
+		$sum_data = sobad_user::count("1=1 ".$cari,$_args);
 
 		$data['data'] = array('data' => $kata, 'type' => $type);
 		$data['search'] = array('Semua','nama','no induk','alamat');

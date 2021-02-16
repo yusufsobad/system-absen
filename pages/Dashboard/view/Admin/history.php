@@ -38,7 +38,8 @@ class history_absen extends _page{
 
 		$kata = '';$where = "AND `abs-log-detail`.type_log='$status' $whr";
 		if(parent::$search){
-			$src = parent::like_search($args,$where);	
+			$_args = array('ID','log_id');
+			$src = parent::like_search($_args,$where);	
 			$cari = $src[0];
 			$where = $src[0];
 			$kata = $src[1];

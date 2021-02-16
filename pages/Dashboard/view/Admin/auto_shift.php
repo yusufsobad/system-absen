@@ -29,9 +29,10 @@ class shift_absen extends _page{
 		$start = intval(parent::$page);
 		$nLimit = intval(parent::$limit);
 		
-		$kata = '';$where = "AND type IN (9) ORDER BY start_date DESC ";
+		$kata = '';$where = "AND type IN (9) ";$_args = array();
 		if(parent::$search){
-			$src = parent::like_search($args,$where);	
+			$_args = array('ID','user');
+			$src = parent::like_search($_args,$where);	
 			$cari = $src[0];
 			$where = $src[0];
 			$kata = $src[1];
@@ -39,12 +40,12 @@ class shift_absen extends _page{
 			$cari=$where;
 		}
 	
-		$limit = 'LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
+		$limit = 'ORDER BY start_date DESC LIMIT '.intval(($start - 1) * $nLimit).','.$nLimit;
 		$where .= $limit;
 
 		$object = self::$table;
 		$args = $object::get_all($args,$where);
-		$sum_data = $object::count("1=1 ".$cari);
+		$sum_data = $object::count("1=1 ".$cari,$_args);
 		
 		$data['data'] = array('data' => $kata);
 		$data['search'] = array('Semua','nama');
