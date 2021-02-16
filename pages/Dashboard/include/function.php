@@ -161,10 +161,17 @@ function set_rule_absen($first='00:00:00',$last='00:00:00',$args=array()){
 		$user = sobad_user::get_id($args['user'],array('dayOff'));
 		$user = $user[0];
 
-		if($user['dayOff']<$status['value']){
-			$cuti = $user['dayOff'] - $status['value'];
-			set_rule_cuti($status['value'],$cuti,$args);
-		}else{
+		$cuti = $user['dayOff'] - $status['value'];
+		if($user['dayOff']>0){
+			$_cuti = $cuti;
+			if($cuti<0){
+				$_cuti = 0;				
+				$status['time'] -= ($user['dayOff'] * 420);
+			}
+			set_rule_cuti($status['value'],$_cuti,$args);
+		}
+
+		if($cuti<0){
 			$status['status'] = 'Ganti Jam';
 			$status['type'] = 2;
 		}

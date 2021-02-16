@@ -899,6 +899,7 @@ class punishment_absen extends _page{
 	}	
 
 	public function _add_permit($args=array()){
+		parent::$type = 'punishment_0';
 		$args = sobad_asset::ajax_conv_json($args);
 		$src = array();
 
@@ -933,7 +934,10 @@ class punishment_absen extends _page{
 
 		$history = unserialize($log[0]['history']);
 		// Set izin jam masuk
-		$count = $history['logs'];
+		$count = 0;
+		if(isset($history['logs'])){
+			$count = count($history['logs']);
+		}
 
 		$_type = 0;
 		if($args['status']==1){
@@ -989,10 +993,11 @@ class punishment_absen extends _page{
 			}
 
 			$cuti = $user['dayOff'] - $num_day;
-			if($user['dayOff']<$num_day){
+			if($cuti<0){
 				set_rule_absen($work[0]['time_in'],$log[0]['time_in'],$data);
+			}else{
+				set_rule_cuti($num_day,$cuti,$data);
 			}
-			set_rule_cuti($num_day,$cuti,$data);
 		}
 
 		if($q!==0){
