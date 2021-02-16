@@ -32,7 +32,7 @@ class absensi{
 		$punish = 0;
 		$times = date('H:i:s');
 
-		$worktime = _calc_time($worktime,'-40 minutes'); // 10 menit adalah waktu briefing
+		$worktime = _calc_time($worktime,'-39 minutes'); // 10 menit adalah waktu briefing
 
 		if($times<$worktime){
 			$punish = 30;
