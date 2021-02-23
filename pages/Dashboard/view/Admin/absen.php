@@ -14,7 +14,12 @@ class report_absen extends _page{
 		$date = empty($date)?date('Y-m'):$date;
 		$date = strtotime($date);
 
-		$whr = "AND `abs-user`.status!='0' ";$width = '400px';
+		$whr = "AND `abs-user`.status!='0' ";
+		if(parent::$type=='absen_0'){
+			$whr = "AND `abs-user`.status='0' ";
+		}
+
+		$width = '400px';
 		if(!empty($filter)){
 			$whr .= "AND `abs-user`.ID IN ($filter)";
 
@@ -273,15 +278,33 @@ class report_absen extends _page{
 	}
 
 	protected function layout(){
+		parent::$type = 'absen_1';
 		$box = self::get_box();
+
+		$tabs = array(
+			'tab'	=> array(
+				0	=> array(
+					'key'	=> 'absen_1',
+					'label'	=> 'Aktif',
+					'qty'	=> ''
+				),
+				1	=> array(
+					'key'	=> 'absen_0',
+					'label'	=> 'Non Aktif',
+					'qty'	=> ''
+				)
+			),
+			'func'	=> '_portlet',
+			'data'	=> $box
+		);
 		
 		$opt = array(
 			'title'		=> self::head_title(),
 			'style'		=> array(self::$object,'_style'),
 			'script'	=> array('')
 		);
-		
-		return portlet_admin($opt,$box);
+
+		return tabs_admin($opt,$tabs);
 	}
 
 	protected function action(){
@@ -376,7 +399,12 @@ class report_absen extends _page{
 	}
 
 	public function display_absen(){
-		$user = sobad_user::get_all(array('ID','name'));
+		$whr = "AND status!='0'";
+		if(parent::$type=='absen_0'){
+			$whr = "AND status='0'";
+		}
+
+		$user = sobad_user::get_all(array('ID','name'),$whr);
 		$user = convToOption($user,'ID','name');
 
 		$button = array(
@@ -386,7 +414,8 @@ class report_absen extends _page{
 			'color'	=> 'green',
 			'icon'	=> 'fa fa-filter',
 			'label'	=> 'Filter',
-			'load'	=> 'table_absensi'
+			'load'	=> 'table_absensi',
+			'type'	=> parent::$type
 		);
 
 		$form = array(
@@ -427,6 +456,8 @@ class report_absen extends _page{
 	public function _filter(){
 		$args = $_POST['args'];
 		$args = sobad_asset::ajax_conv_json($args);
+
+		parent::$type = $_POST['type'];
 
 		$data = self::table($args['user'],$args['date']);
 		ob_start();

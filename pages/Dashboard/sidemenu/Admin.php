@@ -190,6 +190,14 @@ function menu_report(){
 		'child'		=> NULL
 	);
 
+	$args['history-permit'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Izin',
+		'func'		=> 'historyPermit_absen',
+		'child'		=> NULL
+	);
+
 	$args['punishment'] = array(
 		'status'	=> '',
 		'icon'		=> '',

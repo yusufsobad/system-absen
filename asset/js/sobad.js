@@ -1,5 +1,5 @@
 // support jQuery Core
-var system = "system-absen"; 
+var system = "system-absen";
 var server = "http://abadi-server/"+system;
 
 var url_ajax = "include/ajax.php";
@@ -130,16 +130,6 @@ var uploads = '';
 		sobad_ajax('#'+id,data,'html',msg,val,html);
 	}
 	
-	function sobad_button_pre(val){
-		var id = $(val).attr('id');
-		var pre = $(val).attr('data-sobad');
-		var data = "page="+pre+"&data="+id;
-		
-		sobad_load_togle($(val).attr('href'));
-		
-		sobad_preview(url_preview,data,'','','');
-	}
-	
 	// click button import
 	function sobad_import(val){
 		var idx = $('#importFile').attr('data-load');
@@ -173,7 +163,7 @@ var uploads = '';
 		var tp = $(val).attr('data-type');
 		var data = $("form").serializeArray();
 		data = conv_array_submit(data);
-		data = "page="+pre+"&object="+object+"&data="+data+"&type="+tp;
+		data = "page="+pre+"&object="+object+"&data="+data+"&type="+tp+"&filter="+filter;
 
         sobad_preview(url_preview,data,'');
     }

@@ -10,6 +10,7 @@ require 'group.php';
 require 'holiday.php';
 require 'internship.php';
 require 'history.php';
+require 'historyPermit.php';
 require 'permit.php';
 require 'punishment.php';
 require 'study program.php';
