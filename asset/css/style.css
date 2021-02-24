@@ -82,3 +82,7 @@ ul.dropdown-menu li a.btn_data_malika {
     color:#fff;
     background-color: #888;
 }
+
+.datepicker.datepicker-inline {
+    display: none !important;
+}
