@@ -50,6 +50,7 @@ class report_absen extends _page{
 			)
 		);
 
+		$_type = parent::$type.'#'.$filter.'#'.$date;
 		foreach($users as $key => $val){
 			$data['table'][0]['td'][$val['no_induk']] = array(
 				'center',
@@ -145,9 +146,13 @@ class report_absen extends _page{
 					'color'	=> 'green',
 					'icon'	=> 'fa fa-recycle',
 					'label'	=> 'Izin',
+					'type'	=> $_type
 				);
 
-				$button = _modal_button($permit);
+				$button = '';
+				if(parent::$type=='absen_1'){
+					$button = _modal_button($permit);
+				}
 
 				$whr_permit = "AND user='$userid' AND type!='9' AND start_date<='$now' AND range_date>='$now' OR user='$userid' AND start_date<='$now' AND range_date='0000-00-00' AND num_day='0.0'";
 				if(!empty($check)){
@@ -615,7 +620,8 @@ class report_absen extends _page{
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_add_permit',
-				'load'		=> 'sobad_portlet'
+				'load'		=> 'table_absensi',
+				'type'		=> $_POST['type']
 			)
 		);
 		
@@ -703,7 +709,11 @@ class report_absen extends _page{
 			unset($args['search']);
 			unset($args['words']);
 		}
-		
+
+		// Convert filter
+		$_type = explode('#',$_POST['type']);
+		parent::$type = $_type[0];
+
 		//Check Jam Kerja
 		$date = date('Y-m-d',strtotime($args['_inserted']));
 		
@@ -741,9 +751,28 @@ class report_absen extends _page{
 
 		$q = sobad_db::_insert_table('abs-user-log',$data);
 
+		// Check Alpha
+		if($args['type']==0){
+			// Get jumlah dalam bulan ini
+			$date = strtotime($date);
+			$y = date('Y',$date);
+			$m = date('m',$date);
+
+			$logs = sobad_user::get_logs(array('ID'),"YEAR(_inserted)='$y' AND MONTH(_inserted)='$m' AND type='0'");
+			$count = count($logs);
+
+			if($count>=5){
+				$besuk = date('Y-m-d',strtotime('+1 days',$date));
+				employee_absen::_dismissed($id,$besuk);
+			}
+		}
+
 		if($q!==0){
-			$table = self::table();
-			return table_admin($table);
+			ob_start();
+			$table = self::table($_type[1],date('Y-m',$_type[2]));
+			metronic_layout::sobad_table($table);
+			self::_script();
+			return ob_get_clean();
 		}
 	}
 

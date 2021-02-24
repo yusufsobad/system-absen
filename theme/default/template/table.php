@@ -162,43 +162,45 @@ class create_table{
 			</thead>
 		<?php
 	}
+
+	public static function tbody($args=array()){
+		?>
+			<tbody>
+				<?php self::_content($args) ;?>
+			</tbody>
+		<?php 
+	}
 	
-private static function tbody($args=array()){
+	public static function _content($args=array()){
 		$len = count($args);
-	?>
-		<tbody>
-			<?php
-				for($i=0;$i<$len;$i++){
-					$hsl = $i % 2;
-					$cls = 'odd';
-					if($hsl == 1){
-						$cls = 'even';
-					}
-					
-					$cls1 = isset($args[$i]['tr'])?$args[$i]['tr']:'';
-					$cls1 = isset($cls1[0])?$cls1[0]:'';
-					
-					echo '<tr role="row" class="'.$cls.' '.$cls1.'">';
-					
-						$tbody = isset($args[0]['td'])?$args[0]['td']:$args[0];
-						foreach($args[$i]['td'] as $key => $val){
-							$colspan = '';
-							if(isset($val[4])){
-								$colspan = 'colspan="'.$val[4].'"';
-							}
-
-							$rowspan = '';
-							if(isset($val[5])){
-								$rowspan = 'rowspan="'.$val[5].'"';
-							}
-
-							echo '<td '.$colspan.' '.$rowspan.' style="text-align:'.$val[0].'">'.$val[2].'</td>';
-						}
-					echo '</tr>';
+		for($i=0;$i<$len;$i++){
+			$hsl = $i % 2;
+			$cls = 'odd';
+			if($hsl == 1){
+				$cls = 'even';
+			}
+						
+			$cls1 = isset($args[$i]['tr'])?$args[$i]['tr']:'';
+			$cls1 = isset($cls1[0])?$cls1[0]:'';
+						
+			echo '<tr role="row" class="'.$cls.' '.$cls1.'">';
+						
+			$tbody = isset($args[0]['td'])?$args[0]['td']:$args[0];
+			foreach($args[$i]['td'] as $key => $val){
+				$colspan = '';
+				if(isset($val[4])){
+					$colspan = 'colspan="'.$val[4].'"';
 				}
-			?>
-		</tbody>
-	<?php
+
+				$rowspan = '';
+				if(isset($val[5])){
+					$rowspan = 'rowspan="'.$val[5].'"';
+				}
+
+				echo '<td '.$colspan.' '.$rowspan.' style="text-align:'.$val[0].'">'.$val[2].'</td>';
+			}
+			echo '</tr>';
+		}
 	}
 	
 	public static function _pagination($args=array()){
@@ -273,9 +275,17 @@ private static function tbody($args=array()){
 		<?php
 	}
 	
-	private static function _scrolldown(){
+	private static function _scrolldown($args=array()){
+
 		?>
-			
+			<script type="text/javascript">
+				if($(window).scrollTop() + 1 >= $(document).height() - $(window).height()) {
+					page += 1;
+					if(status!=1){
+						
+					}
+				}
+			</script>
 		<?php
 	}
 }

@@ -808,76 +808,6 @@ class history_absen extends _page{
 // --------------------------------------------------------------
 // Database -----------------------------------------------------
 // --------------------------------------------------------------	
-	public function _preview($args=array()){
-		$_SESSION[_prefix.'development'] = 1;
-		parent::$type = $_GET['type'];
-
-		switch (parent::$type) {
-			case 'history_2':
-				$title = 'Ganti Jam';
-				break;
-
-			case 'history_3':
-				$title = 'Lembur';
-				break;
-			
-			default:
-				$title = 'Undefined';
-				break;
-		}
-
-		$args = array(
-			'data'		=> '',
-			'style'		=> array('style_type2','style_history'),
-			'object'	=> self::$object,
-			'html'		=> '_html',
-			'setting'	=> array(
-				'posisi'	=> 'landscape',
-				'layout'	=> 'A4',
-			),
-			'name save'	=> $title.' '.conv_month_id(date('m')).' '.date('Y')
-		);
-
-		return sobad_convToPdf($args);
-	}
-
-	public function _html(){
-		parent::$type = $_GET['type'];
-		$now = isset($_GET['filter']) && !empty($_GET['filter'])?$_GET['filter']:date('Y-m');
-		$data = self::table($now);
-
-		$now = strtotime($now);
-		$dateM = date('m',$now);
-		$dateY = date('Y',$now);
-
-		switch (parent::$type) {
-			case 'history_2':
-				$title = 'GANTI JAM';
-				break;
-
-			case 'history_3':
-				$title = 'LEMBUR';
-				break;
-			
-			default:
-				$title = 'Undefined';
-				break;
-		}
-
-		unset($data['data']);
-		unset($data['search']);
-		?>
-			<page backtop="5mm" backbottom="5mm" backleft="5mm" backright="5mm" pagegroup="new">
-				<div style="text-align:center;width:100%;">
-					<h2 style="margin-bottom: 0px;"> <?php print($title) ;?> </h2>
-					<h3 style="margin-top: 0px;">Bulan <u>Absensi</u>: <?php echo conv_month_id($dateM).' '.$dateY ;?></h3>
-				</div><br>
-			<?php
-				metronic_layout::sobad_table($data);
-			?>
-			</page>
-		<?php
-	}
 
 	public function _history($id=0){
 		$id = str_replace('history_', '', $id);
@@ -1168,4 +1098,79 @@ class history_absen extends _page{
 			));
 		}
 	}	
+
+	// ----------------------------------------------------------
+	// Print data history ---------------------------------------
+	// ----------------------------------------------------------
+
+	public function _preview($args=array()){
+		$_SESSION[_prefix.'development'] = 0;
+		parent::$type = $_GET['type'];
+
+		switch (parent::$type) {
+			case 'history_2':
+				$title = 'Ganti Jam';
+				break;
+
+			case 'history_3':
+				$title = 'Lembur';
+				break;
+			
+			default:
+				$title = 'Undefined';
+				break;
+		}
+
+		$args = array(
+			'data'		=> '',
+			'style'		=> array('style_type2','style_history'),
+			'object'	=> self::$object,
+			'html'		=> '_html',
+			'setting'	=> array(
+				'posisi'	=> 'landscape',
+				'layout'	=> 'A4',
+			),
+			'name save'	=> $title.' '.conv_month_id(date('m')).' '.date('Y')
+		);
+
+		return sobad_convToPdf($args);
+	}
+
+	public function _html(){
+		parent::$type = $_GET['type'];
+		$now = isset($_GET['filter']) && !empty($_GET['filter'])?$_GET['filter']:date('Y-m');
+		$data = self::table($now);
+
+		$now = strtotime($now);
+		$dateM = date('m',$now);
+		$dateY = date('Y',$now);
+
+		switch (parent::$type) {
+			case 'history_2':
+				$title = 'GANTI JAM';
+				break;
+
+			case 'history_3':
+				$title = 'LEMBUR';
+				break;
+			
+			default:
+				$title = 'Undefined';
+				break;
+		}
+
+		unset($data['data']);
+		unset($data['search']);
+		?>
+			<page backtop="5mm" backbottom="5mm" backleft="5mm" backright="5mm" pagegroup="new">
+				<div style="text-align:center;width:100%;">
+					<h2 style="margin-bottom: 0px;"> <?php print($title) ;?> </h2>
+					<h3 style="margin-top: 0px;">Bulan : <?php echo conv_month_id($dateM).' '.$dateY ;?></h3>
+				</div><br>
+			<?php
+				metronic_layout::sobad_table($data);
+			?>
+			</page>
+		<?php
+	}
 }

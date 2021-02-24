@@ -172,11 +172,12 @@ class dash_absensi{
 		intval($id);
 
 		$date = date('Y-m-d');
+		$day = date('w');
 		$limit = '';
 
 		$args = array('ID','picture','no_induk','name','divisi','status','inserted');
 		if($id!=0){
-			$args = array('ID','picture','no_induk','name','divisi','status','inserted','type','_inserted');
+			$args = array('ID','picture','no_induk','name','divisi','status','inserted','type','shift','_inserted','time_in');
 			$limit = "AND `abs-user-log`._inserted='$date' AND `abs-user-log`.type='$id'";
 		}
 
@@ -214,6 +215,19 @@ class dash_absensi{
 				}
 
 				$permit = permit_absen::_conv_type($val['type']);					
+			}
+
+			$timein = '';
+			if($id==1){
+				$timein = $val['time_in'];
+
+				$work = sobad_work::get_id($val['shift'],array('time_in'),"AND days='$day' AND status='1'");
+				$check = array_filter($work);
+				if(!empty($check)){
+					if($val['time_in']>=$work[0]['time_in']){
+						$timein = '<span style="color:red">'.$val['time_in'].'</span>';
+					}
+				}
 			}
 
 			$data['table'][$no-1]['tr'] = array('');
@@ -254,6 +268,12 @@ class dash_absensi{
 					$status,
 					true
 				),
+				'Masuk'		=> array(
+					'left',
+					'10%',
+					$timein,
+					true
+				),
 				'Note'		=> array(
 					'left',
 					'15%',
@@ -261,6 +281,10 @@ class dash_absensi{
 					true
 				),
 			);
+
+			if($id!=1){
+				unset($data['table'][$no-1]['td']['Masuk']);
+			}
 
 			if($id!=4){
 				unset($data['table'][$no-1]['td']['Note']);

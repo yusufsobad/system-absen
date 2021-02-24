@@ -1055,10 +1055,10 @@ class punishment_absen extends _page{
 						<th rowspan="2" style="width:5%;font-family: calibriBold;">No</th>
 						<th rowspan="2" style="width:10%;font-family: calibriBold;">Nama</th>
 						<th colspan="2" style="width:15%;font-family: calibriBold;">Data</th>
-						<th rowspan="2" style="width:8%;font-family: calibriBold;">Punishment</th>
+						<th rowspan="2" style="width:10%;font-family: calibriBold;">Punishment</th>
 						<th rowspan="2" style="width:5%;font-family: calibriBold;">Hari</th>
 						<th rowspan="2" style="width:10%;font-family: calibriBold;">Tanggal</th>
-						<th rowspan="2" style="width:37%;font-family: calibriBold;">Pekerjaan</th>
+						<th rowspan="2" style="width:35%;font-family: calibriBold;">Pekerjaan</th>
 						<th colspan="2" style="width:10%;font-family: calibriBold;">TTD.</th>
 					</tr>
 					<tr>

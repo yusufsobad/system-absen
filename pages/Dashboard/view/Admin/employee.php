@@ -973,15 +973,15 @@ class employee_absen extends _file_manager{
 		}
 	}
 
-	public function _resign($id){
-		return self::_status($id,1);
+	public function _resign($id,$date=''){
+		return self::_status($id,1,$date);
 	}
 
-	public function _dismissed($id){
-		return self::_status($id,2);
+	public function _dismissed($id,$date=''){
+		return self::_status($id,2,$date);
 	}
 
-	private function _status($id,$type=0){
+	private function _status($id,$type=0,$now=''){
 		$id = str_replace("status_", '', $id);
 		$user = sobad_user::get_id($id,array('status'));
 		$status = $user[0]['status'];
@@ -996,8 +996,10 @@ class employee_absen extends _file_manager{
 			)
 		);
 
+		$now = empty($now)?date('Y-m-d'):$now;
+
 		// Update user-meta
-		$data2 = array('meta_id' => $id,'meta_value' => date('Y-m-d'));
+		$data2 = array('meta_id' => $id,'meta_value' => $now);
 
 		$dt_meta = sobad_user::check_meta($id,'_resign_date');	
 		$check = array_filter($dt_meta);

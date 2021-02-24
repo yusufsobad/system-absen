@@ -42,7 +42,7 @@ class historyPermit_absen extends _page{
 				break;
 
 			case 'history_4':
-				$where = "AND (type='3' OR type>'10')";
+				$where = "AND (type='4' OR type>'10')";
 				break;
 
 			case 'history_5':
