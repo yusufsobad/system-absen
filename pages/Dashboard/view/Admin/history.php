@@ -405,8 +405,12 @@ class history_absen extends _page{
 				$label = 'Ganti Jam';
 				break;
 
-			case 1:
+			case 3:
 				$label = 'Lembur';
+				break;
+
+			case 4:
+				$label = 'Reward';
 				break;
 			
 			default:

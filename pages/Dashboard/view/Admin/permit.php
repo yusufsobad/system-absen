@@ -88,59 +88,10 @@ class permit_absen extends _page{
 				'label'	=> 'hapus',
 			);
 
-			$sts_day = 'hari';
-			if($val['range_date']=='0000-00-00'){
-				$val['range_date'] = date('Y-m-d');
-			}
-
-			$range = strtotime($val['range_date']) - strtotime($val['start_date']);
-			$range = floor($range / (60 * 60 * 24));
-
-			if($val['num_day']>0){
-				$range = $val['num_day']-1;
-				
-				switch ($val['type_date']) {
-
-					case 2:
-						$sts_day = 'bulan';
-						$_num = $range.' months';
-						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' months');
-						break;
-
-					case 3:
-						$sts_day = 'tahun';
-						$_num = $range.' years';
-						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' years');
-						break;
-
-					default:
-						$_range = $range;
-						if($val['num_day']==0.5){
-							$_range = 0;
-						}
-
-						$sts_day = 'hari kerja';
-						$val['range_date'] = _calc_date($val['start_date'],'+'.$_range.' days');
-
-						$_num = $range.' days';
-						break;
-				}
-
-				//$range_date = strtotime($val['start_date']);
-				//$val['range_date'] = date('Y-m-d',strtotime('+'.$_num,$range_date));
-			}
-
-			if($val['type_date']<2){
-				$_num = ceil($range);
-				$_date = strtotime($val['start_date']);
-				for($i=0;$i<$_num;$i++){
-					$_date = strtotime("+".$i." days",$_date);
-					$_check = holiday_absen::_check_holiday(date('Y-m-d',$_date));
-					if($_check){
-						$range -= 1;
-					}
-				}
-			}
+			$conv = self::_conv_dateRange($val);
+			$val = $conv['data'];
+			$sts_day = $conv['status'];
+			$range = $conv['range'];
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -238,6 +189,68 @@ class permit_absen extends _page{
 		);
 		
 		return portlet_admin($opt,$box);
+	}
+
+	public static function _conv_dateRange($val=array()){
+		$sts_day = 'hari';
+		if($val['range_date']=='0000-00-00'){
+			$val['range_date'] = date('Y-m-d');
+		}
+
+		$range = strtotime($val['range_date']) - strtotime($val['start_date']);
+		$range = floor($range / (60 * 60 * 24));
+
+		if($val['num_day']>0){
+			$range = $val['num_day']-1;
+			
+			switch ($val['type_date']) {
+
+				case 2:
+					$sts_day = 'bulan';
+					$_num = $range.' months';
+					$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' months');
+					break;
+
+				case 3:
+					$sts_day = 'tahun';
+					$_num = $range.' years';
+					$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' years');
+					break;
+
+				default:
+					$_range = $range;
+					if($val['num_day']==0.5){
+						$_range = 0;
+					}
+
+					$sts_day = 'hari kerja';
+					$val['range_date'] = _calc_date($val['start_date'],'+'.$_range.' days');
+
+					$_num = $range.' days';
+					break;
+			}
+
+			//$range_date = strtotime($val['start_date']);
+			//$val['range_date'] = date('Y-m-d',strtotime('+'.$_num,$range_date));
+		}
+
+		if($val['type_date']<2){
+			$_num = ceil($range);
+			$_date = strtotime($val['start_date']);
+			for($i=0;$i<$_num;$i++){
+				$_date = strtotime("+".$i." days",$_date);
+				$_check = holiday_absen::_check_holiday(date('Y-m-d',$_date));
+				if($_check){
+					$range -= 1;
+				}
+			}
+		}
+
+		return array(
+			'range'		=> $range,
+			'status'	=> $sts_day,
+			'data'		=> $val
+		);
 	}
 
 	public static function _conv_type($id=0){

@@ -25,13 +25,7 @@ class historyPermit_absen extends _page{
 		return $args;
 	}
 
-	protected function table($now=''){
-		$data = array();
-		$args = self::_array();
-
-		$start = intval(parent::$page);
-		$nLimit = intval(parent::$limit);
-
+	protected function _where($now=''){
 		$now = strtotime($now);
 		$y = date('Y',$now);
 		$m = date('m',$now);
@@ -55,6 +49,18 @@ class historyPermit_absen extends _page{
 		}
 
 		$where .= " AND ((YEAR(start_date)='$y' AND MONTH(start_date)='$m') OR (YEAR(range_date)='$y' AND MONTH(range_date)='$m'))";
+		
+		return $where;
+	}
+
+	protected function table($now=''){
+		$data = array();
+		$args = self::_array();
+
+		$start = intval(parent::$page);
+		$nLimit = intval(parent::$limit);
+
+		$where = self::_where($now);
 		
 		$kata = '';
 		if(parent::$search){
@@ -83,67 +89,42 @@ class historyPermit_absen extends _page{
 		$data['class'] = '';
 		$data['table'] = array();
 
-		$no = 0;
+		$users = array();
 		foreach($args as $key => $val){
+			$idx = $val['user'];
+			if(isset($users[$idx])){
+				$user[$idx] = array();
+			}
+
+			$users[$idx][] = $val;
+		}
+
+		$no = 0;
+		foreach($users as $key => $val){
 			$no += 1;
-			$id = $val['ID'];
+			$id = $key;
 
-			$sts_day = 'hari';
-			if($val['range_date']=='0000-00-00'){
-				$val['range_date'] = date('Y-m-d');
+			$lama = 0;
+			foreach ($val as $_key => $_val) {
+				$conv = permit_absen::_conv_dateRange($_val);
+				$range = $conv['range'];
+
+				$lama += $range;
 			}
 
-			$range = strtotime($val['range_date']) - strtotime($val['start_date']);
-			$range = floor($range / (60 * 60 * 24));
+			$lama += count($val);
 
-			if($val['num_day']>0){
-				$range = $val['num_day']-1;
-				
-				switch ($val['type_date']) {
-
-					case 2:
-						$sts_day = 'bulan';
-						$_num = $range.' months';
-						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' months');
-						break;
-
-					case 3:
-						$sts_day = 'tahun';
-						$_num = $range.' years';
-						$val['range_date'] = _calc_date($val['start_date'],'+'.$range.' years');
-						break;
-
-					default:
-						$_range = $range;
-						if($val['num_day']==0.5){
-							$_range = 0;
-						}
-
-						$sts_day = 'hari kerja';
-						$val['range_date'] = _calc_date($val['start_date'],'+'.$_range.' days');
-
-						$_num = $range.' days';
-						break;
-				}
-
-				//$range_date = strtotime($val['start_date']);
-				//$val['range_date'] = date('Y-m-d',strtotime('+'.$_num,$range_date));
-			}
-
-			if($val['type_date']<2){
-				$_num = ceil($range);
-				$_date = strtotime($val['start_date']);
-				for($i=0;$i<$_num;$i++){
-					$_date = strtotime("+".$i." days",$_date);
-					$_check = holiday_absen::_check_holiday(date('Y-m-d',$_date));
-					if($_check){
-						$range -= 1;
-					}
-				}
-			}
+			$_history = array(
+				'ID'	=> 'history_'.$id,
+				'func'	=> '_history',
+				'color'	=> 'yellow',
+				'icon'	=> 'fa fa-eye',
+				'label'	=> 'History',
+				'type'	=> self::$type.'#'.$now
+			);
 			
-			$data['table'][$key]['tr'] = array('');
-			$data['table'][$key]['td'] = array(
+			$data['table'][$no-1]['tr'] = array('');
+			$data['table'][$no-1]['td'] = array(
 				'No'		=> array(
 					'center',
 					'5%',
@@ -153,31 +134,25 @@ class historyPermit_absen extends _page{
 				'Name'		=> array(
 					'left',
 					'auto',
-					$val['name_user'],
+					$val[0]['name_user'],
 					true
 				),
-				'Mulai'		=> array(
-					'center',
-					'17%',
-					conv_day_id($val['start_date']).', '.format_date_id($val['start_date']),
-					true
-				),
-				'Sampai'	=> array(
-					'center',
-					'17%',
-					conv_day_id($val['range_date']).', '.format_date_id($val['range_date']),
-					true
-				),
-				'Jenis'		=> array(
+				'Banyak (X)'		=> array(
 					'center',
 					'15%',
-					permit_absen::_conv_type($val['type']),
+					count($val),
 					true
 				),
 				'Lama'		=> array(
 					'center',
 					'10%',
-					($range + 1).' '.$sts_day,
+					$lama.' hari',
+					true
+				),
+				'History'		=> array(
+					'center',
+					'10%',
+					_modal_button($_history),
 					true
 				),
 			);
@@ -296,8 +271,79 @@ class historyPermit_absen extends _page{
 	}
 
 // --------------------------------------------------------------
-// Form Ganti Jam -----------------------------------------------
+// History ------------------------------------------------------
 // --------------------------------------------------------------
+
+	public function _history($id=0){
+		$id = str_replace('history_', '', $id);
+		intval($id);
+
+		$data = $_POST['type'];
+		$data = explode('#', $data);
+		
+		self::$type = $data[0];
+		$date = $data[1];
+
+		$where = self::_where($date);
+		$history = sobad_permit::get_all(array('user','start_date','range_date','num_day','type_date','type'),$where." AND user='$id'");
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($history as $key => $val) {
+			$no += 1;
+
+			$conv = permit_absen::_conv_dateRange($val);
+			$val = $conv['data'];
+			$sts_day = $conv['status'];
+			$range = $conv['range'];
+
+			$data['table'][$no-1]['tr'] = array('');
+			$data['table'][$no-1]['td'] = array(
+				'no'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Mulai'		=> array(
+					'center',
+					'17%',
+					conv_day_id($val['start_date']).', '.format_date_id($val['start_date']),
+					true
+				),
+				'Sampai'	=> array(
+					'center',
+					'17%',
+					conv_day_id($val['range_date']).', '.format_date_id($val['range_date']),
+					true
+				),
+				'Jenis'		=> array(
+					'left',
+					'auto',
+					permit_absen::_conv_type($val['type']),
+					true
+				),
+				'Lama'		=> array(
+					'center',
+					'10%',
+					($range + 1).' '.$sts_day,
+					true
+				),
+			);
+		}
+
+		$args = array(
+			'title'		=> 'History '.$history[0]['name_user'],
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
 
 
 // --------------------------------------------------------------
