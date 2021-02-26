@@ -265,7 +265,11 @@ class history_absen extends _page{
 		if($rangeD['finish_month'] == date('m') && $rangeD['finish_year'] == date('Y')){
 			if($rangeD['finish_day']>date('d')){
 				$rangeD['finish_day'] = date('d');
-			}else if($rangeD['finish_day']<date('d')){
+			}
+		}
+
+		if($rangeD['start_month'] == date('m') && $rangeD['start_year'] == date('Y')){
+			if($rangeD['start_day']<=date('d')){
 				$rangeD['finish_day'] = date('d') - $rangeD['start_day'];
 			}
 		}
@@ -393,6 +397,7 @@ class history_absen extends _page{
 
 		$action = self::action();
 		$action .= in_array($type,array('2','3'))?self::action2():'';
+		$action .= in_array($type,array('3','4'))?self::action3():'';
 
 		$box = array(
 			'label'		=> 'History '.$label,
@@ -481,6 +486,10 @@ class history_absen extends _page{
 			'type'	=> parent::$type
 		);
 
+		return _modal_button($manual);
+	}
+
+	protected function action3(){
 		$print = array(
 			'ID'	=> 'preview_0',
 			'func'	=> '_preview',
@@ -490,7 +499,7 @@ class history_absen extends _page{
 			'type'	=> parent::$type
 		);	
 
-		return _modal_button($manual).' '.print_button($print);
+		return print_button($print);
 	}
 
 	public function _filter($date=''){
