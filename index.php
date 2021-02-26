@@ -56,6 +56,7 @@ global $body;
 
     <script type="text/javascript">
     	var object = "<?php print($menu) ;?>";
+    	var hosting = "<?php print($_SERVER['SERVER_NAME']) ;?>";
     </script>
 
 </head>

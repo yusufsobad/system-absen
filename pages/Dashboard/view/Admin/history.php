@@ -10,6 +10,35 @@ class history_absen extends _page{
 	// Layout category  ------------------------------------------
 	// ----------------------------------------------------------
 
+	protected function _where($now=''){
+
+
+		$status = str_replace('history_', '', parent::$type);
+		intval($status);
+
+		$status = $status==0?1:$status;
+		$whr = '';
+		if($status==1){
+			$whr = "AND (`abs-log-detail`.log_history LIKE '%$now%') ";
+		}
+
+		if($status==2){
+			$whr = "AND (`abs-log-detail`.date_schedule LIKE '%$now%') ";
+		}
+
+		if($status==3){
+			$rangeD = report_absen::get_range($now);
+			$sDate = $rangeD['start_date'];
+			$fDate = $rangeD['finish_date'];
+
+			$whr = "AND (`abs-log-detail`.date_schedule BETWEEN '$sDate' AND '$fDate') ";
+		}
+
+		$where = "AND `abs-log-detail`.type_log='$status' $whr";
+
+		return $where;
+	}
+
 	protected function table($now=''){
 		$now = empty($now)?date('Y-m'):$now;
 
@@ -23,20 +52,9 @@ class history_absen extends _page{
 		$start = intval(parent::$page);
 		$nLimit = intval(parent::$limit);
 		
-		$status = str_replace('history_', '', parent::$type);
-		intval($status);
+		$where = self::_where($now);
 
-		$status = $status==0?1:$status;
-		$whr = '';
-		if($status==1){
-			$whr = "AND (`abs-log-detail`.log_history LIKE '%$now%') ";
-		}
-
-		if($status==3){
-			$whr = "AND (`abs-log-detail`.date_schedule LIKE '%$now%') ";
-		}
-
-		$kata = '';$where = "AND `abs-log-detail`.type_log='$status' $whr";
+		$kata = '';
 		if(parent::$search){
 			$_args = array('ID','log_id');
 			$src = parent::like_search($_args,$where);	
@@ -58,77 +76,64 @@ class history_absen extends _page{
 		$data['search'] = array('Semua','nama');
 		$data['class'] = '';
 		$data['table'] = array();
-	/*	
-		$data['page'] = array(
-			'func'	=> '_pagination',
-			'data'	=> array(
-				'start'		=> $start,
-				'qty'		=> $sum_data,
-				'limit'		=> $nLimit,
-				'type'		=> parent::$type
-			)
-		);
-	*/
+
+		$users = array();
+		foreach($args as $key => $val){
+			$idx = $val['user_log_'];
+
+			if(empty($val['name_user'])){
+				$hist = unserialize($val['log_history']);
+				if(isset($hist['user'])){
+					$idx = $hist['user'];
+					$guser = sobad_user::get_id($hist['user'],array('name'));
+					$val['name_user'] = $guser[0]['name'];
+				}
+			}
+
+			if(isset($users[$idx])){
+				$user[$idx] = array();
+			}
+
+			$users[$idx][] = $val;
+		}
 
 		$no = ($start-1) * $nLimit;
-		foreach($args as $key => $val){
+		foreach($users as $key => $val){
 			$no += 1;
 
-			$note = ($val['type_log']==3)?'Jam':'Menit';
-
-			$date = date($val['_inserted_log_']);
-			$date = strtotime($date);
-			$days = date('w',$date);
-
-			$work = sobad_work::get_workTime($val['ID_shif'],"AND `abs-work-normal`.days='$days'");
-			$worktime = format_time_id($work[0]['time_in']).' - '.format_time_id($work[0]['time_out']);
-
-			$masuk = 'Masuk';$pulang = 'Pulang';$extime = $val['times'].' menit';
-			if(self::$type=='history_2'){
-				//Check kekurangan
-				$history = unserialize($val['log_history']);
-				if(isset($history['extime'])){
-					$extime = $history['extime'].' menit';
+			$lama = 0;
+			$status = 0;
+			$total = 0;
+			foreach ($val as $_key => $_val) {
+				if($_val['status']>$status){
+					$status = $_val['status'];
 				}
 
-				//Check history time
-				$masuk = 'Keluar';$pulang = 'Kembali';
-				$history = unserialize($val['history_log_']);
+				$lama += $_val['times'];
 
-				$val['time_in_log_'] = '-';
-				$val['time_out_log_'] = '-';
-
-				$_idx = 0;
-				if(isset($history['logs'])){
-					foreach ($history['logs'] as $ky => $vl) {
-						if(in_array($vl['type'],array('4','8'))){
-							if($ky==0){
-								$val['time_out_log_'] = $vl['time'];
-							}else{
-								$val['time_in_log_'] = $vl['time'];
-								$_idx = $ky;
-							}
-							break;
-						}
-					}
-
-					if(isset($history['logs'][$_idx + 1])){
-						if($_idx==0){
-							$val['time_in_log_'] = '-';
+				if(self::$type=='history_3'){
+					$holiday = holiday_absen::_check_holiday($_val['date_schedule']);
+					if($holiday){
+						$total += ($_val['times'] * 2);
+					}else{
+						if($_val['times']<=2){
+							$total += $_val['times'] * 1.5;
 						}else{
-							$val['time_out_log_'] = $history['logs'][$_idx + 1]['time'];
+							$total += ($_val['times'] * 2) - 1;
 						}
 					}
+				}else{
+					$total = $lama;
 				}
 			}
 
-			if(self::$type=='history_3'){
-				$masuk = 'Mulai';
-				$val['time_in_log_'] = $work[0]['time_out']=='00:00:00'?$val['time_in_log_']:format_time_id($work[0]['time_out']);
+			$nm_user = $val[0]['name_user'];
+
+			if(self::$type!='history_3'){
+				$total = round($total / 60,1);
 			}
 
-			$status = '';
-			switch ($val['status']) {
+			switch ($status) {
 				case 0:
 					$status = '#666;';
 					break;
@@ -149,32 +154,16 @@ class history_absen extends _page{
 			$status = '<i class="fa fa-circle" style="color:'.$status.'"></i>';
 
 			$_history = array(
-				'ID'	=> 'history_'.$val['ID'],
+				'ID'	=> 'history_'.$key,
 				'func'	=> '_history',
 				'color'	=> 'yellow',
 				'icon'	=> 'fa fa-eye',
 				'label'	=> 'History',
-				'type'	=> self::$type
+				'type'	=> self::$type.'#'.$now
 			);
 
-			if(self::$type=='history_3'){
-				if(empty($val['name_user'])){
-					$hist = unserialize($val['log_history']);
-					if(isset($hist['user'])){
-						$guser = sobad_user::get_id($hist['user'],array('name'));
-						$val['name_user'] = $guser[0]['name'];
-					}
-				}
-			}
-
-			$tanggal = format_date_id($val['date_schedule']);
-			$holiday = holiday_absen::_check_holiday($val['date_schedule']);
-			if($holiday){
-				$tanggal = '<span style="color:red;">'.$tanggal.'</span>';
-			}
-
-			$data['table'][$key]['tr'] = array('');
-			$data['table'][$key]['td'] = array(
+			$data['table'][$no - 1]['tr'] = array('');
+			$data['table'][$no - 1]['td'] = array(
 				'No'			=> array(
 					'center',
 					'5%',
@@ -184,48 +173,24 @@ class history_absen extends _page{
 				'Name'			=> array(
 					'left',
 					'auto',
-					$val['name_user'],
+					$nm_user,
 					true
 				),
-				'Tanggal'		=> array(
-					'left',
+				'Lama'	=> array(
+					'right',
 					'15%',
-					$tanggal,
-					true
-				),
-				'Jam Kerja'		=> array(
-					'center',
-					'15%',
-					$worktime,
-					true
-				),
-				$masuk			=> array(
-					'center',
-					'10%',
-					$val['time_in_log_'],
-					true
-				),
-				$pulang			=> array(
-					'center',
-					'10%',
-					$val['time_out_log_'],
+					$lama .' Jam',
 					true
 				),
 				'Total'	=> array(
-					'left',
-					'10%',
-					$val['times'] .' '. $note,
-					true
-				),
-				'Waktu'	=> array(
-					'left',
-					'8%',
-					$extime,
+					'right',
+					'15%',
+					$total .' Jam',
 					true
 				),
 				'Status'		=> array(
 					'center',
-					'7%',
+					'10%',
 					$status,
 					true
 				),
@@ -238,12 +203,10 @@ class history_absen extends _page{
 			);
 
 			if(self::$type=='history_3'){
-				unset($data['table'][$key]['td']['Status']);
+				unset($data['table'][$no-1]['td']['Status']);
 				//unset($data['table'][$key]['td']['History']);
-			}
-
-			if(self::$type!='history_2'){
-				unset($data['table'][$key]['td']['Waktu']);
+			}else{
+				unset($data['table'][$no-1]['td']['Lama']);
 			}
 		}
 
@@ -298,7 +261,16 @@ class history_absen extends _page{
 		$default = $now.'-01';
 		$default = strtotime($default);
 		$rangeD = report_absen::get_range($now);
-		for($i=$rangeD['number_day'];$i<$rangeD['finish_day'];$i++){
+
+		if($rangeD['finish_month'] == date('m') && $rangeD['finish_year'] == date('Y')){
+			if($rangeD['finish_day']>date('d')){
+				$rangeD['finish_day'] = date('d');
+			}else if($rangeD['finish_day']<date('d')){
+				$rangeD['finish_day'] = date('d') - $rangeD['start_day'];
+			}
+		}
+
+		for($i=$rangeD['number_day'];$i<=$rangeD['finish_day'];$i++){
 			$_now = date('Y-m-d',strtotime($i.' days',$default));
 			$_day = date('w',strtotime($i.' days',$default));
 			$holiday = holiday_absen::_check_holiday($_now);
@@ -387,6 +359,7 @@ class history_absen extends _page{
 				)
 			),
 			'date'	=> false,
+			'modal'	=> 3
 		); 
 		
 		return $args;
@@ -418,7 +391,7 @@ class history_absen extends _page{
 				break;
 		}
 
-		$action = in_array($type,array('1','4','3'))?self::action():'';
+		$action = self::action();
 		$action .= in_array($type,array('2','3'))?self::action2():'';
 
 		$box = array(
@@ -811,9 +784,224 @@ class history_absen extends _page{
 
 // --------------------------------------------------------------
 // Database -----------------------------------------------------
-// --------------------------------------------------------------	
-
+// --------------------------------------------------------------
 	public function _history($id=0){
+		$id = str_replace('history_', '', $id);
+		intval($id);
+
+		$data = $_POST['type'];
+		$data = explode('#', $data);
+
+		parent::$type = $data[0];
+		$where = self::_where($data[1]);
+
+		if($data[0]=='history_3'){
+			$whr = "AND (_log_id.user='$id' OR `abs-log-detail`.log_id='0') ";
+		}else{
+			$whr = "AND _log_id.user='$id' ";
+		}
+
+		$history = sobad_logDetail::get_all(array(),$whr.$where);
+
+		$data = array();
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($history as $key => $val) {
+			$no += 1;
+
+			$note = ($val['type_log']==3)?'Jam':'Menit';
+
+			$date = date($val['_inserted_log_']);
+			$date = strtotime($date);
+			$days = date('w',$date);
+
+			$work = sobad_work::get_workTime($val['ID_shif'],"AND `abs-work-normal`.days='$days'");
+			$worktime = format_time_id($work[0]['time_in']).' - '.format_time_id($work[0]['time_out']);
+
+			$masuk = 'Masuk';$pulang = 'Pulang';$extime = $val['times'].' menit';
+			if(self::$type=='history_2'){
+				//Check kekurangan
+				$history = unserialize($val['log_history']);
+				if(isset($history['extime'])){
+					$extime = $history['extime'].' menit';
+				}
+
+				//Check history time
+				$masuk = 'Keluar';$pulang = 'Kembali';
+				$history = unserialize($val['history_log_']);
+
+				$val['time_in_log_'] = '-';
+				$val['time_out_log_'] = '-';
+
+				$_idx = 0;
+				if(isset($history['logs'])){
+					foreach ($history['logs'] as $ky => $vl) {
+						if(in_array($vl['type'],array('4','8'))){
+							if($ky==0){
+								$val['time_out_log_'] = $vl['time'];
+							}else{
+								$val['time_in_log_'] = $vl['time'];
+								$_idx = $ky;
+							}
+							break;
+						}
+					}
+
+					if(isset($history['logs'][$_idx + 1])){
+						if($_idx==0){
+							$val['time_in_log_'] = '-';
+						}else{
+							$val['time_out_log_'] = $history['logs'][$_idx + 1]['time'];
+						}
+					}
+				}
+			}
+
+			if(self::$type=='history_3'){
+				$masuk = 'Mulai';
+				$val['time_in_log_'] = $work[0]['time_out']=='00:00:00'?$val['time_in_log_']:format_time_id($work[0]['time_out']);
+			}
+
+			$status = '';
+			switch ($val['status']) {
+				case 0:
+					$status = '#666;';
+					break;
+
+				case 1:
+					$status = '#26a69a;';
+					break;
+
+				case 2:
+					$status = '#f5b724;';
+					break;
+				
+				default:
+					$status = '#fff;';
+					break;
+			}
+
+			$status = '<i class="fa fa-circle" style="color:'.$status.'"></i>';
+
+			$_history = array(
+				'ID'	=> 'history_'.$val['ID'],
+				'func'	=> '_historyDetail',
+				'color'	=> 'yellow',
+				'icon'	=> 'fa fa-eye',
+				'label'	=> 'History',
+				'type'	=> self::$type
+			);
+
+			$tanggal = format_date_id($val['date_schedule']);
+			$holiday = holiday_absen::_check_holiday($val['date_schedule']);
+			if($holiday){
+				$tanggal = '<span style="color:red;">'.$tanggal.'</span>';
+			}
+
+			$lama = '';
+			if(self::$type=='history_3'){
+				$lama = $val['times'];
+				if($lama<=2){
+					$val['times'] = $lama * 1.5;
+				}else{
+					$val['times'] = ($lama * 2) - 1;
+				}
+
+				if($holiday){
+					$val['times'] = ($lama * 2);
+				}
+			}
+
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'No'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Tanggal'		=> array(
+					'left',
+					'15%',
+					$tanggal,
+					true
+				),
+				'Jam Kerja'		=> array(
+					'center',
+					'15%',
+					$worktime,
+					true
+				),
+				$masuk			=> array(
+					'center',
+					'10%',
+					$val['time_in_log_'],
+					true
+				),
+				$pulang			=> array(
+					'center',
+					'10%',
+					$val['time_out_log_'],
+					true
+				),
+				'Lama'	=> array(
+					'right',
+					'10%',
+					$lama .' '. $note,
+					true
+				),
+				'Total'	=> array(
+					'right',
+					'10%',
+					$val['times'] .' '. $note,
+					true
+				),
+				'Waktu'	=> array(
+					'left',
+					'8%',
+					$extime,
+					true
+				),
+				'Status'		=> array(
+					'center',
+					'7%',
+					$status,
+					true
+				),
+				'View'		=> array(
+					'center',
+					'10%',
+					_modal_button($_history,2),
+					true
+				),
+			);
+
+			if(self::$type=='history_3'){
+				unset($data['table'][$key]['td']['Status']);
+				//unset($data['table'][$key]['td']['History']);
+			}else{
+				unset($data['table'][$key]['td']['Lama']);
+			}
+
+			if(self::$type!='history_2'){
+				unset($data['table'][$key]['td']['Waktu']);
+			}
+		}
+
+		$args = array(
+			'title'		=> 'History ',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
+
+	public function _historyDetail($id=0){
 		$id = str_replace('history_', '', $id);
 		intval($id);
 
@@ -884,7 +1072,7 @@ class history_absen extends _page{
 				'Edit'	=> array(
 					'center',
 					'10%',
-					_modal_button($_edit,2),
+					_modal_button($_edit,3),
 					true
 				),
 			);
@@ -914,7 +1102,11 @@ class history_absen extends _page{
 		$filter = strtotime($filter);
 		$filter = date('Y-m',$filter);
 
-		$args = sobad_user::get_id($id,array('name','shift','time_in','time_out'));
+		$rangeD = report_absen::get_range($filter);
+		$sDate = $rangeD['start_date'];
+		$fDate = $rangeD['finish_date'];
+
+		$args = sobad_user::get_id($id,array('name','shift','time_in','time_out','_inserted'),"AND _inserted BETWEEN '$sDate' AND '$fDate'");
 
 		$data['class'] = '';
 		$data['table'] = array();
@@ -923,6 +1115,9 @@ class history_absen extends _page{
 		foreach ($args as $key => $val) {
 			$no += 1;
 
+			$_now = strtotime($val['_inserted']);
+			$days = date('w',$_now);
+			
 			$work = sobad_work::get_workTime($val['shift'],"AND `abs-work-normal`.days='$days'");
 			$worktime = format_time_id($work[0]['time_in']).' - '.format_time_id($work[0]['time_out']);
 
@@ -943,7 +1138,7 @@ class history_absen extends _page{
 				'Jam Kerja'		=> array(
 					'left',
 					'20%',
-					format_date_id($val['_inserted']),
+					$worktime,
 					true
 				),
 				'Masuk'		=> array(
@@ -962,7 +1157,7 @@ class history_absen extends _page{
 		}
 
 		$args = array(
-			'title'		=> 'Absen "'.$args[0]['name'].'" - '.format_date_id($m).' '.$y,
+			'title'		=> 'Reward',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(),
 			'func'		=> array('sobad_table'),

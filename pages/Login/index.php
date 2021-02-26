@@ -118,10 +118,18 @@ class login_absen{
 			$time = 10 * 60 * 60; // 10 jam
 
 			$r=$q[0];
+
+			$image = sobad_post::get_id($r['picture'],array('notes'));
+			$check = array_filter($image);
+			if(!empty($check)){
+				$link = 'asset/img/user/'.$image[0]['notes'];
+			}
+
 			$_SESSION[$prefix.'page'] = $r['dept'];
 			$_SESSION[$prefix.'user'] = $user;
 			$_SESSION[$prefix.'id'] = $r['ID'];
 			$_SESSION[$prefix.'name'] = $r['name'];
+			$_SESSION[$prefix.'picture'] = $link;
 
 			setcookie('id',$r['ID'],time() + (60*60*10));
 			setcookie('name',$user,time() + (60*60*10));

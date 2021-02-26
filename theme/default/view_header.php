@@ -297,13 +297,13 @@ class metronic_header{
 		$name = get_name_user();
 		$id = get_id_user();
 
-		$user = sobad_user::get_id($id,array('picture'));
-		$image = empty($user[0]['notes_pict'])?'no-profile.jpg':$user[0]['notes_pict'];
+		$user = get_picture_user();
+		$image = empty($user)?'asset/img/user/no-profile.jpg':$user;
 
 		?>
 			<li class="dropdown dropdown-user">
 					<a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
-					<img alt="" class="img-circle" src="asset/img/user/<?php print($image) ;?>">
+					<img alt="" class="img-circle" src="<?php print($image) ;?>">
 					<span class="username username-hide-on-mobile">
 					<?php print($name) ;?> </span>
 					<i class="fa fa-angle-down"></i>

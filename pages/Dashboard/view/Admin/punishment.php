@@ -541,7 +541,7 @@ class punishment_absen extends _page{
 					'Jadwal'		=> array(
 						'left',
 						'15%',
-						format_date_id($vl['date']),
+						isset($vl['date'])?format_date_id($vl['date']):'-',
 						true
 					),
 					'Actual'		=> array(

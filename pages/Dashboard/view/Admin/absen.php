@@ -396,9 +396,11 @@ class report_absen extends _page{
 			'start_day'		=> $sDate,
 			'start_month'	=> $mb,
 			'start_year'	=> $my,
+			'start_date'	=> $my.'-'.$mb.'-'.$sDate,
 			'finish_day'	=> $fDate,
 			'finish_month'	=> $m,
 			'finish_year'	=> $y,
+			'finish_date'	=> $y.'-'.$m.'-'.$fDate,
 			'number_day'	=> $before
 		);
 	}

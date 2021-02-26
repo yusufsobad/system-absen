@@ -29,12 +29,20 @@ class dash_absensi{
 			'object'	=> 'dash_head1',
 			'data'		=> ''
 		);
+
+		$data[] = array(
+			'style'		=> array(),
+			'script'	=> array(''),
+			'func'		=> '_layout',
+			'object'	=> 'dash_head2',
+			'data'		=> ''
+		);
 		
 		$data[] = array(
 			'style'		=> array(),
 			'script'	=> array('dash_absensi','dash_script'),
 			'func'		=> '_layout',
-			'object'	=> 'dash_head2',
+			'object'	=> 'dash_head3',
 			'data'		=> ''
 		);
 		
@@ -161,6 +169,15 @@ class dash_absensi{
 
 	public static function dash_punishment(){
 		return dash_head2::_statistic();
+	}
+
+	public static function dash_comparison(){
+		$func = '_'.$_POST['type'];
+		if(is_callable(array(new dash_head3(),$func))){
+			return dash_head3::{$func}();
+		}
+
+		return '';
 	}
 
 	// ----------------------------------------------------

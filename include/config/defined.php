@@ -34,6 +34,11 @@ function get_name_user(){
 	return $user;
 }
 
+function get_picture_user(){
+	$picture = isset($_SESSION[_prefix.'picture'])?$_SESSION[_prefix.'picture']:'';
+	return $picture;
+}
+
 class _config_define{
 	public function __construct(){
 		self::_system();

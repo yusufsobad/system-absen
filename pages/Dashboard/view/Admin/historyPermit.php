@@ -26,9 +26,9 @@ class historyPermit_absen extends _page{
 	}
 
 	protected function _where($now=''){
-		$now = strtotime($now);
-		$y = date('Y',$now);
-		$m = date('m',$now);
+		$conv = report_absen::get_range($now);
+		$sdate = $conv['start_year'].'-'.$conv['start_month'].'-'.$conv['start_day'];
+		$fdate = $conv['finish_year'].'-'.$conv['finish_month'].'-'.$conv['finish_day'];
 
 		switch (parent::$type) {
 			case 'history_3':
@@ -48,7 +48,7 @@ class historyPermit_absen extends _page{
 				break;
 		}
 
-		$where .= " AND ((YEAR(start_date)='$y' AND MONTH(start_date)='$m') OR (YEAR(range_date)='$y' AND MONTH(range_date)='$m'))";
+		$where .= " AND (start_date>='$sdate' AND range_date<='$fdate')";
 		
 		return $where;
 	}
@@ -82,7 +82,7 @@ class historyPermit_absen extends _page{
 
 		$object = self::$table;
 		$args = $object::get_all($args,$where);
-		$sum_data = $object::count("1=1 ".$cari,self::_array());
+		//$sum_data = $object::count("1=1 ".$cari,self::_array());
 		
 		$data['data'] = array('data' => $kata,'type' => parent::$type);
 		$data['search'] = array('Semua','nama');
@@ -285,7 +285,7 @@ class historyPermit_absen extends _page{
 		$date = $data[1];
 
 		$where = self::_where($date);
-		$history = sobad_permit::get_all(array('user','start_date','range_date','num_day','type_date','type'),$where." AND user='$id'");
+		$history = sobad_permit::get_all(array('user','start_date','range_date','num_day','type_date','type','note'),$where." AND user='$id'");
 
 		$data['class'] = '';
 		$data['table'] = array();
@@ -321,8 +321,14 @@ class historyPermit_absen extends _page{
 				),
 				'Jenis'		=> array(
 					'left',
-					'auto',
+					'20%',
 					permit_absen::_conv_type($val['type']),
+					true
+				),
+				'Keterangan'	=> array(
+					'left',
+					'auto',
+					$val['note'],
 					true
 				),
 				'Lama'		=> array(
@@ -350,7 +356,7 @@ class historyPermit_absen extends _page{
 // Database -----------------------------------------------------
 // --------------------------------------------------------------	
 	public function _preview($args=array()){
-		$_SESSION[_prefix.'development'] = 1;
+		$_SESSION[_prefix.'development'] = 0;
 		parent::$type = $_GET['type'];
 
 		switch (parent::$type) {
@@ -389,11 +395,26 @@ class historyPermit_absen extends _page{
 	public function _html(){
 		parent::$type = $_GET['type'];
 		$now = isset($_GET['filter']) && !empty($_GET['filter'])?$_GET['filter']:date('Y-m');
-		$data = self::table($now);
+
+		$where = self::_where($now);
+		$args = self::_array();
+
+		$object = self::$table;
+		$args = $object::get_all($args,$where);
 
 		$now = strtotime($now);
 		$dateM = date('m',$now);
 		$dateY = date('Y',$now);
+
+		$users = array();
+		foreach($args as $key => $val){
+			$idx = $val['user'];
+			if(isset($users[$idx])){
+				$user[$idx] = array();
+			}
+
+			$users[$idx][] = $val;
+		}
 
 		switch (parent::$type) {
 			case 'history_3':
@@ -413,17 +434,87 @@ class historyPermit_absen extends _page{
 				break;
 		}
 
-		unset($data['data']);
-		unset($data['search']);
 		?>
 			<page backtop="5mm" backbottom="5mm" backleft="5mm" backright="5mm" pagegroup="new">
 				<div style="text-align:center;width:100%;">
 					<h2 style="margin-bottom: 0px;"> <?php print($title) ;?> </h2>
 					<h3 style="margin-top: 0px;">Bulan <u>Absensi</u>: <?php echo conv_month_id($dateM).' '.$dateY ;?></h3>
 				</div><br>
-			<?php
-				metronic_layout::sobad_table($data);
-			?>
+				<table style="width:100%;font-family:calibri;">
+					<thead>
+						<tr>
+							<th style="width:45%;font-family: calibriBold;"></th>
+							<th style="width:20%;font-family: calibriBold;"></th>
+							<th style="width:35%;font-family: calibriBold;"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+							$no = 0;
+							foreach ($users as $key => $val) {
+								$lama = 0;$no += 1;
+								foreach ($val as $_key => $_val) {
+									$conv = permit_absen::_conv_dateRange($_val);
+									$range = $conv['range'];
+
+									$lama += $range;
+								}
+
+								$lama += count($val);
+
+								?>
+									<tr>
+										<td style="padding-top: 30px;font-family: calibriBold;"><?php print($val[0]['name_user']) ;?></td>
+										<td style="padding-top: 30px;">Banyak : <?php print(count($val).' kali'); ?></td>
+										<td style="text-align:right;padding-right: 20px;padding-top: 30px;">Total : <?php print($lama.' hari'); ?></td>
+									</tr>
+									<tr>
+										<td colspan="3">
+											<table class="table-bordered sobad-punishment" style="width:100%;font-family:calibri;">
+												<thead>
+													<tr>
+														<th style="text-align:center;width:5%;font-family: calibriBold;">No</th>
+														<th style="text-align:center;width:20%;font-family: calibriBold;">Mulai</th>
+														<th style="text-align:center;width:20%;font-family: calibriBold;">Sampai</th>
+														<th style="text-align:center;width:15%;font-family: calibriBold;">Jenis</th>
+														<th style="text-align:center;width:25%;font-family: calibriBold;">Keterangan</th>
+														<th style="text-align:center;width:15%;font-family: calibriBold;">Lama</th>
+													</tr>
+												</thead>
+												<tbody>
+													<?php
+														$_no = 0;
+														foreach ($val as $_key => $_val) {
+															$_no += 1;
+
+															$conv = permit_absen::_conv_dateRange($_val);
+															$_val = $conv['data'];
+															$sts_day = $conv['status'];
+															$range = $conv['range'];
+
+															$mulai = conv_day_id($_val['start_date']).', '.format_date_id($_val['start_date']);
+															$sampai = conv_day_id($_val['range_date']).', '.format_date_id($_val['range_date']);
+															?>
+																<tr>
+																	<td><?php print($_no) ;?></td>
+																	<td><?php print($mulai) ;?></td>
+																	<td><?php print($sampai) ;?></td>
+																	<td><?php print(permit_absen::_conv_type($_val['type'])) ;?></td>
+																	<td><?php print($_val['note']) ;?></td>
+																	<td><?php print(($range + 1).' '.$sts_day) ;?></td>
+																</tr>
+															<?php
+														}
+													?>
+												</tbody>
+											</table>
+										</td>
+									</tr>
+								<?php
+							}
+						?>
+					</tbody>
+				</table>
 			</page>
 		<?php
 	}

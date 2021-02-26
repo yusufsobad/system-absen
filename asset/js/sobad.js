@@ -1,6 +1,6 @@
 // support jQuery Core
 var system = "system-absen";
-var server = "http://abadi-server/"+system;
+var server = hosting+system;
 
 var url_ajax = "include/ajax.php";
 var url_preview = "include/preview.php";
