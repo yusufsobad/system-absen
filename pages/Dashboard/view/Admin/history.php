@@ -270,7 +270,7 @@ class history_absen extends _page{
 
 		if($rangeD['start_month'] == date('m') && $rangeD['start_year'] == date('Y')){
 			if($rangeD['start_day']<=date('d')){
-				$rangeD['finish_day'] = date('d') - $rangeD['start_day'];
+				$rangeD['finish_day'] = $rangeD['number_day'] + (date('d') - $rangeD['start_day']);
 			}
 		}
 
