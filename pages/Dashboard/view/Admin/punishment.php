@@ -1116,10 +1116,10 @@ class punishment_absen extends _page{
 								</li>
 								<li>
 									Punishment dilakukan <span style="font-family: calibriBold">sebelum</span> jam kerja berlangsung dengan ketentuan:<br>
-									<i style="padding-left:10px;"></i>a. Untuk Punishment 30 menit : maksimal absen sebelum jam 07.20 WIB <br>
-									<i style="padding-left:10px;"></i>b. Untuk Punishment 60 menit : maksimal absen sebelum jam 06.50 WIB <br>
+									<i style="padding-left:10px;"></i>a. Untuk Punishment 30 menit : maksimal absen sebelum jam 07.25 WIB <br>
+									<i style="padding-left:10px;"></i>b. Untuk Punishment 60 menit : maksimal absen sebelum jam 06.55 WIB <br>
 									<i style="padding-left:10px;"></i>c. Jika absen punishment di atas jam tersebut, maka secara sistem tidak akan terekam sebagai pelaksanaan punishment <br>
-									<i style="padding-left:10px;"></i>d. Jika absen setelah jam 06.50 WIB dan sebelum jam 07.20 maka akan di hitung telah melaksanakan punishment 30 menit <br>
+									<i style="padding-left:10px;"></i>d. Jika absen setelah jam 06.50 WIB dan sebelum jam 07.25 maka akan di hitung telah melaksanakan punishment 30 menit <br>
 									<i style="padding-left:10px;"></i>e. Untuk punishment 60 menit dapat dilakukan 2 x 30 menit (2 hari) <br>
 								</li>
 								<li>
