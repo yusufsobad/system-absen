@@ -697,8 +697,9 @@ class punishment_absen extends _page{
 				}
 
 				if($vl['times']>=60){
-					$_status = false;
+					$_status = true;
 					if($vl['status']==2){
+						$_status = false;
 						$args[$vl['index']]['status'] = 0;
 						break;
 					}

@@ -398,7 +398,7 @@ class absensi{
 					$_out = _calc_time($work['time_out'],'30 minutes');
 					// Jika lebih dari 30 jam ---> modal box
 					if($time>=$_out){
-						$_log = sobad_logDetail::get_all(array('ID','log_id','times'),"AND _log_id.user='$_userid' AND type_log='2' AND status!='1'");
+						$_log = sobad_logDetail::get_all(array('ID','log_id','times'),"AND _log_id.user='$_userid' AND type_log='2' AND `abs-log-detail`.status!='1'");
 						$check = array_filter($_log);
 
 						// Jika tidak ada ganti jam
