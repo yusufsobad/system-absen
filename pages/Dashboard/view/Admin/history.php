@@ -102,11 +102,29 @@ class history_absen extends _page{
 			$no += 1;
 
 			$lama = 0;
-			$status = 0;
+			$status = 1;
 			$total = 0;
 			foreach ($val as $_key => $_val) {
-				if($_val['status']>$status){
-					$status = $_val['status'];
+				switch ($_val['status']) {
+					case 0:
+						$status = 0;
+						break;
+
+					case 1:
+						if($status!=1){
+							$status = 2;
+						}else{
+							$status = 1;
+						}
+						break;
+
+					case 2:
+						$status = 2;
+						break;
+					
+					default:
+						$status = 0;
+						break;
 				}
 
 				$lama += $_val['times'];
@@ -561,7 +579,7 @@ class history_absen extends _page{
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_add_lembur',
-				'load'		=> 'sobad_portlet',
+				'load'		=> 'history_portlet',
 				'type'		=> $_POST['type']
 			)
 		);
@@ -659,7 +677,7 @@ class history_absen extends _page{
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_update_gantiJam',
-				'load'		=> 'here_modal'
+				'load'		=> 'here_modal2'
 			)
 		);
 		
@@ -787,7 +805,7 @@ class history_absen extends _page{
 		));
 
 		if($q!==0){
-			return self::_history($_idx);
+			return self::_historyDetail($_idx);
 		}
 	}
 
@@ -795,16 +813,31 @@ class history_absen extends _page{
 // Database -----------------------------------------------------
 // --------------------------------------------------------------
 	public function _history($id=0){
+		$data = self::_historyTable($id);
+
+		$args = array(
+			'id'		=> 'history_portlet',
+			'title'		=> 'History ',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
+
+	public function _historyTable($id=0){
 		$id = str_replace('history_', '', $id);
 		intval($id);
 
-		$data = $_POST['type'];
-		$data = explode('#', $data);
+		$_type = $_POST['type'];
+		$_type = explode('#', $_type);
 
-		parent::$type = $data[0];
-		$where = self::_where($data[1]);
+		parent::$type = $_type[0];
+		$where = self::_where($_type[1]);
 
-		if($data[0]=='history_3'){
+		if($_type[0]=='history_3'){
 			$whr = "AND (_log_id.user='$id' OR `abs-log-detail`.log_id='0') ";
 		}else{
 			$whr = "AND _log_id.user='$id' ";
@@ -900,7 +933,7 @@ class history_absen extends _page{
 				'color'	=> 'yellow',
 				'icon'	=> 'fa fa-eye',
 				'label'	=> 'History',
-				'type'	=> self::$type
+				'type'	=> self::$type.'#'.$_type[1]
 			);
 
 			$tanggal = format_date_id($val['date_schedule']);
@@ -999,22 +1032,15 @@ class history_absen extends _page{
 			}
 		}
 
-		$args = array(
-			'title'		=> 'History ',
-			'button'	=> '_btn_modal_save',
-			'status'	=> array(),
-			'func'		=> array('sobad_table'),
-			'data'		=> array($data)
-		);
-		
-		return modal_admin($args);
+		return $data;
 	}
 
 	public function _historyDetail($id=0){
 		$id = str_replace('history_', '', $id);
 		intval($id);
 
-		$type = $_POST['type'];
+		$data = explode('#', $_POST['type']);
+		self::$type = $type = $data[0];
 		if($type=='history_1'){
 			return punishment_absen::_history($id);
 		}
@@ -1227,9 +1253,18 @@ class history_absen extends _page{
 			);
 
 			if($args['ID']==0){
-				sobad_db::_insert_table('abs-log-detail',$data);
+				if($args['time']>0){
+					sobad_db::_insert_table('abs-log-detail',$data);
+				}
 			}else{
-				sobad_db::_update_single($args['ID'],'abs-log-detail',$data);
+				if($args['time']>0){
+					sobad_db::_update_single($args['ID'],'abs-log-detail',$data);
+				}else{
+					self::_delete($args['ID']);
+				}
+
+				$table = self::_historyTable($val);
+				return table_admin($table);
 			}
 		}
 

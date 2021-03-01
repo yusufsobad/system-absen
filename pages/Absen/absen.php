@@ -32,7 +32,7 @@ class absensi{
 		$punish = 0;
 		$times = date('H:i:s');
 
-		$worktime = _calc_time($worktime,'-39 minutes'); // 10 menit adalah waktu briefing
+		$worktime = _calc_time($worktime,'-34 minutes'); // 5 menit adalah waktu briefing
 
 		if($times<$worktime){
 			$punish = 30;
@@ -395,16 +395,22 @@ class absensi{
 
 					sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
 
-					$_out = _calc_time($work['time_out'],'1 hours');
-					// Jika lebih dari 1 jam ---> modal box
+					$_out = _calc_time($work['time_out'],'30 minutes');
+					// Jika lebih dari 30 jam ---> modal box
 					if($time>=$_out){
-						$_log = sobad_logDetail::get_all(array('ID','log_id','times'),"AND _log_id.user='$_userid' AND type_log='2'");
+						$_log = sobad_logDetail::get_all(array('ID','log_id','times'),"AND _log_id.user='$_userid' AND type_log='2' AND status!='1'");
 						$check = array_filter($_log);
 
 						// Jika tidak ada ganti jam
 						if(empty($check)){
 							$label = 'Lembur';
 							$index = 9;
+
+							// jika kurang dari satu jam
+							$_out = _calc_time($work['time_out'],'1 hours');
+							if($time<$_out){
+								goto pulang;
+							}
 						}else{
 							$label = 'Ganti Jam';
 							$index = 7;
@@ -428,6 +434,7 @@ class absensi{
 						);
 					}
 
+					pulang:
 					return array(
 						'id' 		=> $id,
 						'data' 		=> array(
