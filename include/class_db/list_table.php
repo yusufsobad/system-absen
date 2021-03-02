@@ -33,6 +33,7 @@ class sobad_table{
 		
 		$table = array(
 			'abs-about'		=> self::abs_about(),
+			'abs-history'	=> self::abs_history(),
 			'abs-holiday'		=> self::abs_holiday(),
 			'abs-module'		=> self::abs_module(),
 			'abs-permit'		=> self::abs_permit(),
@@ -56,6 +57,18 @@ class sobad_table{
 			'config_name'	=> '',
 			'config_value'	=> '',
 			'status'	=> 0,	
+		);
+		
+		return $list;
+	}
+
+	private static function abs_history(){
+		$list = array(
+			'meta_id'	=> 0,
+			'meta_key'	=> '',
+			'meta_value'	=> '',
+			'meta_var'	=> '',
+			'meta_date'	=> date('Y-m-d H:i:s'),	
 		);
 		
 		return $list;

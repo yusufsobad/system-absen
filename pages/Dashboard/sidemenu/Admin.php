@@ -1,6 +1,6 @@
 <?php
 
-function sidemenu_admin(){
+function sidemenu_dashboard(){
 	$args = array();
 	$args['dashboard'] = array(
 		'status'	=> 'active',

@@ -69,6 +69,7 @@ class absen_sobad{
 			<script>
 			var m = 0;
 			var reload = true;
+			var stsnow = true;
 
 			setInterval(function(){
 				var currentdate = new Date(); 
@@ -83,6 +84,14 @@ class absen_sobad{
 					var _now = currentdate.getHours() * 60 + currentdate.getMinutes();
 					if(_now>302){
 						reload = true;
+					}
+				}
+
+				if(stsnow){
+					if(time=="20:0"){
+						stsnow = false;
+						var data = "ajax=_checkAlpha&object=report_absen&data=0";
+						sobad_ajax('#my',data,'html',false,'','');
 					}
 				}
 

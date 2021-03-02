@@ -2,13 +2,13 @@
 require dirname(__FILE__).'/function.php';
 
 $args = array();
-$args['dashboard'] = array(
-	'page'		=> 'dashboard_sobad',
+$args['admin'] = array(
+	'page'		=> 'admin_sobad',
 	'home'		=> false
 );
 reg_hook('reg_page',$args);
 
-class dashboard_sobad{
+class admin_sobad{
 	public function _reg(){
 		$GLOBALS['body'] = 'page-header-fixed';
 		
@@ -19,7 +19,7 @@ class dashboard_sobad{
 		
 		self::_script();
 		reg_hook('reg_language',array());
-		reg_hook('reg_sidebar',sidemenu_dashboard());
+		reg_hook('reg_sidebar',sidemenu_admin());
 	}
 
 	public function _page(){

@@ -702,6 +702,15 @@ class permit_absen extends _page{
 
 			$data['user'] = $val;
 			$q = sobad_db::_insert_table('abs-permit',$data);
+
+			//Check log absen
+			$now = date('Y-m-d');
+			$u = sobad_user::get_logs(array('ID','type'),"user='$val' AND _inserted='$now'");
+			$c = array_filter($u);
+			if(!empty($c)){
+				$_type = $data['type']>10?4:$data['type'];
+				sobad_db::_update_single($u[0]['ID'],'abs-user-log',array('type' => $_type));
+			}
 		}
 
 		if($q!==0){

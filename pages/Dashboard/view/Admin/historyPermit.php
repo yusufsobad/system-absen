@@ -99,6 +99,27 @@ class historyPermit_absen extends _page{
 			$users[$idx][] = $val;
 		}
 
+		//Hitung Jumlah Cuti
+		$sisa = 0;
+		if(parent::$type=='history_3'){
+			$_date = strtotime($now);
+			$_y = date('Y',$_date);
+			$_m = date('m',$_date);
+
+			$_option = sobad_module::get_all(array('meta_value'),"AND meta_key='opt_dayoff' AND meta_reff='$_y'");
+			$_option = $_option[0]['meta_value'];
+
+			$_dayoff = array();
+			$q = sobad_permit::get_all(array('user','num_day'),"AND type='3' AND YEAR(start_date)='$_y' AND MONTH(start_date)<='$_m'");
+			foreach ($q as $key => $val) {
+				if(!isset($_dayoff[$val['user']])){
+					$_dayoff[$val['user']] = $_option;
+				}
+
+				$_dayoff[$val['user']] -= $val['num_day'];
+			}
+		}
+
 		$no = 0;
 		foreach($users as $key => $val){
 			$no += 1;
@@ -122,6 +143,10 @@ class historyPermit_absen extends _page{
 				'label'	=> 'History',
 				'type'	=> self::$type.'#'.$now
 			);
+
+			if(parent::$type=='history_3'){
+				$sisa = isset($_dayoff[$key])?$_dayoff[$key]:0;
+			}
 			
 			$data['table'][$no-1]['tr'] = array('');
 			$data['table'][$no-1]['td'] = array(
@@ -149,6 +174,12 @@ class historyPermit_absen extends _page{
 					$lama.' hari',
 					true
 				),
+				'Sisa'		=> array(
+					'center',
+					'10%',
+					$sisa.' hari',
+					true
+				),		
 				'History'		=> array(
 					'center',
 					'10%',
@@ -156,6 +187,10 @@ class historyPermit_absen extends _page{
 					true
 				),
 			);
+
+			if(parent::$type!='history_3'){
+				unset($data['table'][$no-1]['tr']['Sisa']);
+			}
 		}
 		
 		return $data;

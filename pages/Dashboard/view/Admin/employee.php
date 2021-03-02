@@ -772,7 +772,7 @@ class employee_absen extends _file_manager{
 				'label'			=> 'Sisa Cuti',
 				'class'			=> 'input-circle',
 				'value'			=> number_format($vals['dayOff'],1,',','.'),
-				'data'			=> ''
+				'data'			=> 'readonly'
 			)
 		);
 			

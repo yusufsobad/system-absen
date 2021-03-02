@@ -778,11 +778,11 @@ class absensi{
 				}
 
 				if($_log){
-					sobad_db::_update_single($log[0]['id_join'],'abs-user-log',array(
-							'user' 		=> $idx,
-							'type'		=> $_permit[$idx],
-						)
-					);
+				//	sobad_db::_update_single($log[0]['id_join'],'abs-user-log',array(
+				//			'user' 		=> $idx,
+				//			'type'		=> $_permit[$idx],
+				//		)
+				//	);
 				}else{
 					if(!$_libur){
 						sobad_db::_insert_table('abs-user-log',array(

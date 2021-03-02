@@ -695,8 +695,11 @@ class report_absen extends _page{
 		return modal_admin($args);
 	}
 
-	public function _add_permit($args=array()){
-		$args = sobad_asset::ajax_conv_json($args);
+	public function _add_permit($args=array(),$ajax=false){
+		if(!$ajax){
+			$args = sobad_asset::ajax_conv_json($args);
+		}
+
 		$src = array();
 
 		$id = $args['ID'];
@@ -760,16 +763,45 @@ class report_absen extends _page{
 			$y = date('Y',$date);
 			$m = date('m',$date);
 
-			$logs = sobad_user::get_logs(array('ID'),"YEAR(_inserted)='$y' AND MONTH(_inserted)='$m' AND type='0'");
+			$logs = sobad_user::get_logs(array('ID'),"user='$id' AND YEAR(_inserted)='$y' AND MONTH(_inserted)='$m' AND type='0'");
 			$count = count($logs);
 
-			if($count>=5){
+			$_data = 0;
+			if($count>=3){
+				$_data = 1;
+
+				$meta = sobad_user::check_meta($id,'_warning');
+				$check = array_filter($meta);
+				if(empty($check)){
+					$q = sobad_db::_insert_table('abs-user-meta',array('_warning' => $_data));
+				}
+
+			}else if($count>=4){
+				$_data = 2;
+			}else if($count>=5){
+				$_data = 3;
+
 				$besuk = date('Y-m-d',strtotime('+1 days',$date));
 				employee_absen::_dismissed($id,$besuk);
 			}
+
+			if($_data>0){
+				// Update SP
+				$whr = "meta_id='$id' AND meta_key='_warning'";
+				$q = sobad_db::_update_multiple($whr,'abs-user-meta',array('_warning' => $_data));
+
+				// Update History
+				sobad_db::_insert_table('abs-history',array(
+					'meta_id'		=> $id,
+					'meta_key'		=> '_warning',
+					'meta_value'	=> $_data,
+					'meta_var'		=> 'user',
+					'meta_date'		=> date('Y-m-d H:i:s')
+				));
+			}
 		}
 
-		if($q!==0){
+		if($q!==0 && $ajax==false){
 			ob_start();
 			$table = self::table($_type[1],date('Y-m',$_type[2]));
 			metronic_layout::sobad_table($table);
@@ -888,5 +920,34 @@ class report_absen extends _page{
 	private function _filter_column($key='',$_data='',$type=''){
 		$data[$key] = formatting::sanitize($_data,$type);
 		return $data;
+	}
+
+	// ------------------------------------------------------------
+	// Ajax Request -----------------------------------------------
+	// ------------------------------------------------------------
+
+	public function _checkAlpha(){
+		// Check today
+		$now = date('Y-m-d');
+		$holiday = holiday_absen::_check_holiday($now);
+		if(!$holiday){
+			// get all user
+			$user = sobad_user::get_all(array('ID'),"AND status!='0'");
+			foreach ($user as $key => $val) {
+				$idx = $val['ID'];
+				$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND _inserted='$now'");
+				$check = array_filter($logs);
+				if(empty($check)){
+					$args = array(
+						'ID'		=> $idx,
+						'_inserted'	=> $now,
+						'type'		=> 0,
+						'note'		=> 'Tidak Absen'
+					);
+
+					self::_add_permit($args,true);
+				}
+			}
+		}
 	}
 }
