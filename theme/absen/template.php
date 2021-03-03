@@ -96,7 +96,7 @@ abstract class absen_control{
 				}
 */				
 				if($_work['status']){
-					if($time>=$_work['time_in']){
+					if($val['time_in']>=$_work['time_in']){
 						$waktu = '<span style="color:red;">'.$time.'</span>';
 					}
 				}

@@ -202,7 +202,7 @@ class absensi{
 		$user = sobad_user::get_absen(array('divisi','_nickname','id_join','type','time_in','time_out','history'),$date,$whr);
 
 		//check group
-		$grp_punish = self::_checkGroup($user['divisi']);
+		$grp_punish = report_absen::_checkGroup($user['divisi']);
 
 		$punish = 0;
 		if($work['status']){
