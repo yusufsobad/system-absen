@@ -89,10 +89,6 @@ class dash_head2{
 	}
 
 	public static function _statistic(){
-		$date = date('Y-m');
-		$start_date = $date.'-01';
-		$end_date = $date.'-'.sum_days(date('m'),date('Y'));
-
 		$label = array();
 
 		$data = array();
@@ -104,17 +100,17 @@ class dash_head2{
 
 		$data[0]['data'] = array();
 
-		$user = sobad_user::get_all(array('ID','name'));
+		$user = sobad_user::get_all(array('ID','name'),"AND status!='0'");
 		foreach ($user as $key => $val) {
-			$log = sobad_user::count_log($val['ID'],"AND punish='1' AND _inserted BETWEEN '$start_date' AND '$end_date'");
+			$log = self::_checkLate($val['ID'],$now);
 
 			$color = 0;
-			if($log>0){
-				if($log>2){
+			if($log['qty']>0){
+				if($log['qty']>2){
 					$color = 1; // orange
 				}
 
-				if($log>4){
+				if($log['status']>1){
 					$color = 2; // merah
 				}
 

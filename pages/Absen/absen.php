@@ -3,31 +3,6 @@
 class absensi{
 	protected $object = 'absensi';
 
-	public static function _status_group($data = array()){
-		$group = array();
-		if(isset($data)){
-			if(in_array(1,$data)){
-				$group['status'] = 1;
-			}else{
-				$group['status'] = 0;
-			}
-
-			if(in_array(2,$data)){
-				$group['group'] = 1;
-			}else{
-				$group['group'] = 0;
-			}
-
-			if(in_array(3,$data)){
-				$group['punish'] = 1;
-			}else{
-				$group['punish'] = 0;
-			}
-		}
-
-		return $group;
-	}
-
 	public static function _check_punishment($user=0,$worktime=''){
 		$punish = 0;
 		$times = date('H:i:s');
@@ -223,8 +198,11 @@ class absensi{
 			sobad_db::_update_single($permit[0]['ID'],'abs-permit',array('range_date' => $pDate));
 		}
 
+		//check log
+		$user = sobad_user::get_absen(array('divisi','_nickname','id_join','type','time_in','time_out','history'),$date,$whr);
+
 		//check group
-		$group['status'] = self::_status_group($group['status']);
+		$grp_punish = self::_checkGroup($user['divisi']);
 
 		$punish = 0;
 		if($work['status']){
@@ -233,12 +211,9 @@ class absensi{
 			}
 		}
 
-		if($group['status']['punish']==0){
+		if($grp_punish==false){
 			$punish = 0;
 		}
-
-		//check log
-		$user = sobad_user::get_absen(array('_nickname','id_join','type','time_in','time_out','history'),$date,$whr);
 
 		$check = array_filter($user);
 		if(empty($check)){
@@ -324,7 +299,7 @@ class absensi{
 					}
 				}
 
-				if($group['status']['punish']==0){
+				if($grp_punish==0){
 					$time = '';
 				}
 
@@ -457,6 +432,26 @@ class absensi{
 							'status' 	=> 1,
 							'msg' 		=> 'Anda sudah scan masuk!!!'
 						);	
+					}
+
+					if($grp_punish==false){
+						// Karyawan non Punishment
+						$history = unserialize($user['history']);
+						$history['logs'][] = array('type' => 2,'time' => $times);
+						$history = serialize($history);
+
+						sobad_db::_update_single($user['id_join'],'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
+
+						return array(
+							'id' 		=> $id,
+							'data' 		=> array(
+								'type' => 2,
+								'date' => $time
+							),
+							'status' 	=> 1,
+							'msg' 		=> '',
+							'absen'		=> true
+						);
 					}
 
 					return array(

@@ -537,7 +537,8 @@ class employee_absen extends _file_manager{
 			'class'	=> '',
 			'color'	=> 'green',
 			'icon'	=> 'fa fa-plus',
-			'label'	=> 'Add'
+			'label'	=> 'Add',
+			'status'=> $vals['ID']==0?'':'disabled'
 		);
 
 		$divisi = sobad_module::_gets('department',array('ID','meta_value'));
@@ -565,7 +566,7 @@ class employee_absen extends _file_manager{
 			0	=> array(
 				'func'			=> 'opt_hidden',
 				'type'			=> 'hidden',
-				'key'			=> 'ID',
+				'key'			=> '_IDX',
 				'value'			=> $vals['ID']
 			),
 			array(
@@ -736,7 +737,7 @@ class employee_absen extends _file_manager{
 				'label'			=> $_label,
 				'class'			=> 'input-circle',
 				'select'		=> $vals[$_key],
-				'status'		=> ''
+				'status'		=> $vals['ID']==0?'':'disabled'
 			),
 			array(
 				'id'			=> 'divisi',
@@ -747,7 +748,7 @@ class employee_absen extends _file_manager{
 				'label'			=> 'Jabatan',
 				'class'			=> 'input-circle',
 				'select'		=> $vals['divisi'],
-				'status'		=> ''
+				'status'		=> $vals['ID']==0?'':'disabled'
 			),
 			array(
 				'func'			=> 'opt_select',
@@ -948,6 +949,11 @@ class employee_absen extends _file_manager{
 	// ----------------------------------------------------------
 	// Function category to database -----------------------------
 	// ----------------------------------------------------------
+
+	protected function _callback($args=array(),$_args=array()){
+		$args['ID'] = $args['_IDX'];
+		return $args;
+	}
 
 	public function _next($id){
 		$id = str_replace("next_", '', $id);

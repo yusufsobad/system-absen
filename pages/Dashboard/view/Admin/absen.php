@@ -695,7 +695,7 @@ class report_absen extends _page{
 		return modal_admin($args);
 	}
 
-	public function _add_permit($args=array(),$ajax=false){
+	public function _add_permit($args=array(),$ajax=false,$code=6){
 		if(!$ajax){
 			$args = sobad_asset::ajax_conv_json($args);
 		}
@@ -766,39 +766,7 @@ class report_absen extends _page{
 			$logs = sobad_user::get_logs(array('ID'),"user='$id' AND YEAR(_inserted)='$y' AND MONTH(_inserted)='$m' AND type='0'");
 			$count = count($logs);
 
-			$_data = 0;
-			if($count>=3){
-				$_data = 1;
-
-				$meta = sobad_user::check_meta($id,'_warning');
-				$check = array_filter($meta);
-				if(empty($check)){
-					$q = sobad_db::_insert_table('abs-user-meta',array('_warning' => $_data));
-				}
-
-			}else if($count>=4){
-				$_data = 2;
-			}else if($count>=5){
-				$_data = 3;
-
-				$besuk = date('Y-m-d',strtotime('+1 days',$date));
-				employee_absen::_dismissed($id,$besuk);
-			}
-
-			if($_data>0){
-				// Update SP
-				$whr = "meta_id='$id' AND meta_key='_warning'";
-				$q = sobad_db::_update_multiple($whr,'abs-user-meta',array('_warning' => $_data));
-
-				// Update History
-				sobad_db::_insert_table('abs-history',array(
-					'meta_id'		=> $id,
-					'meta_key'		=> '_warning',
-					'meta_value'	=> $_data,
-					'meta_var'		=> 'user',
-					'meta_date'		=> date('Y-m-d H:i:s')
-				));
-			}
+			self::_changeStatus($id,$count,$code);
 		}
 
 		if($q!==0 && $ajax==false){
@@ -926,28 +894,192 @@ class report_absen extends _page{
 	// Ajax Request -----------------------------------------------
 	// ------------------------------------------------------------
 
+	public function _checkGantiJam(){
+		$now = date('Y-m-d');
+		$logs = sobad_logDetail::get_all(array('ID','date_schedule','times'),"AND type_log='2'");
+		foreach ($variable as $key => $value) {
+			$next = strtotime($val['date_schedule']);
+			$next = date('Y-m-d',strtotime("+1 month",$next));
+
+			if($now>=$next){
+				$times = $val['times'] + 60;
+				sobad_db::_update_single($val['ID'],'abs-log-detail',array('date_schedule' => $next, 'times' => $times));
+			}
+		}
+	}
+
 	public function _checkAlpha(){
 		// Check today
 		$now = date('Y-m-d');
 		$holiday = holiday_absen::_check_holiday($now);
 		if(!$holiday){
 			// get all user
-			$user = sobad_user::get_all(array('ID'),"AND status!='0'");
+			$user = sobad_user::get_all(array('ID','divisi'),"AND status!='0'");
 			foreach ($user as $key => $val) {
 				$idx = $val['ID'];
-				$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND _inserted='$now'");
-				$check = array_filter($logs);
-				if(empty($check)){
-					$args = array(
-						'ID'		=> $idx,
-						'_inserted'	=> $now,
-						'type'		=> 0,
-						'note'		=> 'Tidak Absen'
-					);
+				$check = self::_checkGroup($val['divisi']);
 
-					self::_add_permit($args,true);
+				if($check){
+					// Check Tidak Absen
+					$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND _inserted='$now'");
+					$check = array_filter($logs);
+					if(empty($check)){
+						$args = array(
+							'ID'		=> $idx,
+							'_inserted'	=> $now,
+							'type'		=> 0,
+							'note'		=> 'Tidak Absen'
+						);
+
+						self::_add_permit($args,true,1);
+					}
+
+					// Check Tidak Absen Pulang
+					$range = get_range($now);
+					$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND type='1' AND _inserted BETWEEN '".$range['start_date']."' AND '".$range['finish_date']."'");
+
+					$cnt = count($logs);
+					$cnt /= 3;
+
+					self::_changeStatus($idx,$cnt,11);
+
+					// Check Absen Terlambat
+					$late = self::_checkLate($idx,$now);
 				}
 			}
+		}
+	}
+
+	public function _checkLate($idx=0,$now=''){
+		$now = empty($now)?date('Y-m-d'):$now;
+
+		$range = get_range($now);
+		$logs = sobad_user::get_logs(array('ID','_inserted'),"user='$idx' AND punish='1' AND _inserted BETWEEN '".$range['start_date']."' AND '".$range['finish_date']."'");
+
+		$check = array_filter($logs);
+		if(empty($check)){
+			return array(
+				'qty'		=> 0,
+				'status'	=> 0
+			);
+		}
+
+		$status = 0;
+		$cnt = count($logs);
+		$status = self::_checkTimeLate($logs);
+
+		$note = 21;
+		if($status>0){
+			$note = 20;
+			$cnt += ($status + 1);
+		}
+
+		$status = floor(($cnt - 3) / 2);
+		self::_changeStatus($idx,$status + 2,$note);
+
+		return array(
+			'qty'		=> count($logs),
+			'status'	=> $status
+		);
+	}
+
+	public function _checkTimeLate($logs=array()){
+		$status = 0;$late=0;$date = array();
+		foreach ($logs as $key => $val) {
+			$date[] = isset($val['_inserted'])?$val['_inserted']:'';
+		}
+
+		foreach ($date as $key => $val) {
+			$_date = strtotime($val);
+			$_date = strtotime("+1 days",$_date);
+
+			holiday:
+			$_date = date('Y-m-d',$_date);
+			
+			$holiday = holiday_absen::_check_holiday($_date);
+			if($holiday){
+				$_date = strtotime($_date);
+				$_date = strtotime("+1 days",$_date);
+				goto holiday;
+			}
+
+			check:
+			if(in_array($_date, $date)){
+				$late += 1;
+			}else{
+				$late = 0;
+			}
+		}
+		
+		if($late==3){
+			$status = 1;
+		}else if($late==4){
+			$status = 2;
+		}else{
+			$status = 3;
+		}
+
+		return $status;
+	}
+
+	public function _checkGroup($divisi=0){
+		// Check Punishment
+		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
+
+		$_group = array();
+		foreach ($group as $key => $val) {
+			$data = unserialize($val['meta_note']);
+			if(in_array($divisi, $data['data'])){
+				if(in_array(3, $data['status'])){
+					$status = true;
+				}else{
+					$status = false;
+				}
+
+				break;
+			}
+		}
+
+		return $status;
+	}
+
+	public function _changeStatus($id=0,$count=0,$note=0){
+		$_data = 0;
+		if($count==3){
+			$_data = 1;
+
+			$meta = sobad_user::check_meta($id,'_warning');
+			$check = array_filter($meta);
+			if(empty($check)){
+				$q = sobad_db::_insert_table('abs-user-meta',array('_warning' => $_data));
+			}
+
+			$note += 100;
+		}else if($count==4){
+			$_data = 2;
+			$note += 200;
+		}else if($count>=5){
+			$_data = 3;
+			$note += 300;
+
+			$besuk = date('Y-m-d',strtotime('+1 days',$date));
+			employee_absen::_dismissed($id,$besuk);
+		}
+
+		if($_data>0){
+			// Update SP
+			$whr = "meta_id='$id' AND meta_key='_warning'";
+			$q = sobad_db::_update_multiple($whr,'abs-user-meta',array('_warning' => $_data));
+
+			// Update History
+			sobad_db::_insert_table('abs-history',array(
+				'meta_id'		=> $id,
+				'meta_key'		=> '_warning',
+				'meta_value'	=> $_data,
+				'meta_note'		=> $note,
+				'meta_var'		=> 'user',
+				'meta_date'		=> date('Y-m-d H:i:s')
+			));
 		}
 	}
 }

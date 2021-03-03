@@ -384,6 +384,31 @@ class group_absen extends _page{
 		return modal_admin($args);
 	}
 
+	public static function _statusGroup($data = array()){
+		$group = array();
+		if(isset($data)){
+			if(in_array(1,$data)){
+				$group['status'] = 1;
+			}else{
+				$group['status'] = 0;
+			}
+
+			if(in_array(2,$data)){
+				$group['group'] = 1;
+			}else{
+				$group['group'] = 0;
+			}
+
+			if(in_array(3,$data)){
+				$group['punish'] = 1;
+			}else{
+				$group['punish'] = 0;
+			}
+		}
+
+		return $group;
+	}
+
 	// ----------------------------------------------------------
 	// Function category to database -----------------------------
 	// ----------------------------------------------------------

@@ -106,10 +106,6 @@ class history_absen extends _page{
 			$total = 0;
 			foreach ($val as $_key => $_val) {
 				switch ($_val['status']) {
-					case 0:
-						$status = 0;
-						break;
-
 					case 1:
 						if($status!=1){
 							$status = 2;
@@ -117,13 +113,9 @@ class history_absen extends _page{
 							$status = 1;
 						}
 						break;
-
-					case 2:
-						$status = 2;
-						break;
 					
 					default:
-						$status = 0;
+						$status = $_val['status'];
 						break;
 				}
 

@@ -70,6 +70,8 @@ class absen_sobad{
 			var m = 0;
 			var reload = true;
 			var stsnow = true;
+			var stsganti = true;
+			var stsabsen = true;
 
 			setInterval(function(){
 				var currentdate = new Date(); 
@@ -92,6 +94,37 @@ class absen_sobad{
 						stsnow = false;
 						var data = "ajax=_checkAlpha&object=report_absen&data=0";
 						sobad_ajax('#my',data,'html',false,'','');
+					}
+				}
+
+				if(stsabsen){
+					if(time=="17:30"){
+						stsabsen = false;
+						for(var g in group){
+							if(group[g]['punish']==0){
+
+								for(var w in work[g]){
+									data = [w,0,0];
+									data = "ajax=_send&object=absensi&data="+JSON.stringify(data);
+
+									//pause slide to animation
+									$('#multiSlider').multislider('pause');
+									sobad_ajax('#absensi',data,set_absen,false);
+								}
+							}
+						}
+					}
+				}
+
+				if(time=="20:0"){
+					$('#video-profile')[0].pause();
+				}
+
+				if(stsganti){
+					if(time=="1:0"){
+						stsganti = false;
+						//var data = "ajax=_checkGantiJam&object=report_absen&data=0";
+						//sobad_ajax('#my',data,'html',false,'','');
 					}
 				}
 

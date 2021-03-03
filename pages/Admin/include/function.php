@@ -123,7 +123,7 @@ function get_rule_absen($first='00:00:00',$last='00:00:00',$worktime=0,$day=0){
 
 	$waktu -= $restTime;
 
-	if($waktu>=0 && $waktu<=10){
+	if($waktu>=0 && $waktu<=30){
 		//Jika Izin kurang dari sama dengan 10 menit, Tidak ganti Jam
 		return array(
 			'time'		=> $waktu,
@@ -132,17 +132,17 @@ function get_rule_absen($first='00:00:00',$last='00:00:00',$worktime=0,$day=0){
 		);
 	}
 
-	//Jika Izin kurang dari setengah Hari, ganti Jam
-	if($waktu>10 && $waktu<210){
-		$_check = $waktu % 30;
-		if($_check<=10){
-			$waktu -= $_check;
-		}else{
-			$waktu += (30 - $_check);
-		}
+	$_check = $waktu % 30;
+	if($_check<=10){
+		$punish = $waktu - $_check;
+	}else{
+		$punish = $waktu + (30 - $_check);
+	}
 
+	//Jika Izin kurang dari setengah Hari, ganti Jam
+	if($waktu>30 && $waktu<210){
 		return array(
-			'time'		=> $waktu,
+			'time'		=> $punish,
 			'status'	=> 'Ganti Jam',
 			'type'		=> 2
 		);
@@ -153,6 +153,7 @@ function get_rule_absen($first='00:00:00',$last='00:00:00',$worktime=0,$day=0){
 		return array(
 			'time'		=> $waktu,
 			'hour'		=> $waktu%60,
+			'punish'	=> $punish,
 			'value'		=> 0.5,
 			'status'	=> 'Cuti',
 			'type'		=> 3
@@ -164,6 +165,7 @@ function get_rule_absen($first='00:00:00',$last='00:00:00',$worktime=0,$day=0){
 		return array(
 			'time'		=> $waktu,
 			'hour'		=> $waktu%60,
+			'punish'	=> $punish,
 			'value'		=> 1,
 			'status'	=> 'Cuti',
 			'type'		=> 3
@@ -183,13 +185,14 @@ function set_rule_absen($first='00:00:00',$last='00:00:00',$args=array()){
 			$_cuti = $cuti;
 			if($cuti<0){
 				$_cuti = 0;				
-				$status['time'] -= ($user['dayOff'] * 420);
+				$status['punish'] -= ($user['dayOff'] * 420);
 			}
 			set_rule_cuti($status['value'],$_cuti,$args);
 		}
 
 		if($cuti<0){
 			$status['status'] = 'Ganti Jam';
+			$status['time'] = $status['punish'];
 			$status['type'] = 2;
 		}
 	}
@@ -200,6 +203,15 @@ function set_rule_absen($first='00:00:00',$last='00:00:00',$args=array()){
 			'date_schedule'	=> $args['date'],
 			'times'			=> $status['time'],
 			'type_log'		=> 2
+		));
+	}
+
+	if($status['type']==0){
+		sobad_db::_insert_table('abs-log-detail',array(
+			'log_id'		=> $args['id'],
+			'date_schedule'	=> $args['date'],
+			'times'			=> $status['time'],
+			'type_log'		=> 9
 		));
 	}
 

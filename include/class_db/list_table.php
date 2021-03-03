@@ -67,6 +67,7 @@ class sobad_table{
 			'meta_id'	=> 0,
 			'meta_key'	=> '',
 			'meta_value'	=> '',
+			'meta_note'	=> '',
 			'meta_var'	=> '',
 			'meta_date'	=> date('Y-m-d H:i:s'),	
 		);

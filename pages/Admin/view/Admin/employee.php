@@ -1,6 +1,6 @@
 <?php
 
-class employee_admin extends _file_manager{
+class employee_admin extends _page{
 	protected static $object = 'employee_admin';
 
 	protected static $table = 'sobad_user';
@@ -281,12 +281,24 @@ class employee_admin extends _file_manager{
 			return '';
 		}
 
+		$add_divisi = array(
+			'ID'	=> 'add_0',
+			'func'	=> '_form_divisi',
+			'class'	=> '',
+			'color'	=> 'green',
+			'icon'	=> 'fa fa-plus',
+			'label'	=> 'Add'
+		);
+
+		$divisi = sobad_module::_gets('department',array('ID','meta_value'));
+		$divisi = convToOption($divisi,'ID','meta_value');
+
 		$data = array(
 			'cols'	=> array(3,8),
 			0	=> array(
 				'func'			=> 'opt_hidden',
 				'type'			=> 'hidden',
-				'key'			=> 'ID',
+				'key'			=> '_IDX',
 				'value'			=> $vals['ID']
 			),
 			array(
@@ -315,6 +327,18 @@ class employee_admin extends _file_manager{
 				'class'			=> 'input-circle',
 				'value'			=> '',
 				'data'			=> 'placeholder="Reset"'
+			),
+			array(
+				'id'			=> 'divisi',
+				'func'			=> 'opt_select',
+				'data'			=> $divisi,
+				'key'			=> 'divisi',
+				'button'		=> _modal_button($add_divisi,3),
+				'label'			=> 'Jabatan',
+				'searching'		=> true,
+				'class'			=> 'input-circle',
+				'select'		=> $vals['divisi'],
+				'status'		=> ''
 			),
 			array(
 				'func'			=> 'opt_input',
@@ -370,6 +394,22 @@ class employee_admin extends _file_manager{
 	}
 
 	// ----------------------------------------------------------
+	// Option Divisi --------------------------------------------
+	// ----------------------------------------------------------
+
+	public function _form_divisi(){
+		return employee_absen::_form_divisi();
+	}
+
+	public function _add_divisi($args=array()){
+		return employee_absen::_add_divisi($args);
+	}
+
+	public function _option_divisi(){
+		return employee_absen::_option_divisi();
+	}
+
+	// ----------------------------------------------------------
 	// Function category to database -----------------------------
 	// ----------------------------------------------------------
 
@@ -377,12 +417,18 @@ class employee_admin extends _file_manager{
 		return employee_absen::_conv_import($files);
 	}
 
-	public function _callback($args=array(),$_args=array()){
-		$username = strtolower($args['password']);
+	protected function _callback($args=array(),$_args=array()){
+		$username = strtolower($args['username']);
 		$username = preg_replace('/\s+/', '_', $username);
 
-		$arga['username'] = $username;
-		$arga['password'] = md5($args['password']);
+		$args['ID'] = $args['_IDX'];
+		$args['username'] = $username;
+
+		if(empty($args['password'])){
+			unset($args['password']);
+		}else{
+			$args['password'] = md5($args['password']);
+		}
 
 		return $args;
 	}

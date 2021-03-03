@@ -189,7 +189,7 @@ class historyPermit_absen extends _page{
 			);
 
 			if(parent::$type!='history_3'){
-				unset($data['table'][$no-1]['tr']['Sisa']);
+				unset($data['table'][$no-1]['td']['Sisa']);
 			}
 		}
 		
