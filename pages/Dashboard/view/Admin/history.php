@@ -845,6 +845,7 @@ class history_absen extends _page{
 		foreach ($history as $key => $val) {
 			$no += 1;
 
+			$lama = '';
 			$note = ($val['type_log']==3)?'Jam':'Menit';
 
 			$date = date($val['_inserted_log_']);
@@ -891,6 +892,10 @@ class history_absen extends _page{
 						}
 					}
 				}
+
+				$first = $val['time_in_log_']=='-'?$work[0]['time_in']:$val['time_in_log_'];
+				$last = $val['time_out_log_']=='-'?$work[0]['time_out']:$val['time_out_log_'];
+				$lama = _conv_time($first,$last,2);
 			}
 
 			if(self::$type=='history_3'){
@@ -934,7 +939,6 @@ class history_absen extends _page{
 				$tanggal = '<span style="color:red;">'.$tanggal.'</span>';
 			}
 
-			$lama = '';
 			if(self::$type=='history_3'){
 				$lama = $val['times'];
 				if($lama<=2){
@@ -993,8 +997,8 @@ class history_absen extends _page{
 					true
 				),
 				'Waktu'	=> array(
-					'left',
-					'8%',
+					'right',
+					'10%',
 					$extime,
 					true
 				),
@@ -1016,7 +1020,9 @@ class history_absen extends _page{
 				unset($data['table'][$key]['td']['Status']);
 				//unset($data['table'][$key]['td']['History']);
 			}else{
-				unset($data['table'][$key]['td']['Lama']);
+				if(self::$type!='history_2'){
+					unset($data['table'][$key]['td']['Lama']);
+				}
 			}
 
 			if(self::$type!='history_2'){

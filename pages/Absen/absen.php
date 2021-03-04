@@ -593,7 +593,7 @@ class absensi{
 											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(8)">Ganti Jam</button>
 										</div>
 										<div class="col-md-4">
-											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(8)">Izin Sakit</button>
+											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(38)">Izin Sakit</button>
 										</div>
 								</div>',
 				'modal'		=> true
@@ -614,12 +614,13 @@ class absensi{
 
 		switch ($type) {
 			case 3:
-				$_args['type'] = 2;
 				$_data = array(
 					'id'	=> $idx,
 					'date'	=> $date,
 					'user'	=> $_id,
-					'note'	=> 'Pulang Cepat'
+					'note'	=> 'Pulang Cepat',
+					'work'	=> $_worktime,
+					'day'	=> $day
 				);
 
 				$waktu = _conv_time($times,$work,2);
@@ -633,7 +634,7 @@ class absensi{
 				if($_dayOff<$num_day){
 					set_rule_absen($times,$work,$data);
 				}
-				set_rule_cuti($num_day,$cuti,$data);	
+				set_rule_cuti($num_day,$cuti,$_data);	
 				break;
 
 			case 8:
@@ -656,7 +657,16 @@ class absensi{
 				break;
 
 			case 5:
-				// next
+				// Luar Kota
+				sobad_db::_insert_table('abs-permit',array(
+					'user'			=> $_id,
+					'start_date'	=> date('Y-m-d'),
+					'range_date'	=> date('Y-m-d'),
+					'num_day'		=> 1,
+					'type_date'		=> 1,
+					'type'			=> 5,
+				));
+
 				break;
 
 			case 7: // Pulang telat --> Ganti Jam
@@ -675,6 +685,20 @@ class absensi{
 				));
 
 				return array('id' => $data,'data' => NULL, 'status' => 0);
+				break;
+
+			case 38:
+				// sakit 38
+				$_args['type'] = 4;
+				$type = 4;
+
+				sobad_db::_insert_table('abs-permit',array(
+					'user'			=> $_id,
+					'start_date'	=> date('Y-m-d'),
+					'range_date'	=> '00:00:00',
+					'type'			=> 48,
+				));
+
 				break;
 			
 			default:

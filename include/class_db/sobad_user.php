@@ -218,6 +218,11 @@ class sobad_user extends _class{
 		$data = array();
 		$logs = parent::_get_data($where,array('ID','user','shift','type','time_in','_inserted'));
 		foreach ($logs as $key => $val) {
+			$stsuser = sobad_user::get_id($val['user'],array('status'));
+			if($stsuser[0]['status']==0){
+				continue;
+			}
+
 			$_date = date($val['_inserted']);
 			$_date = strtotime($_date);
 			$_date = date('w',$_date);
@@ -237,50 +242,6 @@ class sobad_user extends _class{
 
 		self::$table = 'abs-user';
 
-		return $data;
-	}
-
-	public static function get_late_old($date=''){
-		$date = date($date);
-		$date = strtotime($date);
-		$year = date('Y',$date);
-		$month = date('m',$date);
-
-		$work = array();
-		$works = sobad_work::get_all(array('ID','name','days','time_in'));
-		foreach ($works as $key => $val) {
-			$idx = $val['ID'];
-			if(!isset($work[$idx])){
-				$work[$idx] = array();
-			}
-
-			$work[$idx][$val['days']] = $val['time_in'];
-		}
-
-		self::$table = 'abs-user-log';
-		$where = "WHERE YEAR(_inserted)='$year' AND MONTH(_inserted)='$month' AND type IN (1,2) AND punish='1'";
-
-		$data = array();
-		$logs = parent::_get_data($where,array('ID','user','shift','type','time_in','_inserted'));
-		foreach ($logs as $key => $val) {
-			$_date = date($val['_inserted']);
-			$_date = strtotime($_date);
-			$_date = date('w',$_date);
-
-			$punish = 30;
-			$time = $work[$val['shift']][$_date];
-			if($val['time_in']>=$time){
-				$time = _calc_time($time,'5 minutes');
-
-				if($val['time_in']>=$time){
-					$punish = 60;
-				}
-				$val['punishment'] = $punish;
-				$data[] = $val;
-			}
-		}
-
-		self::$table = 'abs-user';
 		return $data;
 	}
 

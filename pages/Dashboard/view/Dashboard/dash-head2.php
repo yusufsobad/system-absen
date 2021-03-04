@@ -3,6 +3,7 @@ class dash_head2{
 	public static function _layout(){
 		metronic_layout::sobad_chart(self::_data());
 		self::_birthday();
+		self::_massDayOff();
 	}
 
 	public static function _data(){
@@ -76,6 +77,84 @@ class dash_head2{
 															</div>
 														</div>
 													</div>
+												<?php
+											}
+										?>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+		<?php
+	}
+
+	public static function _massDayOff(){
+		$now = date('Y-m-d');
+		$_y = date('Y');
+		$s = date('Y').'-01-05';
+		$f = (date('Y')+1).'-01-04';
+
+		$whr = "AND status='3' AND holiday BETWEEN '$s' AND '$f'";
+		$holiday = sobad_holiday::get_all(array('holiday','title'),$whr);
+
+		$_option = sobad_module::get_all(array('meta_note'),"AND meta_key='opt_dayoff' AND meta_reff='$_y'");
+		$_option = $_option[0]['meta_note'];
+
+		$sisa = $_option - count($holiday);
+		?>
+			<div class="col-md-4 col-sm-4">
+					<div class="portlet light ">
+						<div class="portlet-title">
+							<div class="caption">
+								<i class="icon-share font-blue-steel hide"></i>
+								<span class="caption-subject font-blue-steel bold uppercase">Cuti Bersama (Sisa : <?php print($sisa) ;?> Hari)</span>
+							</div>
+							<div class="actions">
+							</div>
+						</div>
+						<div class="portlet-body">
+							<div class="slimScrollDiv">
+								<div class="scroller">
+									<ul class="feeds">
+										<?php
+											foreach ($holiday as $key => $val) {
+												if($val['holiday']<=$now){
+													$status = '
+															<div class="label label-sm label-danger">
+																<i class="fa fa-bell-o"></i>
+															</div>
+													';
+												}else{
+													$status = '
+															<div class="label label-sm label-success">
+																<i class="fa fa-bell-o"></i>
+															</div>
+													';
+												}
+
+												?>
+													<li>
+														<a href="javascript:;">
+															<div class="col1">
+																<div class="cont">
+																	<div class="cont-col1" style="margin-top: 12px;">
+																		<?php print($status); ?>
+																	</div>
+																	<div class="cont-col2">
+																		<div class="desc">
+																			<span style="font-size: 16px;color:#666;">
+																				<?php print(format_date_id($val['holiday'])) ;?>
+																			</span>
+																			<div>
+																				<?php print($val['title']) ;?>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</a>
+													</li>
 												<?php
 											}
 										?>

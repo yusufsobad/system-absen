@@ -631,7 +631,7 @@ class punishment_absen extends _page{
 		}
 
 	//Get data punishment
-		$args = sobad_logDetail::get_punishments(array('ID','date_schedule','log_id','status','log_history','times','user'),"AND `abs-log-detail`.status !='1'");
+		$args = sobad_logDetail::get_punishments(array('ID','date_schedule','log_id','status','log_history','times','user'),"AND `abs-log-detail`.status !='1' AND _user.status!='0'");
 
 		// Check 
 		$check = array_filter($args);
@@ -788,9 +788,9 @@ class punishment_absen extends _page{
 				$_history = $val['log_history'];
 				if(isset($_history['history'])){
 					$_cnt = count($_history['history']);
-					$_history['history'][$_cnt-1] = array(
+					$_history['history'][$_cnt] = array(
 						'date'		=> $_date,
-						'periode'	=> $_cnt
+						'periode'	=> $_cnt + 1
 					);
 				}else{
 					$_history = array(

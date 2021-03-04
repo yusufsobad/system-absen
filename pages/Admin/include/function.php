@@ -123,8 +123,8 @@ function get_rule_absen($first='00:00:00',$last='00:00:00',$worktime=0,$day=0){
 
 	$waktu -= $restTime;
 
-	if($waktu>=0 && $waktu<=30){
-		//Jika Izin kurang dari sama dengan 10 menit, Tidak ganti Jam
+	if($waktu<=30){
+		//Jika Izin kurang dari sama dengan 30 menit, Tidak ganti Jam
 		return array(
 			'time'		=> $waktu,
 			'status'	=> 'Izin',
