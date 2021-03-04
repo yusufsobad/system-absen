@@ -199,10 +199,11 @@ class absensi{
 		}
 
 		//check log
-		$user = sobad_user::get_absen(array('divisi','_nickname','id_join','type','time_in','time_out','history'),$date,$whr);
+		$user = sobad_user::get_absen(array('_nickname','id_join','type','time_in','time_out','history'),$date,$whr);
 
 		//check group
-		$grp_punish = report_absen::_checkGroup($user['divisi']);
+		$grp_punish = group_absen::_statusGroup($group['status']);
+		$grp_punish = $grp_punish['status'];
 
 		$punish = 0;
 		if($work['status']){
@@ -211,7 +212,7 @@ class absensi{
 			}
 		}
 
-		if($grp_punish==false){
+		if($grp_punish==0){
 			$punish = 0;
 		}
 
@@ -434,7 +435,7 @@ class absensi{
 						);	
 					}
 
-					if($grp_punish==false){
+					if($grp_punish==0){
 						// Karyawan non Punishment
 						$history = unserialize($user['history']);
 						$history['logs'][] = array('type' => 2,'time' => $times);

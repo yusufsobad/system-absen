@@ -935,7 +935,7 @@ class report_absen extends _page{
 					}
 
 					// Check Tidak Absen Pulang
-					$range = get_range($now);
+					$range = self::get_range($now);
 					$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND type='1' AND _inserted BETWEEN '".$range['start_date']."' AND '".$range['finish_date']."'");
 
 					$cnt = count($logs);
@@ -953,7 +953,7 @@ class report_absen extends _page{
 	public function _checkLate($idx=0,$now=''){
 		$now = empty($now)?date('Y-m-d'):$now;
 
-		$range = get_range($now);
+		$range = self::get_range($now);
 		$logs = sobad_user::get_logs(array('ID','_inserted'),"user='$idx' AND punish='1' AND _inserted BETWEEN '".$range['start_date']."' AND '".$range['finish_date']."'");
 
 		$check = array_filter($logs);
@@ -1045,14 +1045,19 @@ class report_absen extends _page{
 
 	public function _changeStatus($id=0,$count=0,$note=0){
 		$_data = 0;
+
+		$meta = sobad_user::check_meta($id,'_warning');
+		$check = array_filter($meta);
+		if(empty($check)){
+			$q = sobad_db::_insert_table('abs-user-meta',array(
+				'meta_id'		=> $id,
+				'meta_key' 		=> '_warning',
+				'meta_value' 	=> $_data
+			));
+		}
+
 		if($count==3){
 			$_data = 1;
-
-			$meta = sobad_user::check_meta($id,'_warning');
-			$check = array_filter($meta);
-			if(empty($check)){
-				$q = sobad_db::_insert_table('abs-user-meta',array('_warning' => $_data));
-			}
 
 			$note += 100;
 		}else if($count==4){

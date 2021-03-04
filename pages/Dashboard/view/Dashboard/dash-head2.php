@@ -89,6 +89,7 @@ class dash_head2{
 	}
 
 	public static function _statistic(){
+		$now = date('Y-m-d');
 		$label = array();
 
 		$data = array();
@@ -100,9 +101,9 @@ class dash_head2{
 
 		$data[0]['data'] = array();
 
-		$user = sobad_user::get_all(array('ID','name'),"AND status!='0'");
+		$user = sobad_user::get_all(array('ID','name','punish'),"AND status!='0'");
 		foreach ($user as $key => $val) {
-			$log = self::_checkLate($val['ID'],$now);
+			$log = report_absen::_checkLate($val['ID'],$now);
 
 			$color = 0;
 			if($log['qty']>0){
