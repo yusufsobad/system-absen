@@ -966,7 +966,9 @@ class report_absen extends _page{
 
 		$status = 0;
 		$cnt = count($logs);
-		$status = self::_checkTimeLate($logs);
+		if($cnt>=3){
+			$status = self::_checkTimeLate($logs);
+		}
 
 		$note = 21;
 		if($status>0){
@@ -1011,11 +1013,11 @@ class report_absen extends _page{
 			}
 		}
 		
-		if($late==3){
-			$status = 1;
-		}else if($late==4){
-			$status = 2;
-		}else{
+		if($late>=3){
+			$status = $late - 2;
+		}
+
+		if($late>3){
 			$status = 3;
 		}
 
@@ -1074,7 +1076,7 @@ class report_absen extends _page{
 		if($_data>0){
 			// Update SP
 			$whr = "meta_id='$id' AND meta_key='_warning'";
-			$q = sobad_db::_update_multiple($whr,'abs-user-meta',array('_warning' => $_data));
+			$q = sobad_db::_update_multiple($whr,'abs-user-meta',array('meta_value' => $_data));
 
 			// Update History
 			sobad_db::_insert_table('abs-history',array(

@@ -202,8 +202,8 @@ class absensi{
 		$user = sobad_user::get_absen(array('_nickname','id_join','type','time_in','time_out','history'),$date,$whr);
 
 		//check group
-		$grp_punish = group_absen::_statusGroup($group['status']);
-		$grp_punish = $grp_punish['status'];
+		$grp_punish = group_absen::_statusGroup($group['status']);	
+		$grp_punish = $grp_punish['punish'];
 
 		$punish = 0;
 		if($work['status']){

@@ -101,7 +101,7 @@ class dash_head2{
 
 		$data[0]['data'] = array();
 
-		$user = sobad_user::get_all(array('ID','name','punish'),"AND status!='0'");
+		$user = sobad_user::get_all(array('ID','name'),"AND status!='0'");
 		foreach ($user as $key => $val) {
 			$log = report_absen::_checkLate($val['ID'],$now);
 
@@ -116,7 +116,7 @@ class dash_head2{
 				}
 
 				$label[] = $val['name'];
-				$data[0]['data'][] = $log;
+				$data[0]['data'][] = $log['qty'];
 				$data[0]['bgColor'][] = dash_absensi::get_color($color,0.8);
 			}
 		}

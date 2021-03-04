@@ -238,11 +238,14 @@ class dash_absensi{
 			if($id==1){
 				$timein = $val['time_in'];
 
-				$work = sobad_work::get_id($val['shift'],array('time_in'),"AND days='$day' AND status='1'");
-				$check = array_filter($work);
-				if(!empty($check)){
-					if($val['time_in']>=$work[0]['time_in']){
-						$timein = '<span style="color:red">'.$val['time_in'].'</span>';
+				$punish = report_absen::_checkGroup($val['divisi']);
+				if($punish){
+					$work = sobad_work::get_id($val['shift'],array('time_in'),"AND days='$day' AND status='1'");
+					$check = array_filter($work);
+					if(!empty($check)){
+						if($val['time_in']>=$work[0]['time_in']){
+							$timein = '<span style="color:red">'.$val['time_in'].'</span>';
+						}
 					}
 				}
 			}
