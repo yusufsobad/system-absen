@@ -158,7 +158,7 @@ class dash_head2{
 												<?php
 											}
 										?>
-									</div>
+									</ul>
 								</div>
 							</div>
 						</div>

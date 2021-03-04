@@ -218,7 +218,11 @@ class sobad_user extends _class{
 		$data = array();
 		$logs = parent::_get_data($where,array('ID','user','shift','type','time_in','_inserted'));
 		foreach ($logs as $key => $val) {
+
+			self::$table = 'abs-user';
 			$stsuser = sobad_user::get_id($val['user'],array('status'));
+			self::$table = 'abs-user-log';
+
 			if($stsuser[0]['status']==0){
 				continue;
 			}
