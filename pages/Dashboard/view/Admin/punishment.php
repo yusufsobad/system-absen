@@ -947,8 +947,12 @@ class punishment_absen extends _page{
 			$_type = 3;
 		}
 
-		$history['logs'][$count - 1]['type'] = $_type; // Change type
-		$history['logs'][] = array('type' => 1,'time' => $work[0]['time_in']);
+		$_temp = $history['logs'];
+		$history['logs'][0] = array('type' => $_type,'time' => $work[0]['time_in']);
+
+		foreach ($_temp as $key => $val) {
+			$history['logs'][$key+1] = $val; // Change type
+		}
 
 		$data = array(
 			'note'		=> $note,

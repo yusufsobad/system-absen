@@ -874,9 +874,7 @@ class history_absen extends _page{
 				if(isset($history['logs'])){
 					foreach ($history['logs'] as $ky => $vl) {
 						if(in_array($vl['type'],array('4','8'))){
-							if($ky==0){
-								$val['time_out_log_'] = $vl['time'];
-							}else{
+							if($ky!=0){
 								$val['time_in_log_'] = $vl['time'];
 								$_idx = $ky;
 							}
@@ -885,11 +883,7 @@ class history_absen extends _page{
 					}
 
 					if(isset($history['logs'][$_idx + 1])){
-						if($_idx==0){
-							$val['time_in_log_'] = '-';
-						}else{
-							$val['time_out_log_'] = $history['logs'][$_idx + 1]['time'];
-						}
+						$val['time_out_log_'] = $history['logs'][$_idx + 1]['time'];
 					}
 				}
 
