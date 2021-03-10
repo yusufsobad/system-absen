@@ -527,6 +527,10 @@ class absensi{
 				$_args = array('type' => $type, 'history' => $history);
 				if(empty($user['history'])){
 					$_args['time_in'] = $times;
+
+					if($times>=$work['time_in']){
+						$_args['punish'] = 1;
+					}
 				}
 
 				sobad_db::_update_single($user['id_join'],'abs-user-log',$_args);
@@ -535,6 +539,9 @@ class absensi{
 					$u_time = substr($user['time_in'], 0,5);
 				}else{
 					$u_time = $time;
+					if($times>=$work['time_in']){
+						$u_time = '<span style="color:red;">'.$time.'</span>';
+					}
 				}
 
 				return array(
