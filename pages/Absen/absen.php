@@ -594,13 +594,13 @@ class absensi{
 				'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau pilih yang mana, \''.$_nickname.'\'?</div>
 									<div class="row" style="text-align:center;">
 										<div class="col-md-4">
+											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(38)">Izin Sakit</button>
+										</div>
+										<div class="col-md-4">
 											<button style="width:60%;" type="button" class="btn btn-info" onclick="send_request(3)">Cuti</button>
 										</div>
 										<div class="col-md-4">
 											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(8)">Ganti Jam</button>
-										</div>
-										<div class="col-md-4">
-											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(38)">Izin Sakit</button>
 										</div>
 								</div>',
 				'modal'		=> true
@@ -660,7 +660,20 @@ class absensi{
 				break;
 
 			case 4:
-
+				// Insert Permit
+				// Check
+				$_permit = sobad_permit::get_all(array('ID'),"AND user='$_id' AND start_date='$date'");
+				$check = array_filter($_permit);
+				if(empty($check)){
+					sobad_db::_insert_table('abs-permit',array(
+						'user'			=> $_id,
+						'start_date'	=> $date,
+						'range_date'	=> $date,
+						'num_day'		=> 1,
+						'type'			=> 4,
+						'note'			=> 'Izin Keluar Sebentar'
+					));
+				}
 				break;
 
 			case 5:

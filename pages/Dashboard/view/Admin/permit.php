@@ -93,6 +93,19 @@ class permit_absen extends _page{
 			$sts_day = $conv['status'];
 			$range = $conv['range'];
 			
+			$range = ($range + 1).' '.$sts_day;
+
+			if($val['type']==4){
+				$_user = $val['user'];
+				$_now = $val['start_date'];
+				$logs = sobad_logDetail::get_all(array('log_id','times'),"AND _log_id.user='$_user' AND _log_id._inserted='$_now'");
+				$check = array_filter($logs);
+
+				if(!empty($check)){
+					$range = round($logs[0]['times'] / 60,2).' jam';
+				}
+			}
+
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
 				'No'		=> array(
@@ -128,7 +141,7 @@ class permit_absen extends _page{
 				'Lama'		=> array(
 					'center',
 					'10%',
-					($range + 1).' '.$sts_day,
+					$range,
 					true
 				),
 				'Edit'		=> array(
@@ -338,7 +351,7 @@ class permit_absen extends _page{
 			'Internship'	=> $intern
 		);
 
-		$permit = array(3 => 'Cuti', 5 => 'Luar Kota', 'Libur');
+		$permit = array(3 => 'Cuti',4 => 'Izin (Ganti Jam)' ,5 => 'Luar Kota', 'Libur');
 		$dayOff = sobad_module::_gets('day_off',array('ID','meta_value'));
 		foreach ($dayOff as $key => $val) {
 			$idx = ($val['ID'] + 10);
@@ -652,6 +665,13 @@ class permit_absen extends _page{
 			'note'			=> $args['note'],
 		);
 
+		// Ganti Jam
+		if($args['type']==4){
+			$args['num_day'] = 1;
+			$args['range_date'] = $args['start_date'];
+		}
+
+		// Permit
 		if($args['type']>6){
 			$idx = $args['type'] - 10;
 			$conv = self::_conv_day_off($idx);
@@ -710,6 +730,34 @@ class permit_absen extends _page{
 			if(!empty($c)){
 				$_type = $data['type']>10?4:$data['type'];
 				sobad_db::_update_single($u[0]['ID'],'abs-user-log',array('type' => $_type));
+			}else{
+				// Izin
+				if($args['type']==4){
+					$now = $args['start_date'];
+					$day = date('w',strtotime($now));
+					// Get Work Time
+					$_usr = sobad_user::get_id($val,array('work_time'));
+					$shift = sobad_permit::get_all(array('note'),"AND user='$val' AND type='9' AND start_date<='$now' AND range_date>='$now'");
+
+					$check = array_filter($shift);
+					$_workT = !empty($check)?$shift[0]['note']:$_usr[0]['work_time'];
+
+					// Get work time
+					$_worktime = sobad_work::get_id($_workT,array('time_in','time_out'),"AND days='$day'");
+					$_worktime = $_worktime[0]['time_in'];
+
+					// History
+					$_history = array('logs' => array( 0 => array('type' => 4,'time' => $_worktime)));
+
+					// Insert Log History
+					sobad_db::_insert_table('abs-user-log',array(
+						'user'		=> $val,
+						'shift'		=> $_workT,
+						'type'		=> 4,
+						'time_out'	=> $_worktime,
+						'history'	=> serialize($_history)
+					));
+				}
 			}
 		}
 
@@ -749,18 +797,31 @@ class permit_absen extends _page{
 				}
 
 				for($i=0;$i<$cuti;$i++){
+					if($i>0){
+						$_day = date('w',strtotime('+1 days',$_date));
+						$_date = date('Y-m-d',strtotime('+1 days',$_date));
+					}else{
+						$_day = date('w',$_date);
+						$_date = date('Y-m-d',$_date);
+					}
+
 					$date = punishment_absen::_check_holiday($_date,$holiday);
 					$_date = strtotime($date);
 
-					$_day = date('w',strtotime('+1 days',$_date));
-					$_date = date('Y-m-d',strtotime('+1 days',$_date));
+					$_works = sobad_work::get_all(array('time_in','time_out','note'),"AND reff='$_reff' AND days='$_day'");
+					$_works = $_works[0];
 
-					$_work = sobad_work::get_all(array('time_in','time_out'),"AND reff='$_reff' AND days='$_day'");
-					$_work = _conv_time($_work[0]['time_in'],$_work[0]['time_out'],2);
+					$_work = _conv_time($_works['time_in'],$_works['time_out'],2);
 
 					// Pengurangan Jam Istirahat
-					if(in_array($_day,array(1,2,3,4,5))){
-						$_work -= 60;
+					if(!empty($_works['note'])){
+						$_break = explode(',', $_works['note']);
+						foreach ($_break as $key => $val) {
+							$_brk = explode('-', $val);
+							$_brk = _conv_time($_brk[0],$_brk[1],2);
+
+							$_work -= $_brk;
+						}
 					}
 
 					//Insert Log Absen

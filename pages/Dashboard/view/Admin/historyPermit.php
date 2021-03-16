@@ -126,14 +126,27 @@ class historyPermit_absen extends _page{
 			$id = $key;
 
 			$lama = 0;
+			$count = 0;
 			foreach ($val as $_key => $_val) {
 				$conv = permit_absen::_conv_dateRange($_val);
 				$range = $conv['range'];
 
+				if($_val['type']==4){
+					$_now = $_val['start_date'];
+					$logs = sobad_logDetail::get_all(array('log_id','times'),"AND _log_id.user='$key' AND _log_id._inserted='$_now'");
+					$check = array_filter($logs);
+
+					if(!empty($check)){
+						$range = round($logs[0]['times'] / 60 / 24,1);
+					}
+				}else{
+					$count += 1;
+				}
+
 				$lama += $range;
 			}
 
-			$lama += count($val);
+			$lama += $count;
 
 			$_history = array(
 				'ID'	=> 'history_'.$id,
@@ -334,6 +347,19 @@ class historyPermit_absen extends _page{
 			$sts_day = $conv['status'];
 			$range = $conv['range'];
 
+			$range = ($range + 1).' '.$sts_day;
+
+			if($val['type']==4){
+				$_user = $val['user'];
+				$_now = $val['start_date'];
+				$logs = sobad_logDetail::get_all(array('log_id','times'),"AND _log_id.user='$_user' AND _log_id._inserted='$_now'");
+				$check = array_filter($logs);
+
+				if(!empty($check)){
+					$range = round($logs[0]['times'] / 60,2).' jam';
+				}
+			}
+
 			$data['table'][$no-1]['tr'] = array('');
 			$data['table'][$no-1]['td'] = array(
 				'no'			=> array(
@@ -369,7 +395,7 @@ class historyPermit_absen extends _page{
 				'Lama'		=> array(
 					'center',
 					'10%',
-					($range + 1).' '.$sts_day,
+					$range,
 					true
 				),
 			);
