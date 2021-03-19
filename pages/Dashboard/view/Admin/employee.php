@@ -13,7 +13,7 @@ class employee_absen extends _file_manager{
 	// Layout category  -----------------------------------------
 	// ----------------------------------------------------------
 
-	protected function _array(){
+	public function _array(){
 		$args = array(
 			'ID',
 			'no_induk',

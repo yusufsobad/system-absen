@@ -82,16 +82,15 @@ class dash_absensi{
 	public static function dash_script(){
 		?>
 			<script type="text/javascript">
-				var dash_year = <?php echo date('Y') ;?>;
-
 				$(".chart_malika").ready(function(){
 					if($('div').hasClass('chart_malika')){
 						for(var i=0;i<$(".chart_malika").length;i++){
 							var ajx = $('.chart_malika:eq('+i+')').attr('data-sobad');
 							var id = $('.chart_malika:eq('+i+')').attr('data-load');
 							var tp = $('.chart_malika:eq('+i+')').attr('data-type');
+							var dash = $('.chart_malika:eq('+i+')').attr('data-value');
 				
-							data = "ajax="+ajx+"&object=dashboard&data="+dash_year+"&type="+tp;
+							data = "ajax="+ajx+"&object="+object+"&data="+dash+"&type="+tp;
 							sobad_ajax(id,data,load_chart_dash);
 						}
 					}
@@ -124,6 +123,43 @@ class dash_absensi{
 							mode		: 'single',
 							callbacks	: {
 								label 		: function(value, data) {return value.xLabel;}
+							}
+						}
+					}
+
+					return option;
+				}
+
+				function _option_time(){
+					var option = {
+						responsive	: true,
+						scales		: {
+							yAxes		: [{
+								ticks		: {
+									callback 	: function(value, index, values) {
+										return value;
+									}
+								}
+							}],
+							xAxes		: [{
+								ticks		: {
+									beginAtZero: true,
+					                userCallback: function(label, index, labels) {
+					                    // when the floored value is the same as the value we have a whole number
+					                    if (Math.floor(label) === label) {
+					                        return label;
+					                    }
+					                },
+								}
+							}]
+						},
+						tooltips	: {
+							enabled		: true,
+							mode		: 'single',
+							callbacks	: {
+								label 		: function(value, data) {
+									return value.xLabel;
+								}
 							}
 						}
 					}

@@ -22,11 +22,32 @@ class admin_dashboard{
 		if(empty($check)){
 			return '';
 		}
+
+		$icon = isset($args['icon']) && !empty($args['icon'])?$args['icon']:'<i class="fa fa-comments"></i>';
+
+		if(!isset($args['column'])){
+			$args['column'] = array();
+		}
+
+		$default = array(
+			'lg' 	=> 3,
+			'md'	=> 3,
+			'sm'	=> 6,
+			'xs'	=> 12
+		);
+
+		$cols = array();
+		foreach ($default as $key => $val) {
+			$_cols = isset($args['column'][$key])?$args['column'][$key]:$val;
+			$cols[] = 'col-'.$key.'-'.$_cols;
+		}
+
+		$cols = implode(' ', $cols);
 		?>
-			<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+			<div class="<?php print($cols) ;?>">
 				<div class="dashboard-stat <?php print($args['color']) ;?>">
 					<div class="visual">
-						<i class="fa fa-comments"></i>
+						<?php echo $icon ;?>
 					</div>
 					<div class="details">
 						<div class="number"> <?php print($args['qty']) ;?> </div>

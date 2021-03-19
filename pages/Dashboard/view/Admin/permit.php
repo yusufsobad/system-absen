@@ -724,7 +724,7 @@ class permit_absen extends _page{
 			$q = sobad_db::_insert_table('abs-permit',$data);
 
 			//Check log absen
-			$now = date('Y-m-d');
+			$now = $data['start_date'];
 			$u = sobad_user::get_logs(array('ID','type'),"user='$val' AND _inserted='$now'");
 			$c = array_filter($u);
 			if(!empty($c)){

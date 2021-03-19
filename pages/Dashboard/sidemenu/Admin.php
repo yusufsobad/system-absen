@@ -182,6 +182,14 @@ function menu_report(){
 		'child'		=> NULL
 	);
 
+	$args['employee-report'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Employee',
+		'func'		=> 'employeeReport_absen',
+		'child'		=> NULL
+	);
+
 	$args['history'] = array(
 		'status'	=> '',
 		'icon'		=> '',

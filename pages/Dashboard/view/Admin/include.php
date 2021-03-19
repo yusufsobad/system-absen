@@ -5,6 +5,7 @@ require 'auto_shift.php';
 require 'divisi.php';
 require 'day off.php';
 require 'employee.php';
+require 'employeeReport.php';
 require 'fakultas.php';
 require 'group.php';
 require 'holiday.php';

@@ -26,10 +26,11 @@ class create_chart{
 		$col = 'col-md-'.$col.' col-sm-'.$col;
 
 		$type = isset($args['type'])?$args['type']:'';
+		$data = isset($args['data'])?$args['data']:'';
 		?>
 			<div class="<?php print($col) ;?>">
 					<!-- BEGIN PORTLET-->
-					<div class="portlet light chart_malika" data-sobad="<?php print($args['func']) ;?>" data-load="<?php print($args['id']) ;?>" data-type="<?php print($type) ;?>" <?php print($status) ;?>>
+					<div class="portlet light chart_malika" data-sobad="<?php print($args['func']) ;?>" data-load="<?php print($args['id']) ;?>" data-type="<?php print($type) ;?>" data-value="<?php print($data) ;?>" <?php print($status) ;?>>
 						<div class="portlet-title" style="text-align:center;">
 							<div class="caption" style="float:unset;">
 								<?php print($args['label']) ;?>
