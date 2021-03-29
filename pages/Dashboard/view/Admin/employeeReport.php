@@ -60,7 +60,7 @@ class employeeReport_absen extends _page{
 	protected function action(){
 		ob_start();
 		?> 
-			<select class="form-control bs-select" data-live-search="true" data-size="6" data-style="blue" data-sobad="sobad__reportEmployee" data-load="report-employee" data-attribute="html" onchange="sobad_options(this)"> 
+			<select class="form-control bs-select" data-live-search="true" data-size="6" data-style="blue" data-sobad="sobad__reportEmployee" data-load="report-employee" data-attribute="html" onchange="option_report(this)"> 
 		<?php
 			$user = sobad_user::get_employees(array('ID','no_induk','name'));
 			foreach ($user as $key => $val) {
@@ -302,9 +302,14 @@ class employeeReport_absen extends _page{
 				    border-radius: 15px !important;
 				}
 
+				.dashboard-stat .details{
+					z-index: 2;
+				}
+
 				.dashboard-stat .visual>svg {
 				    width: 80%;
 				    margin-top: -90%;
+				    fill: #fff;
 				}
 			</style>
 		<?php
@@ -313,7 +318,55 @@ class employeeReport_absen extends _page{
 	public function _script(){
 		?>
 			<script type="text/javascript">
-				
+				function option_report(val){
+					var ajx = $(val).attr("data-sobad");
+					if(ajx){
+						var lbl = val.value;
+						var id = $(val).attr('data-load');
+						var att = $(val).attr('data-attribute');
+
+						sobad_load(id);
+					
+						data = "ajax="+ajx+"&object="+object+"&data="+lbl;
+						sobad_ajax('#'+id,data,att,false);
+					}
+				}
+
+				function filter_report(val){
+					var id = $(val).attr('data-load');
+					var ajx = $(val).attr('data-sobad');
+					var tp = $(val).attr('data-type');
+					var index = $(val).attr('data-index');
+					var dt = $(val).val();
+
+					sobad_load(id);
+						
+					filter = dt;
+					var data = "ajax="+ajx+"&object="+object+"&data="+dt+'&type='+tp+'&index='+index;
+					sobad_ajax('#'+id,data,callback_filter,false,'','');
+				}
+
+				function callback_filter(data,id){
+					var func = '';
+					$(id+' .blockUI').remove();
+
+
+					for(var k in data){
+						for(var l in data[k]){
+							func = l;
+							if(typeof func == 'function'){
+								func(data[k][l],k);
+							}else if(typeof window[func] == 'function'){
+								window[func](data[k][l],k);
+							}else{
+								if(typeof $('#'+k)[func] == 'function'){					
+									func = ('inner' in data)?data['inner']:func;
+									$('#'+k)[func](data[k][l]);
+								}
+							}
+						}
+					}
+				}
 			</script>
 		<?php
 	}
@@ -354,13 +407,13 @@ class employeeReport_absen extends _page{
 			$score += ($time * 4);
 		}
 
+		$score = round($score / count($user),0);
+
 		if($score>100){
 			$score = 100;
 		}else if($score<0){
 			$score = 0;
 		}
-
-		$score = round($score / count($user),0);
 
 		if($score>80){
 			$abjad = 'A';
@@ -380,14 +433,49 @@ class employeeReport_absen extends _page{
 		);
 	}
 
+	public function _filter($date=''){
+		$date = empty($date)?date('Y-m'):$date;
+		$idx = isset($_POST['index'])?$_POST['index']:0;
+		$type = isset($_POST['type'])?$_POST['type']:'month';
+
+		$_POST['type'] = $idx;
+
+		ob_start();
+		$func = '_history_'.$type.'ly';
+		self::{$func}($date,$idx);
+		$history = ob_get_clean();
+
+		ob_start();
+		$func = '_dahs'.ucwords($type).'ly';
+		self::{$func}($date,$idx);
+		$permit = ob_get_clean();
+
+		$absen = 'dash_absen'.ucwords($type).'ly';
+		$over = 'dash_overtime'.ucwords($type).'ly';
+		
+		$args = array(
+			'absen-'.$type.'ly'		=> array(
+				'load_chart_dash'	=> self::{$absen}($date)
+			),
+			'overtime-'.$type.'ly'	=> array(
+				'load_chart_dash'	=> self::{$over}($date)
+			),
+			'history-'.$type.'y'	=> array(
+				'html'				=> $history
+			),
+			'permit-'.$type.'ly'	=> array(
+				'html'				=> $permit
+			)
+		);
+		return $args;
+	}
+
 // --------------------------------------------------
 // --------------------------------------------------
 // --------------------------------------------------
 
 	public function _layout(){
 		?>
-			<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-
 			<div id="report-employee">
 				
 			</div>
@@ -419,9 +507,30 @@ class employeeReport_absen extends _page{
 			</div>
 			<div class="row">
 				<div class="col-md-12">
-					
+					<?php self::_yearlyReport($user['ID']) ;?>
 				</div>
 			</div>
+			<script type="text/javascript">
+				if(jQuery().datepicker) {
+		            $(".reportpicker").datepicker( {
+					    format: "yyyy-mm",
+					    viewMode: "months", 
+					    minViewMode: "months",
+					    rtl: Metronic.isRTL(),
+			            orientation: "right",
+			            autoclose: true
+					});
+
+					$(".yearlypicker").datepicker( {
+					    format: "yyyy",
+					    viewMode: "years", 
+					    minViewMode: "years",
+					    rtl: Metronic.isRTL(),
+			            orientation: "right",
+			            autoclose: true
+					});
+		        };
+			</script>
 		<?php
 
 		dash_absensi::dash_script();
@@ -663,7 +772,9 @@ class employeeReport_absen extends _page{
 			<div id="monthly-report" class="bag-report">
 				<div class="row">
 					<div class="col-md-12">
-						
+						<div style="display: inline-flex;float: right;" class="input-group input-medium date date-picker" data-date-format="yyyy-mm" data-date-viewmode="months">
+							<input type="text" class="form-control reportpicker" value="2021-03" data-sobad="_filter" data-load="monthly-report" data-type="month" data-index="<?php print($idx) ;?>" name="filter_date" onchange="filter_report(this)">
+						</div>
 					</div>
 				</div>
 				<div class="row">
@@ -674,7 +785,7 @@ class employeeReport_absen extends _page{
 						</div>
 					</div>
 				</div>
-				<div class="row">
+				<div id="permit-monthly" class="row">
 					<?php self::_dahsMonthly(date('Y-m'),$idx) ;?>
 				</div>
 			</div>
@@ -906,7 +1017,7 @@ class employeeReport_absen extends _page{
 			$val['range_date'] = $val['range_date']>$finish?$finish:$val['range_date'];
 
 			$range = strtotime($val['range_date']) - strtotime($val['start_date']);
-			$range = floor($range / (60 * 60 * 24));
+			$range = floor($range / (60 * 60 * 24)) + 1;
 
 			if($val['type']==3){
 				$dayoff += $range;
@@ -954,9 +1065,9 @@ class employeeReport_absen extends _page{
 				'icon'		=> $icoLeave,
 				'color'		=> 'blue-report',
 				'qty'		=> $dayoff,
-				'desc'		=> 'Leaving of Absence',
+				'desc'		=> 'Leaving of<br>Absence',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_3','func' => '_view_block'))
+				'button'	=> button_toggle_block(array('ID' => 'absen_3','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -968,7 +1079,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $izin,
 				'desc'		=> 'Permission',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_4','func' => '_view_block'))
+				'button'	=> button_toggle_block(array('ID' => 'absen_4','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -980,7 +1091,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $sick,
 				'desc'		=> 'Sick',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_48','func' => '_view_block'))
+				'button'	=> button_toggle_block(array('ID' => 'absen_48','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -992,7 +1103,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $outcity,
 				'desc'		=> 'Luar Kota',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_5','func' => '_view_block'))
+				'button'	=> button_toggle_block(array('ID' => 'absen_5','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1004,27 +1115,410 @@ class employeeReport_absen extends _page{
 				'qty'		=> $alpha,
 				'desc'		=> 'Off',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_0','func' => '_view_block'))
+				'button'	=> button_toggle_block(array('ID' => 'absen_0','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 
 		return metronic_layout::sobad_dashboard($dash);
 	}
 
+	// Report Monthly -----------------------------------------
+	public function _yearlyReport($idx=0){
+		?>
+			<div id="yearly-report" class="bag-report">
+				<div class="row">
+					<div class="col-md-12">
+						<div style="display: inline-flex;float: right;" class="input-group input-medium date date-picker" data-date-format="yyyy" data-date-viewmode="years">
+							<input type="text" class="form-control yearlypicker" value="2021" data-sobad="_filter" data-load="yearly-report" data-type="year" data-index="<?php print($idx) ;?>" name="filter_date" onchange="filter_report(this)">
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<?php self::_graphYearly($idx) ;?>
+					<div class="col-md-6">
+						<div id="history-yearly" class="history-report">
+							<?php self::_history_yearly(date('Y'),$idx) ;?>
+						</div>
+					</div>
+				</div>
+				<div id="permit-yearly" class="row">
+					<?php self::_dahsYearly(date('Y'),$idx) ;?>
+				</div>
+			</div>
+		<?php
+	}
+
+	// Graphic Yearly Report ---------------------------------
+	public function _graphYearly($idx=0){
+		$chart[] = array(
+			'func'	=> '_site_load',
+			'data'	=> array(
+				'id'		=> 'absen-yearly',
+				'func'		=> 'dash_absenYearly',
+				'status'	=> '',
+				'col'		=> 12,
+				'label'		=> '<h2 class="title-report">Yearly Report</h2>',
+				'type'		=> $idx
+			),
+		);
+
+		$chart[] = array(
+			'func'	=> '_site_load',
+			'data'	=> array(
+				'id'		=> 'overtime-yearly',
+				'func'		=> 'dash_overtimeYearly',
+				'status'	=> '',
+				'col'		=> 6,
+				'label'		=> '<h2 class="title-report">Overtime Report</h2>',
+				'type'		=> $idx
+			),
+		);
+		
+		return metronic_layout::sobad_chart($chart);
+	}
+
+	public function dash_absenYearly($date=''){
+		$idx = isset($_POST['type'])?$_POST['type']:0;
+
+		$date = empty($date)?date('Y-m'):$date;
+		$date = report_absen::get_range($date);
+
+		$default = $date['finish_year'].'-'.$date['finish_month'].'-01';
+		$default = strtotime($default);
+
+		$sDay = $date['number_day'];
+		$fDay = $date['finish_day'];
+
+		$no = -1;
+		$label = array();$data = array();
+		for($i=$sDay;$i<$fDay;$i++){
+			$no += 1;
+			$label[] = date('M-d',strtotime($i.' days',$default));
+			$data[0]['data'][$no] = 0;
+			$data[1]['data'][$no] = 0;
+			
+			$now = date('Y-m-d',strtotime($i.' days',$default));
+			$user = sobad_user::get_id($idx,array('shift','time_in','time_out'),"AND _inserted='$now'");
+			
+			$check = array_filter($user);
+			if(!empty($check)){
+				$time_in = _conv_time('00:00:00',$user[0]['time_in'],2);
+				$time_out = _conv_time('00:00:00',$user[0]['time_out'],2);
+
+				$time_in = round($time_in/60,2);
+				$time_out = round($time_out/60,2);
+
+				$data[0]['data'][$no] = $time_in;
+				$data[1]['data'][$no] = $time_out;
+			}
+		}
+
+		$data[0]['label'] = 'Entry Hours';
+		$data[1]['label'] = 'Left Hours';
+
+		$data[0]['type'] = 'line';
+		$data[1]['type'] = 'line';
+
+		$data[0]['bgColor'] = 'rgba(21,73,154,1)';
+		$data[0]['brdColor'] = 'rgba(21,73,154,1)';
+
+		$data[1]['bgColor'] = 'rgba(255,174,0,1)';
+		$data[1]['brdColor'] = 'rgba(255,174,0,1)';
+
+		$args = array(
+			'type'		=> 'bar',
+			'label'		=> $label,
+			'data'		=> $data,
+			'option'	=> ''
+		);
+		
+		return $args;
+	}
+
+	public function dash_overtimeYearly($year=''){
+		$idx = isset($_POST['type'])?$_POST['type']:0;
+
+		$year = empty($year)?date('Y'):$year;
+		$label = array();$data = array();
+		for($m=1;$m<=12;$m++){
+			$date = report_absen::get_range($year.'-'.$m);
+
+			$start = $date['start_date'];
+			$finish = $date['finish_date'];
+
+			$whr = "AND _log_id.user='$idx' AND type_log='3' AND date_schedule BETWEEN '$start' AND '$finish'";
+			$logs = sobad_logDetail::get_all(array('log_id','times'),$whr);
+				
+			$over = 0;$total = 0;
+			foreach ($logs as $key => $val) {
+				$over += $val['times'];
+				if($val['times']<2){
+					$total += ($val['times'] + 0.5);
+				}else{
+					$total += (($val['times'] * 2) - 1);
+				}
+			}
+				
+			$label[] = sprintf('%02d',$m);
+			$data[0]['data'][$m-1] = $over;
+			$data[1]['data'][$m-1] = $total;
+		}
+
+		$data[0]['label'] = 'Overtime';
+		$data[1]['label'] = 'Total';
+
+		$data[0]['type'] = 'bar';
+		$data[1]['type'] = 'bar';
+
+		$data[0]['bgColor'] = 'rgba(21,73,154,1)';
+		$data[0]['brdColor'] = 'rgba(21,73,154,1)';
+
+		$data[1]['bgColor'] = 'rgba(255,174,0,1)';
+		$data[1]['brdColor'] = 'rgba(255,174,0,1)';
+
+		$args = array(
+			'type'		=> 'bar',
+			'label'		=> $label,
+			'data'		=> $data,
+			'option'	=> ''
+		);
+		
+		return $args;
+	}
+
+	public function _history_yearly($date='',$idx=0){
+		$idx = isset($_POST['type'])?$_POST['type']:$idx;
+
+		$date = empty($date)?date('Y'):$date;
+		$yearA = $date.'-01';
+		$yearB = $date.'-12';
+
+		$dateA = report_absen::get_range($yearA);
+		$dateB = report_absen::get_range($yearB);
+
+		$start = $dateA['start_date'];
+		$finish = $dateB['finish_date'];
+
+		$whr = "AND _log_id.user='$idx' AND type_log IN ('1','2') AND date_schedule BETWEEN '$start' AND '$finish'";
+		$logs = sobad_logDetail::get_all(array('log_id','times','type_log'),$whr);
+		
+		$switch = 0;$punish = 0;
+		foreach ($logs as $key => $val) {
+			if($val['type_log']==1){
+				$punish += $val['times'];
+			}
+
+			if($val['type_log']==2){
+				$switch += $val['times'];
+			}
+		}
+
+		$punish = $punish==0?'-':round($punish/60,1).'H';
+		$switch = $switch==0?'-':round($switch/60,1).'H';
+
+		?>
+			<div class="history-title">
+				<h2 class="title-report">History Report</h2>
+			</div>
+			<div class="history-row">
+				<div class="history-diagram">
+					<div class="box-history">
+						<?php self::_circle_number($switch,100) ;?>
+					</div>
+				</div>
+				<div class="history-diagram">
+					<div class="box-history">
+						<?php self::_circle_number($punish,100) ;?>
+					</div>
+				</div>
+			</div>
+			<div class="history-row">
+				<div class="history-label">
+					<label>Switch Hours</label>
+				</div>
+				<div class="history-label">
+					<label>Punishment</label>
+				</div>
+			</div>
+		<?php
+	}
+
+	// Dashboard monthly Report ------------------------------
+	public function _dahsYearly($date='',$idx=0){
+		$idx = isset($_POST['type'])?$_POST['type']:$idx;
+
+		$date = empty($date)?date('Y'):$date;
+		$yearA = $date.'-01';
+		$yearB = $date.'-12';
+
+		$dateA = report_absen::get_range($yearA);
+		$dateB = report_absen::get_range($yearB);
+
+		$start = $dateA['start_date'];
+		$finish = $dateB['finish_date'];
+
+		$whr = "AND user='$idx' AND type NOT IN ('6','9') AND ((start_date BETWEEN '$start' AND '$finish') OR (range_date BETWEEN '$start' AND '$finish') OR range_date='0000-00-00')";	
+		$logs = sobad_permit::get_all(array('start_date','range_date','num_day','type_date','type'),$whr);
+
+		// Check Permit
+		$dayoff = 0;$izin = 0;$sick = 0;$outcity = 0;
+		foreach ($logs as $key => $val) {
+			$val['start_date'] = $val['start_date']<$start?$start:$val['start_date'];
+
+			$val['range_date'] = $val['range_date']=='0000-00-00'?date('Y-m-d'):$val['range_date'];
+			$val['range_date'] = $val['range_date']>$finish?$finish:$val['range_date'];
+
+			$range = strtotime($val['range_date']) - strtotime($val['start_date']);
+			$range = floor($range / (60 * 60 * 24)) + 1;
+
+			if($val['type']==3){
+				$dayoff += $range;
+			}else if($val['type']==4 || ($val['type']>10 && $val['type']!=48)){
+				$izin += $range;
+			}else if($val['type']==5){
+				$outcity += $range;
+			}else if($val['type']==48){
+				$sick += $range;
+			}
+		}
+
+		// Check Alpha (Tidak Absen)
+		$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND type='0' AND _inserted BETWEEN '".$start."' AND '".$finish."'");
+		$alpha = count($logs);
+
+		// Check Tidak Absen Pulang
+		$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND type='1' AND _inserted BETWEEN '".$start."' AND '".$finish."'");
+		$cnt = count($logs);
+		$cnt = floor($cnt/3);
+
+		$alpha += $cnt;
+
+		// Get Icon
+		ob_start();
+		self::_iconLeaving();
+		$icoLeave = ob_get_clean();
+
+		ob_start();
+		self::_iconPermit();
+		$icoPermit = ob_get_clean();
+
+		ob_start();
+		self::_iconSick();
+		$icoSick = ob_get_clean();
+
+		ob_start();
+		self::_iconAlpha();
+		$icoAlpha = ob_get_clean();
+
+		$column = array('lg' => 20, 'md' => 20);
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> $icoLeave,
+				'color'		=> 'blue-report',
+				'qty'		=> $dayoff,
+				'desc'		=> 'Leaving of<br>Absence',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_3','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
+			)
+		);
+		
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> $icoPermit,
+				'color'		=> 'green-report',
+				'qty'		=> $izin,
+				'desc'		=> 'Permission',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_4','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+			)
+		);
+		
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> $icoSick,
+				'color'		=> 'yellow-report',
+				'qty'		=> $sick,
+				'desc'		=> 'Sick',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_48','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+			)
+		);
+		
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'purple-plum',
+				'qty'		=> $outcity,
+				'desc'		=> 'Luar Kota',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_5','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+			)
+		);
+		
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> $icoAlpha,
+				'color'		=> 'red-report',
+				'qty'		=> $alpha,
+				'desc'		=> 'Off',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_0','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+			)
+		);
+
+		return metronic_layout::sobad_dashboard($dash);
+	}
+
+// Report Icon -----------------------------------------	
+
 	public static function _iconLeaving(){
+		?>
+			<!-- Creator: CorelDRAW 2020 (64-Bit) -->
+			<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="51.4565mm" height="51.3808mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+			viewBox="0 0 1492.33 1490.13"
+			 xmlns:xlink="http://www.w3.org/1999/xlink"
+			 xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+			 <g id="Layer_x0020_1">
+			  <metadata id="CorelCorpID_0Corel-Layer"/>
+			  <g id="_1922961280304">
+			   <path class="fil0" d="M309.49 424.88l341.88 0 0 338.13 -362.34 0 0 -338.13 20.46 0zm300.95 40.93l-280.49 0 0 256.27 280.49 0 0 -256.27z"/>
+			   <polygon class="fil0" points="734.37,508.54 1099.82,508.54 1099.82,549.46 734.37,549.46 "/>
+			   <polygon class="fil0" points="734.37,662.64 1099.82,662.64 1099.82,703.57 734.37,703.57 "/>
+			   <polygon class="fil0" points="272.06,821.14 1099.82,821.14 1099.82,862.07 272.06,862.07 "/>
+			   <polygon class="fil0" points="272.06,979.65 1099.82,979.65 1099.82,1020.58 272.06,1020.58 "/>
+			   <polygon class="fil0" points="272.06,1138.15 1099.82,1138.15 1099.82,1179.08 272.06,1179.08 "/>
+			   <g>
+			    <path class="fil0" d="M211.07 40.93l0 1224.91 971.75 0 0 -922.1 -302.81 -302.82 -668.93 0zm-40.93 1245.38l0 -1286.31 726.8 0c108.91,108.96 217.89,217.85 326.8,326.81l0 979.96 -1053.6 0 0 -20.46z"/>
+			    <g>
+			     <polygon class="fil0" points="859.2,329.76 859.2,20.46 900.13,20.46 900.13,329.76 "/>
+			     <polygon class="fil0" points="859.2,309.3 1188.96,309.3 1188.96,350.23 859.2,350.23 "/>
+			    </g>
+			   </g>
+			   <g>
+			    <path class="fil0" d="M1351.18 1408.59l-88.5 -301.92 0 -660.52c0,-31.59 12.91,-60.31 33.71,-81.11 20.8,-20.8 49.52,-33.71 81.11,-33.71 31.59,0 60.31,12.91 81.11,33.71 20.8,20.8 33.72,49.52 33.72,81.11l0 660.52 -123.23 358.31 -17.92 -56.39zm-47.58 -301.92l147.8 0 0 -660.52c0,-20.3 -8.32,-38.78 -21.72,-52.18 -13.4,-13.4 -31.87,-21.72 -52.18,-21.72 -20.31,0 -38.78,8.32 -52.18,21.72 -13.4,13.4 -21.72,31.88 -21.72,52.18l0 660.52zm7.42 40.93l61.09 192.3 71.5 -192.3 -132.59 0z"/>
+			    <polygon class="fil0" points="1283.14,538.25 1471.86,538.25 1471.86,579.18 1283.14,579.18 "/>
+			   </g>
+			   <polygon class="fil0" points="190.61,201.63 40.93,201.63 40.93,1449.21 1050.73,1449.21 1050.73,1286.31 1091.66,1286.31 1091.66,1490.13 -0,1490.13 -0,160.71 190.61,160.71 "/>
+			   <path class="fil0" d="M309.49 115.58l447.55 0 0 230.25 -468.02 0 0 -230.25 20.46 0zm406.62 40.93l-386.16 0 0 148.4 386.16 0 0 -148.4z"/>
+			   <path class="fil0" d="M351.74 605.88c-8.49,-11.26 -6.26,-27.27 5,-35.77 11.26,-8.49 27.27,-6.26 35.77,5l36.42 48.31 120.14 -118.26c10.04,-9.88 26.19,-9.74 36.07,0.3 9.88,10.04 9.74,26.19 -0.3,36.07l-139.94 137.75c-1.04,1.13 -2.19,2.18 -3.46,3.14 -11.26,8.49 -27.27,6.26 -35.77,-5l-53.93 -71.54z"/>
+			  </g>
+			 </g>
+			</svg>
+		<?php
+	}
+
+	public static function _iconPermit(){
 		?>
 			<!-- Creator: CorelDRAW 2020 (64-Bit) -->
 			<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="40.4952mm" height="49.349mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
 			viewBox="0 0 13957.22 17008.8"
 			 xmlns:xlink="http://www.w3.org/1999/xlink"
 			 xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
-			 <defs>
-			  <style type="text/css">
-			   <![CDATA[
-			    .fil0 {fill:#1D1819}
-			   ]]>
-			  </style>
-			 </defs>
 			 <g id="Layer_x0020_1">
 			  <metadata id="CorelCorpID_0Corel-Layer"/>
 			  <path class="fil0" d="M13173.73 16209.49c943.34,-137.73 806.24,-1217.39 726.76,-2188.96 -76.17,-930.35 -1325.23,-686.5 -2232.73,-680.57 -5.41,-1153.18 -242.47,-941.28 -607.95,-1115.23 207.8,-1787.22 941.24,-2023.76 1207.36,-2827.58 266.49,-805 116.91,-1622.5 -380.41,-2280.95 -314.26,-416.11 -430.31,-317.06 -474.95,-615.12 0,-881.51 91.61,-5544.05 -67.9,-6000.01 -247.78,-708.25 -1774.33,-458.26 -2602.14,-458.26l-6081.35 0c-841.94,0 -2329.27,-249.71 -2584.56,478.39 -133.56,380.92 -48.15,13102.52 -57.15,15103.88 -6.76,1502.87 208.31,1380.41 1657.93,1377.45l10648.21 6.27c715.73,-9 745.96,-155.51 848.87,-799.31zm-5900.02 129.11c131.39,258.74 -151.27,23.02 148,144.38 109.5,44.39 203.35,42.63 326.57,45.74 843.6,21.37 4657.58,72.1 4896.63,-100.68 -53.25,-348.66 41.01,-223.03 -1130.67,-221.96l-3936.61 -5.48c-564.59,72.28 -24.02,9.03 -303.92,138zm2160.52 -3666.74l-481.46 137.52c-21.82,5.69 -54.15,14.51 -71.52,19.03 -17.06,4.41 -48.43,8.41 -70.35,18.82l-75.65 966.85c-2173.28,-42.39 -2256.62,-269.25 -2258.34,913.94 -2,1356.97 9.03,996.42 3427.51,996.42 697.01,0 2946.84,114.6 3414.72,-73.24l66.11 -108.91c99.85,-281.49 117.81,-1518.79 -48.77,-1655.52 -572.69,-222.82 -1468.85,-33.6 -2135.88,-96.4l-47.46 -994.35 -664.68 -21.4c214.83,-2483.92 928.01,-2576.43 1268.6,-3432.61 558.63,-1404.09 -467.98,-2661.56 -1762.95,-2686.27 -1332.71,-25.37 -2361.25,1227 -1878.31,2626.09 346.39,1003.49 998.56,634.73 1318.44,3390.04zm-8878.39 -12111.85c-160.2,1242.51 -56.73,13158.63 -56.21,15420.86 -0.21,734.37 497.69,540.67 1176.82,537.3 564.66,-2.86 4779.52,103.47 5120.63,-90.13 -214.04,-786.14 -797.69,507.83 -797.69,-2056.95 0,-1375.07 1074.25,-1037.92 2271.85,-1031.13 -4.41,-1108.2 229.82,-897.47 606.19,-1115.23 -234.34,-2214.77 -1650.25,-2227.35 -1336.29,-4046.35 139.18,-806.17 613.09,-1335.5 1133.63,-1658.8 721.97,-448.44 1402.68,-370.44 2255.44,-188.05l-0.59 -4749.7c6.79,-705.32 180.88,-1047.36 -578.07,-1047.36 -2589.28,0 -7469.37,-94.54 -9795.71,25.54z"/>
@@ -1040,70 +1534,25 @@ class employeeReport_absen extends _page{
 		<?php
 	}
 
-	public static function _iconPermit(){
-		?>
-			<!-- Creator: CorelDRAW 2020 (64-Bit) -->
-			<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="51.8039mm" height="51.3808mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
-			viewBox="0 0 2889.75 2866.15"
-			 xmlns:xlink="http://www.w3.org/1999/xlink"
-			 xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
-			 <defs>
-			  <style type="text/css">
-			   <![CDATA[
-			    .str0 {stroke:#1D1819;stroke-width:78.71;stroke-miterlimit:22.9256}
-			    .str1 {stroke:#1D1819;stroke-width:98.39;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:22.9256}
-			    .fil0 {fill:none}
-			   ]]>
-			  </style>
-			 </defs>
-			 <g id="Layer_x0020_1">
-			  <metadata id="CorelCorpID_0Corel-Layer"/>
-			  <polygon class="fil0 str0" points="366.62,39.36 366.62,2474.1 2314.42,2474.1 2314.42,644.87 1708.91,39.36 "/>
-			  <rect class="fil0 str0" x="595.28" y="856.59" width="618.21" height="571.63"/>
-			  <line class="fil0 str0" x1="1412.5" y1="1017.49" x2="2115.4" y2= "1017.49" />
-			  <line class="fil0 str0" x1="1412.5" y1="1313.89" x2="2115.4" y2= "1313.89" />
-			  <line class="fil0 str0" x1="523.28" y1="1618.76" x2="2115.4" y2= "1618.76" />
-			  <line class="fil0 str0" x1="523.28" y1="1923.63" x2="2115.4" y2= "1923.63" />
-			  <line class="fil0 str0" x1="523.28" y1="2228.5" x2="2115.4" y2= "2228.5" />
-			  <line class="fil0 str0" x1="1691.96" y1="634.27" x2="1691.96" y2= "39.36" />
-			  <line class="fil0 str0" x1="1691.96" y1="634.27" x2="2286.87" y2= "634.27" />
-			  <polygon class="fil0 str0" points="2636.23,2697.46 2468,2167.94 2833.12,2167.94 "/>
-			  <path class="fil0 str0" d="M2468 2167.94l363 0 0 -1309.82c0,-99.83 -81.67,-181.5 -181.5,-181.5l-0.01 0c-99.83,0 -181.5,81.67 -181.5,181.5l0 1309.82z"/>
-			  <line class="fil0 str0" x1="2468" y1="1074.65" x2="2831.01" y2= "1074.65" />
-			  <polyline class="fil0 str0" points="366.62,348.47 39.36,348.47 39.36,2826.78 2060.36,2826.78 2060.36,2474.1 "/>
-			  <rect class="fil0 str0" x="595.28" y="261.66" width="821.47" height="364.15"/>
-			  <polyline class="fil0 str1" points="715.74,1135.77 819.48,1273.38 1090.48,1006.62 "/>
-			 </g>
-			</svg>
-		<?php
-	}
-
 	public static function _iconSick(){
 		?>
 			<!-- Creator: CorelDRAW 2020 (64-Bit) -->
-			<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="39.1016mm" height="52.6079mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
-			viewBox="0 0 1604.42 2158.61"
+			<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="39.1017mm" height="52.608mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+			viewBox="0 0 1707.24 2296.94"
 			 xmlns:xlink="http://www.w3.org/1999/xlink"
 			 xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
-			 <defs>
-			  <style type="text/css">
-			   <![CDATA[
-			    .fil0 {fill:black}
-			   ]]>
-			  </style>
-			 </defs>
 			 <g id="Layer_x0020_1">
 			  <metadata id="CorelCorpID_0Corel-Layer"/>
-			  <g id="_2218150820608">
-			   <path class="fil0" d="M248.21 2094.59l65.45 37.79c44.11,5.55 70.7,23.81 127.94,25.98 42.98,1.63 90.46,-5.19 122.71,-17.86 78.31,-30.77 153.23,-74.96 201.66,-181.5 21.12,-43.63 32.38,-87.04 34.62,-127.6 9.12,-165.22 -66.53,-8.14 132.12,-352.61l577.6 -1003.38c50.58,-88.37 98.78,-145.69 93.73,-236.45 -6.64,-119.22 -59.86,-139.91 -92.7,-189.08l-61 -35.22c-57.35,-3.03 -81.95,-24.18 -139.62,-9.61 -44.51,11.24 -83.89,23.38 -121.38,60.17 -58.57,57.47 -683.03,1163.63 -808.1,1379.81 -24.94,43.11 -16.95,30.82 -55.27,43.45 -34.64,11.42 -84.68,45.01 -117.54,76.49 -116.32,111.43 -127.09,293.09 -60.32,414.91 41.11,75 77.37,85.66 100.09,114.7zm1167.76 -1984.91c-128.68,-47.75 -175.75,43.09 -218.2,110.06 -151.46,238.93 -363.2,623.22 -509.06,875.87l-253.2 439.3c-18.43,27.67 -33.62,30.6 -55.5,37.75 -25.06,8.18 -32.1,10.57 -56.8,24.66 -181.73,103.62 -147.61,362.33 24.65,442.82 160.33,74.91 381.75,-52.93 353.13,-255.73 -8.01,-56.75 -22.03,-56.85 19.49,-127.23 29.42,-49.86 57.84,-100.41 86.58,-150.66l677.5 -1180.16c42.13,-73.57 20.62,-183.56 -68.59,-216.67z"/>
-			   <path class="fil0" d="M485.88 1655.29c-27.49,21.1 -118.35,-9.45 -165.91,93.33 -77.08,166.56 150.14,279.15 241.77,159.6 27.52,-35.91 40.87,-68.42 38.11,-107.28 -3.4,-47.95 -11.42,-47.06 -33.53,-90.2 72.71,-123.24 421.7,-701.47 438.88,-785.55 -80.45,-73.94 -104,14.72 -149.04,91.63 -41.44,70.77 -82.84,141.56 -124.04,212.47 -82.38,141.79 -164.25,283.97 -246.25,425.99zm-27.26 106.17c-68.04,-6.93 -76.18,96.99 -6.28,101.32 55.02,3.41 76.59,-94.16 6.28,-101.32z"/>
-			   <path class="fil0" d="M602.82 94.37c36.67,31.94 147.81,89.09 199.44,118.9 27.16,15.68 74.6,51.47 102.79,54.9 27.72,3.37 60.74,-26.24 47.76,-61.04 -14.07,-37.73 -147.31,-99.08 -191.91,-124.83 -72.27,-41.73 -155.73,-111.61 -158.08,12.06z"/>
-			   <path class="fil0" d="M-0 1135.27c28.28,29.55 279.36,175.21 320.3,173.76 1.3,-0.29 90.66,-39.76 -16.72,-101.76 -79.38,-45.83 -158.75,-91.66 -238.13,-137.48 -45.34,-26.18 -64.35,29.16 -65.45,65.48z"/>
-			   <path class="fil0" d="M650.71 713.35c-34.95,-20.18 -282.36,-173.41 -312.64,-167.57 -33.95,6.56 -52.98,52.72 -20.13,79.41 25.59,20.79 270.36,171.93 302.57,163.35 46.04,-12.25 29.32,-43.38 30.2,-75.2z"/>
-			   <path class="fil0" d="M343.33 1109.46c85.84,49.56 117.39,29.9 106.86,-51.39 -38.51,-21.14 -112.01,-80.7 -150.21,-60.37 -70.16,37.34 0.72,87.15 43.35,111.76z"/>
-			   <path class="fil0" d="M670.47 352.62c54.84,76.05 200.01,130.38 185.4,34.45 -4.74,-31.11 -63.76,-62.59 -99.56,-79.25 -50.42,-23.45 -68.91,-7.96 -85.84,44.8z"/>
-			   <path class="fil0" d="M369.32 873.42c40.68,60.23 193.95,140.08 186.23,39.2 -2.53,-33.08 -58.07,-63.82 -94,-80.39 -57.05,-26.3 -71.44,-14.79 -92.22,41.19z"/>
-			   <path class="fil0" d="M627.94 472.85c-42.96,-6.44 -65.75,47.63 -41.84,76.37 15.12,18.18 97.57,64.92 120.47,66.49 38.69,2.64 67.9,-45.99 38.5,-77.27 -17.27,-18.39 -95.05,-62.28 -117.13,-65.59z"/>
+			  <g id="_1922954106368">
+			   <path class="fil0" d="M264.12 2228.82l69.65 40.21c46.94,5.9 75.23,25.33 136.14,27.65 45.73,1.74 96.26,-5.52 130.57,-19 83.32,-32.74 163.04,-79.77 214.59,-193.13 22.47,-46.43 34.45,-92.62 36.84,-135.77 9.71,-175.81 -70.8,-8.66 140.59,-375.21l614.62 -1067.67c53.82,-94.03 105.11,-155.03 99.74,-251.6 -7.06,-126.86 -63.7,-148.88 -98.64,-201.2l-64.91 -37.47c-61.03,-3.22 -87.2,-25.73 -148.56,-10.22 -47.36,11.96 -89.27,24.88 -129.16,64.03 -62.33,61.15 -726.8,1238.2 -859.89,1468.23 -26.54,45.87 -18.03,32.79 -58.82,46.24 -36.86,12.16 -90.11,47.89 -125.07,81.39 -123.77,118.57 -135.24,311.87 -64.18,441.5 43.74,79.8 82.32,91.15 106.51,122.05zm1242.59 -2112.11c-136.93,-50.81 -187.02,45.85 -232.18,117.11 -161.17,254.24 -386.47,663.16 -541.69,932l-269.43 467.45c-19.61,29.45 -35.78,32.56 -59.06,40.16 -26.67,8.7 -34.16,11.25 -60.44,26.24 -193.38,110.26 -157.07,385.55 26.23,471.19 170.6,79.71 406.21,-56.32 375.76,-272.12 -8.52,-60.38 -23.44,-60.5 20.74,-135.39 31.3,-53.05 61.55,-106.84 92.13,-160.31l720.92 -1255.79c44.83,-78.29 21.94,-195.33 -72.98,-230.55z"/>
+			   <path class="fil0" d="M517.02 1761.37c-29.25,22.46 -125.93,-10.06 -176.54,99.31 -82.02,177.23 159.77,297.04 257.27,169.83 29.28,-38.21 43.49,-72.81 40.56,-114.15 -3.62,-51.02 -12.15,-50.08 -35.68,-95.98 77.37,-131.13 448.73,-746.42 467,-835.89 -85.61,-78.68 -110.66,15.66 -158.59,97.5 -44.1,75.3 -88.15,150.63 -131.99,226.08 -87.66,150.88 -174.78,302.16 -262.03,453.29zm-29 112.97c-72.4,-7.37 -81.07,103.21 -6.68,107.81 58.54,3.62 81.5,-100.19 6.68,-107.81z"/>
+			   <path class="fil0" d="M641.46 100.42c39.02,33.99 157.28,94.8 212.22,126.52 28.9,16.69 79.39,54.77 109.38,58.41 29.5,3.59 64.64,-27.92 50.82,-64.95 -14.98,-40.15 -156.75,-105.42 -204.21,-132.83 -76.9,-44.4 -165.71,-118.76 -168.21,12.84z"/>
+			   <path class="fil0" d="M-0 1208.02c30.1,31.44 297.26,186.43 340.83,184.9 1.38,-0.31 96.47,-42.31 -17.8,-108.28 -84.46,-48.77 -168.93,-97.53 -253.38,-146.29 -48.25,-27.86 -68.47,31.03 -69.64,69.67z"/>
+			   <path class="fil0" d="M692.41 759.07c-37.19,-21.47 -300.45,-184.53 -332.67,-178.3 -36.13,6.98 -56.38,56.1 -21.42,84.5 27.23,22.12 287.68,182.95 321.96,173.82 48.99,-13.04 31.2,-46.16 32.13,-80.02z"/>
+			   <path class="fil0" d="M365.34 1180.56c91.34,52.74 124.91,31.81 113.71,-54.69 -40.98,-22.49 -119.19,-85.87 -159.84,-64.24 -74.65,39.73 0.76,92.73 46.13,118.93z"/>
+			   <path class="fil0" d="M713.44 375.22c58.36,80.93 212.83,138.73 197.28,36.66 -5.05,-33.11 -67.85,-66.6 -105.94,-84.33 -53.65,-24.96 -73.33,-8.47 -91.34,47.67z"/>
+			   <path class="fil0" d="M393 929.39c43.29,64.09 206.38,149.06 198.16,41.71 -2.69,-35.2 -61.79,-67.91 -100.03,-85.54 -60.7,-27.98 -76.02,-15.74 -98.13,43.83z"/>
+			   <path class="fil0" d="M668.19 503.16c-45.72,-6.85 -69.97,50.68 -44.53,81.26 16.09,19.35 103.82,69.08 128.19,70.75 41.17,2.81 72.25,-48.94 40.97,-82.22 -18.38,-19.56 -101.14,-66.27 -124.63,-69.79z"/>
 			  </g>
 			 </g>
 			</svg>
@@ -1114,25 +1563,17 @@ class employeeReport_absen extends _page{
 		?>
 			<!-- Creator: CorelDRAW 2020 (64-Bit) -->
 			<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="48.3905mm" height="52.846mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
-			viewBox="0 0 1841.81 2011.4"
+			viewBox="0 0 2619.39 2860.57"
 			 xmlns:xlink="http://www.w3.org/1999/xlink"
 			 xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
-			 <defs>
-			  <style type="text/css">
-			   <![CDATA[
-			    .fil0 {fill:black}
-			    .fil1 {fill:white}
-			    .fil2 {fill:#1D1819;fill-rule:nonzero}
-			   ]]>
-			  </style>
-			 </defs>
 			 <g id="Layer_x0020_1">
 			  <metadata id="CorelCorpID_0Corel-Layer"/>
-			  <path class="fil0" d="M1008.49 637.99c-96.32,-18.57 -240.57,-140 -324,-151.7 -86.94,-12.19 -225.44,129.6 -286.6,184.47 -42.4,38.04 -92.12,63.05 -90.69,140.14 1.78,95.86 93.7,187.81 265.46,34.25 68.77,-61.49 108.9,-114.05 140.49,-74.93 20.02,24.78 -298.2,562.98 -330.65,583.87 -45.56,29.35 -220.03,15.7 -287.56,33.34 -83.18,21.72 -126.58,111.65 -67.94,190.43 51.12,68.66 155.69,45.29 256.6,37.24 105.77,-8.44 200.53,5.61 256.95,-63.55 47.31,-58 80.56,-152.95 132.32,-188.41 48.2,12.93 96.23,61.39 134.37,92.49 48.62,39.64 83.99,49.34 90.72,136.07 10.16,130.95 -19.91,350.54 162.77,310.35 137.4,-30.23 81.12,-238.8 73.96,-360.78 -11.23,-191.47 -84.01,-194.37 -183.52,-286.94l147.28 -279.78c137.77,46.71 135.3,101.84 268.32,-6.27l212.58 -177.15c73.57,-91.5 5.02,-213.34 -113.04,-197.08 -59.52,8.19 -177.92,128.18 -229.5,164.42l-228.32 -120.48zm-189.34 101.55c-46.1,124.56 -202.27,387.92 -276.18,506.02 -25.16,40.2 -48.38,76.99 -72.03,115.91 -62.85,103.47 -121.22,71.84 -303.92,88.34 -77.01,6.95 -98.64,18.31 -90.67,92.37 79.97,25.9 197.35,0.63 288.19,-5.22 142.65,-9.19 125.77,-38.15 186.68,-135.57 109.96,-175.87 153.23,-120.39 284.86,-14.97 153.79,123.17 118.26,82.25 139.11,347.09 11.8,149.86 114.84,141.55 101.38,-22.58 -5.95,-72.58 -2.25,-234.58 -38.73,-284.18 -20.45,-27.79 -146.9,-125.03 -180.25,-142.29 12.95,-59.45 183.16,-372.66 218.08,-405.8 244.09,102.93 96.73,142.89 374.84,-68.89 10.22,-7.78 51.03,-41.32 58.3,-49.22 32.44,-35.26 33.38,-19.46 19.35,-79.52 -51.53,-28.03 -64.27,-14.46 -105.83,19.93 -32.84,27.16 -57.63,49.27 -88.2,73.51 -100.1,79.36 -80.28,86.06 -208.53,13.84 -58.5,-32.94 -387.77,-213.11 -433.9,-225.73 -51.04,-13.95 -73.47,17.05 -104.48,42.39l-176.98 146.11c-32.67,27.26 -55.55,76.71 -1.37,98.31 50.89,20.29 155.83,-95.61 190.89,-124.5 91.76,-75.59 118.73,-41.14 219.38,14.69z"/>
-			  <path class="fil0" d="M644.8 455.55l84.76 11.63 -0.08 -377.77 1026.09 0.61 0.69 1830.54 -1025.88 4.23 -0.99 -455.62c0,-61.52 -20.11,-66.17 -58.9,-80.93 -28.54,64.78 -27.83,42.75 -27.43,134.16l0.58 488.99 1198.17 -0.15 -0.13 -2011.25 -1198.04 0.45 1.16 455.1z"/>
-			  <path class="fil1" d="M1120.1 366.31c-181.02,42.46 -100.59,272.79 52.53,233.36 147.29,-37.93 89.78,-266.75 -52.53,-233.36z"/>
-			  <line class="fil0" x1="1008.49" y1="637.99" x2="1008.49" y2= "637.99" />
-			  <path class="fil2" d="M1126.35 197.1c56.72,0 108.09,23 145.26,60.18 37.17,37.17 60.18,88.54 60.18,145.26 0,56.72 -23,108.09 -60.18,145.26 -37.17,37.17 -88.54,60.18 -145.26,60.18 -56.72,0 -108.09,-23 -145.26,-60.18 -37.17,-37.17 -60.18,-88.54 -60.18,-145.26 0,-56.72 23,-108.09 60.18,-145.26 37.17,-37.17 88.54,-60.18 145.26,-60.18zm88.3 117.14c-22.59,-22.59 -53.82,-36.57 -88.3,-36.57 -34.48,0 -65.71,13.98 -88.3,36.57 -22.59,22.59 -36.57,53.82 -36.57,88.3 0,34.48 13.98,65.71 36.57,88.3 22.59,22.59 53.82,36.57 88.3,36.57 34.48,0 65.71,-13.98 88.3,-36.57 22.59,-22.59 36.57,-53.82 36.57,-88.3 0,-34.48 -13.98,-65.71 -36.57,-88.3z"/>
+			  <g id="_1922806597504">
+			   <path class="fil0" d="M1434.25 907.34c-136.98,-26.42 -342.14,-199.11 -460.79,-215.74 -123.64,-17.33 -320.61,184.31 -407.6,262.35 -60.31,54.1 -131.01,89.67 -128.98,199.3 2.53,136.33 133.26,267.11 377.53,48.71 97.81,-87.45 154.87,-162.2 199.8,-106.57 28.47,35.24 -424.1,800.66 -470.24,830.37 -64.79,41.73 -312.92,22.33 -408.96,47.41 -118.3,30.89 -180.02,158.79 -96.62,270.82 72.7,97.65 221.42,64.41 364.93,52.97 150.42,-12 285.2,7.98 365.43,-90.38 67.28,-82.49 114.57,-217.53 188.18,-267.96 68.55,18.39 136.86,87.31 191.1,131.54 69.15,56.37 119.45,70.17 129.02,193.52 14.45,186.24 -28.32,498.53 231.49,441.37 195.4,-43 115.36,-339.62 105.19,-513.09 -15.97,-272.3 -119.48,-276.43 -261,-408.08l209.46 -397.9c195.94,66.43 192.43,144.84 381.6,-8.92l302.32 -251.94c104.63,-130.13 7.14,-303.41 -160.76,-280.29 -84.64,11.65 -253.03,182.29 -326.39,233.83l-324.71 -171.34zm-269.28 144.42c-65.56,177.14 -287.66,551.7 -392.77,719.65 -35.78,57.17 -68.81,109.49 -102.44,164.84 -89.39,147.15 -172.39,102.18 -432.22,125.63 -109.52,9.88 -140.29,26.04 -128.95,131.36 113.74,36.84 280.67,0.9 409.86,-7.43 202.87,-13.07 178.87,-54.25 265.5,-192.81 156.38,-250.13 217.92,-171.22 405.12,-21.29 218.72,175.17 168.18,116.97 197.84,493.62 16.78,213.13 163.32,201.32 144.18,-32.12 -8.46,-103.22 -3.19,-333.62 -55.08,-404.15 -29.08,-39.53 -208.92,-177.81 -256.34,-202.37 18.42,-84.55 260.49,-529.99 310.15,-577.13 347.14,146.39 137.57,203.22 533.1,-97.98 14.53,-11.06 72.57,-58.76 82.92,-70.01 46.13,-50.15 47.47,-27.68 27.51,-113.09 -73.29,-39.86 -91.4,-20.56 -150.51,28.34 -46.7,38.63 -81.96,70.08 -125.43,104.54 -142.36,112.87 -114.17,122.39 -296.57,19.68 -83.2,-46.85 -551.47,-303.09 -617.08,-321.02 -72.59,-19.84 -104.49,24.24 -148.59,60.28l-251.7 207.8c-46.47,38.76 -79.01,109.09 -1.95,139.81 72.38,28.85 221.61,-135.98 271.48,-177.05 130.5,-107.5 168.86,-58.5 312,20.89z"/>
+			   <path class="fil0" d="M917.03 647.88l120.54 16.54 -0.11 -537.25 1459.29 0.87 0.99 2603.36 -1458.98 6.01 -1.41 -647.98c0,-87.49 -28.6,-94.1 -83.76,-115.1 -40.59,92.13 -39.58,60.8 -39.02,190.8l0.82 695.44 1704.01 -0.21 -0.18 -2860.36 -1703.83 0.64 1.65 647.24z"/>
+			   <line class="fil0" x1="1434.25" y1="907.34" x2="1434.25" y2= "907.34" />
+			   <path class="fil1" d="M1601.87 280.31c80.67,0 153.72,32.71 206.59,85.58 52.87,52.87 85.58,125.92 85.58,206.59 0,80.67 -32.71,153.72 -85.58,206.59 -52.87,52.87 -125.92,85.58 -206.59,85.58 -80.67,0 -153.72,-32.71 -206.59,-85.58 -52.87,-52.87 -85.58,-125.92 -85.58,-206.59 0,-80.67 32.71,-153.72 85.58,-206.59 52.87,-52.87 125.92,-85.58 206.59,-85.58zm125.58 166.59c-32.13,-32.13 -76.53,-52.01 -125.58,-52.01 -49.04,0 -93.45,19.88 -125.58,52.01 -32.13,32.13 -52.01,76.53 -52.01,125.58 0,49.04 19.88,93.45 52.01,125.58 32.13,32.13 76.53,52.01 125.58,52.01 49.04,0 93.45,-19.88 125.58,-52.01 32.13,-32.13 52.01,-76.53 52.01,-125.58 0,-49.04 -19.88,-93.45 -52.01,-125.58z"/>
+			  </g>
 			 </g>
 			</svg>
 		<?php

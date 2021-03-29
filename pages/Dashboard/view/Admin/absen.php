@@ -334,7 +334,7 @@ class report_absen extends _page{
 		return apply_button($import).' '.print_button($excel);
 	}
 
-	public function get_range($date=''){
+	public static function get_range($date=''){
 		$date = empty($date)?date('Y-m'):$date;
 		$date = strtotime($date);
 

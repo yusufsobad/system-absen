@@ -863,7 +863,7 @@ abstract class absen_control{
 							$('#myModal').modal('show');
 
 							if(typeof data['timeout'] === 'undefined'){
-								data['timeout'] = 1 * 60 * 1000;
+								data['timeout'] = 1 * 60 * 2000;
 							}
 
 							//Aktif Microphone

@@ -1023,7 +1023,7 @@ class employee_absen extends _file_manager{
 		}
 	}
 
-	public function _check_noInduk($id=0){
+	public static function _check_noInduk($id=0){
 		//Check user ---> employee atau internship
 		$whr = "AND no_induk='$id'";
 		if(preg_match("/^M[0-9]{4}/", $id)){

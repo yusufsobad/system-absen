@@ -165,18 +165,21 @@ class absensi{
 			$group = sobad_module::_get_group($users[0]['divisi']);
 		}
 
+		$check = array_filter($group);
+		if(empty($check)){
+			$group = array(
+				'ID'		=> 0,
+				'name'		=> 'undefined',
+				'data'		=> array(0),
+				'status'	=> array(1,3)
+			);
+		}
+
 		$check = array_filter($work);
 		if(empty($check)){
 			$work = array(
 				'time_in'	=> '08:00:00',
 				'time_out'	=> '16:00:00'
-			);
-
-			$group = array(
-				'ID'	=> 0,
-				'name'	=> 'undefined',
-				'data'	=> array(0),
-				'group'	=> array(0)
 			);
 		}else{
 			$work = $work[0];
