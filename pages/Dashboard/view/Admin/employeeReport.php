@@ -61,7 +61,7 @@ class employeeReport_absen extends _page{
 		ob_start();
 		?> 
 			<div class="select-employee">
-				<select class="form-control bs-select" data-live-search="true" data-size="6" data-style="blue" data-sobad="sobad__reportEmployee" data-load="report-employee" data-attribute="html" onchange="option_report(this)"> 
+				<select class="form-control bs-select" data-live-search="true" data-size="6" data-sobad="sobad__reportEmployee" data-load="report-employee" data-attribute="html" onchange="option_report(this)"> 
 		<?php
 			$user = sobad_user::get_employees(array('ID','no_induk','name'));
 			foreach ($user as $key => $val) {
@@ -96,6 +96,11 @@ class employeeReport_absen extends _page{
 				.select-employee>.form-control.bs-select {
 				    width: 200px;
 				    margin-right: 20px;
+				}
+
+				.select-employee span.filter-option.pull-left,
+				.select-employee span.caret {
+    				color: #333;
 				}
 
 				.bag-report {
@@ -423,7 +428,7 @@ class employeeReport_absen extends _page{
 	}
 
 	public function _score_entryHours($idx=0,$limit=''){
-		$user = sobad_user::get_id($idx,array('shift','time_in','_inserted'),"AND time_in!='00:00:00' ".$limit);
+		$user = sobad_user::get_id($idx,array('shift','time_in','_inserted'),"AND time_in!='00:00:00' ".$limit);	
 		return self::_get_score($user,'time_in');
 	}
 
@@ -502,7 +507,7 @@ class employeeReport_absen extends _page{
 			'overtime-'.$type.'ly'	=> array(
 				'load_chart_dash'	=> self::{$over}($date)
 			),
-			'history-'.$type.'y'	=> array(
+			'history-'.$type.'ly'	=> array(
 				'html'				=> $history
 			),
 			'permit-'.$type.'ly'	=> array(
@@ -1079,17 +1084,26 @@ class employeeReport_absen extends _page{
 		$sDay = $date['number_day'];
 		$fDay = $date['finish_day'];
 
+		//Get Data User
+		$_user = sobad_user::get_id($idx,array('work_time','_entry_date'));
+
 		$no = -1;
 		$label = array();$data = array();
 		for($i=$sDay;$i<$fDay;$i++){
 			$no += 1;
+			
+			$work_in = 0;
+			$work_out = 0;
+
 			$pcolor = 'rgba(21,73,154,1)';
-			$label[] = date('M-d',strtotime($i.' days',$default));
 			$data[0]['data'][$no] = 0;
 			$data[1]['data'][$no] = 0;
 			
 			$now = date('Y-m-d',strtotime($i.' days',$default));
 			$user = sobad_user::get_id($idx,array('shift','time_in','time_out'),"AND _inserted='$now'");
+
+			$_label = date('M-d',strtotime($i.' days',$default));
+			$label[] = $_label;			
 			
 			$check = array_filter($user);
 			if(!empty($check)){
@@ -1103,23 +1117,70 @@ class employeeReport_absen extends _page{
 				$data[1]['data'][$no] = $time_out;
 
 				$work_in = 8;
-				$pcolor = $time_in>=$work_in?'rgba(255, 99, 132,1)':$pcolor;
+				$pcolor = $time_in>=$work_in?'rgba(255,0,0,1)':$pcolor;
 			}
+
+			// Work Time
+			$_shift = sobad_permit::get_all(array('start_date','range_date','note'),"AND user='$idx' AND start_date<='$now' AND range_date>='$now'");
+			$check = array_filter($_shift);
+			if(!empty($check)){
+				$wTime = $_shift[0]['note'];
+			}else{
+				$wTime = $_user[0]['work_time'];
+			}
+
+			if($_user[0]['_entry_date']<=$now){
+				$_day = date('w',strtotime($now));
+				$_work = sobad_work::get_id($wTime,array('time_in','time_out'),"AND days='$_day'");
+
+				$check = array_filter($_work);
+				if(!empty($check)){
+					$work_in = $_work[0]['time_in'];
+					$work_out = $_work[0]['time_out'];
+
+					$work_in = _conv_time('00:00:00',$work_in,2);
+					$work_out = _conv_time('00:00:00',$work_out,2);
+				}
+			}
+
+			if($work_in!=0){
+				$work_in = round($work_in/60,2);
+			}
+
+			if($work_out!=0){
+				$work_out = round($work_out/60,2);
+			}
+
+			$data[2]['data'][$no] = $work_in;
+			$data[3]['data'][$no] = $work_out;
+
+			$data[2]['pRadius'][$no] = 0;
+			$data[3]['pRadius'][$no] = 0;
 
 			$data[0]['pBgColor'][$no] = $pcolor;
 		}
 
 		$data[0]['label'] = 'Entry Hours';
 		$data[1]['label'] = 'Left Hours';
+		$data[2]['label'] = 'Entry Work';
+		$data[3]['label'] = 'Left Work';
 
 		$data[0]['type'] = 'line';
 		$data[1]['type'] = 'line';
+		$data[2]['type'] = 'line';
+		$data[3]['type'] = 'line';
 
 		$data[0]['bgColor'] = 'rgba(21,73,154,1)';
 		$data[0]['brdColor'] = 'rgba(21,73,154,1)';
 
 		$data[1]['bgColor'] = 'rgba(255,174,0,1)';
 		$data[1]['brdColor'] = 'rgba(255,174,0,1)';
+
+		$data[2]['bgColor'] = 'rgba(69,196,35,0.5)';
+		$data[2]['brdColor'] = 'rgba(69,196,35,0.5)';
+
+		$data[3]['bgColor'] = 'rgba(255,0,0,0.5)';
+		$data[3]['brdColor'] = 'rgba(255,0,0,0.5)';
 
 		$args = array(
 			'type'		=> 'bar',
@@ -1444,16 +1505,16 @@ class employeeReport_absen extends _page{
 			$start = $date['start_date'];
 			$finish = $date['finish_date'];
 
-			$scoreA = self::_score_entryHours($idx,"AND _inserted BETWEEN $start AND $finish");
-			$scoreB = self::_score_leftHours($idx,"AND _inserted BETWEEN $start AND $finish");
-			
+			$scoreA = self::_score_entryHours($idx,"AND _inserted BETWEEN '$start' AND '$finish'");
+			$scoreB = self::_score_leftHours($idx,"AND _inserted BETWEEN '$start' AND '$finish'");
+		
 			$label[] = conv_month_id($i);
 			$data[0]['data'][$no] = $scoreA['nominal'];
 			$data[1]['data'][$no] = $scoreB['nominal'];
 		}
 
 		$data[0]['label'] = 'Score Entry';
-		$data[0]['label'] = 'Score Left';
+		$data[1]['label'] = 'Score Left';
 
 		$data[0]['type'] = 'line';
 		$data[1]['type'] = 'line';
@@ -1525,12 +1586,13 @@ class employeeReport_absen extends _page{
 		return $args;
 	}
 
-	public function _history_yearly($date='',$idx=0){
+	public function _history_yearly($year='',$idx=0){
 		$idx = isset($_POST['type'])?$_POST['type']:$idx;
 
-		$date = empty($date)?date('Y'):$date;
-		$yearA = $date.'-01';
-		$yearB = $date.'-12';
+		$year = empty($year)?date('Y'):$year;
+	
+		$yearA = $year.'-01';
+		$yearB = $year.'-12';
 
 		$dateA = report_absen::get_range($yearA);
 		$dateB = report_absen::get_range($yearB);

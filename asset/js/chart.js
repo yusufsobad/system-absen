@@ -18,9 +18,10 @@
 						borderWidth : brd,
 						data : data['data'][i]['data'],
 						fill : fl,
-						stack : isNaN(data['data'][i]['stack'])?i:data['data'][i]['stack'],
+						stack : typeof data['data'][i]['stack']=='object'?data['data'][i]['stack']:i,
 						pointBackgroundColor : typeof data['data'][i]['pBgColor']=='object'?data['data'][i]['pBgColor']:data['data'][i]['bgColor'],
-						pointBorderColor : typeof data['data'][i]['pBgColor']=='object'?data['data'][i]['pBgColor']:data['data'][i]['brdColor']
+						pointBorderColor : typeof data['data'][i]['pBgColor']=='object'?data['data'][i]['pBgColor']:data['data'][i]['brdColor'],
+						pointRadius : typeof data['data'][i]['pRadius']=='object'?data['data'][i]['pRadius']:3
 					}
 				};
 
