@@ -60,7 +60,8 @@ class employeeReport_absen extends _page{
 	protected function action(){
 		ob_start();
 		?> 
-			<select class="form-control bs-select" data-live-search="true" data-size="6" data-style="blue" data-sobad="sobad__reportEmployee" data-load="report-employee" data-attribute="html" onchange="option_report(this)"> 
+			<div class="select-employee">
+				<select class="form-control bs-select" data-live-search="true" data-size="6" data-style="blue" data-sobad="sobad__reportEmployee" data-load="report-employee" data-attribute="html" onchange="option_report(this)"> 
 		<?php
 			$user = sobad_user::get_employees(array('ID','no_induk','name'));
 			foreach ($user as $key => $val) {
@@ -69,7 +70,8 @@ class employeeReport_absen extends _page{
 				<?php
 			}
 		?>
-			</select>
+				</select>
+			</div>
 		<?php
 		$opt = ob_get_clean();
 
@@ -89,6 +91,11 @@ class employeeReport_absen extends _page{
     				padding: 30px;
     				border-radius: 20px !important;
     				font-size: 16px;
+				}
+
+				.select-employee>.form-control.bs-select {
+				    width: 200px;
+				    margin-right: 20px;
 				}
 
 				.bag-report {
@@ -318,6 +325,8 @@ class employeeReport_absen extends _page{
 	public function _script(){
 		?>
 			<script type="text/javascript">
+				ComponentsDropdowns.init();
+
 				function option_report(val){
 					var ajx = $(val).attr("data-sobad");
 					if(ajx){
@@ -367,6 +376,27 @@ class employeeReport_absen extends _page{
 						}
 					}
 				}
+
+				function opt_monthAbsen(){
+					var option = {
+						tooltips	: {
+							enabled		: true,
+							mode		: 'single',
+							callbacks	: {
+								label 		: function(value, data) {
+									var jam = Math.floor(value.yLabel);
+									var menit = Math.floor((value.yLabel - jam) * 60);
+
+									jam = jam<10?'0'+jam:jam;
+									menit = menit<10?'0'+menit:menit;
+									return jam+':'+menit;
+								}
+							}
+						}
+					}
+
+					return option;
+				}
 			</script>
 		<?php
 	}
@@ -392,22 +422,34 @@ class employeeReport_absen extends _page{
 		<?php
 	}
 
-	public function _score_entryHours($idx=0){
-		$score = 0;
-		$user = sobad_user::get_id($idx,array('shift','time_in','_inserted'),"AND time_in!='00:00:00'");
+	public function _score_entryHours($idx=0,$limit=''){
+		$user = sobad_user::get_id($idx,array('shift','time_in','_inserted'),"AND time_in!='00:00:00' ".$limit);
+		return self::_get_score($user,'time_in');
+	}
 
+	public function _score_leftHours($idx=0,$limit=''){
+		$user = sobad_user::get_id($idx,array('shift','time_out','_inserted'),"AND time_out!='00:00:00' ".$limit);
+		return self::_get_score($user,'time_out');
+	}
+
+	public function _get_score($user=array(),$_time=''){
+		$score = 0;
 		foreach ($user as $key => $val) {
 			$date = strtotime($val['_inserted']);
 			$day = date('w',$date);
 
-			$work = sobad_work::get_id($val['shift'],array('time_in'),"AND days='$day'");
-			$time = _conv_time($val['time_in'],$work[0]['time_in'],2);
+			$work = sobad_work::get_id($val['shift'],array($_time),"AND days='$day'");
+			$time = _conv_time($val[$_time],$work[0][$_time],2);
 			$time += 5;
 
 			$score += ($time * 4);
 		}
 
-		$score = round($score / count($user),0);
+		if($score!=0 || count($user)!=0){
+			$score = round($score / count($user),0);
+		}else{
+			$score = 0;
+		}
 
 		if($score>100){
 			$score = 100;
@@ -468,6 +510,209 @@ class employeeReport_absen extends _page{
 			)
 		);
 		return $args;
+	}
+
+	public function _permitMonth($data=''){
+		$idx = $_POST['type'];
+		$date = empty($_POST['filter'])?date('Y-m'):$_POST['filter'];
+		$type = str_replace('month_', '', $data);
+
+		$date = report_absen::get_range($date);
+
+		$start = $date['start_date'];
+		$finish = $date['finish_date'];
+
+		return self::_permitForm($idx,$type,$start,$finish);
+	}
+
+	public function _permitYear($data=''){
+		$idx = $_POST['type'];
+		$year = empty($_POST['filter'])?date('Y'):$_POST['filter'];
+		$type = str_replace('year_', '', $data);
+
+		$dateA = report_absen::get_range($year.'-01');
+		$dateB = report_absen::get_range($year.'-12');
+
+		$start = $dateA['start_date'];
+		$finish = $dateB['finish_date'];
+
+		return self::_permitForm($idx,$type,$start,$finish);
+	}
+
+	private static function _permitForm($idx=0,$type=0,$sdate='',$fdate='',$limit=''){
+		//Alpha Form
+		if($type==0){
+			return self::_alphaForm($idx,$sdate,$fdate);
+		}
+
+		$where = "AND (start_date>='$sdate' AND range_date<='$fdate') AND user='$idx' ";
+		if($type==4){
+			$where .= "AND type='4' OR (type>'10' AND type!='48')";
+		}else{
+			$where .= "AND type='$type'";
+		}
+
+		$where .= $limit;
+		$history = sobad_permit::get_all(array('user','start_date','range_date','num_day','type_date','type','note'),$where);
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($history as $key => $val) {
+			$no += 1;
+
+			$conv = permit_absen::_conv_dateRange($val);
+			$val = $conv['data'];
+			$sts_day = $conv['status'];
+			$range = $conv['range'];
+
+			$range = ($range + 1).' '.$sts_day;
+
+			if($val['type']==4){
+				$_user = $val['user'];
+				$_now = $val['start_date'];
+				$logs = sobad_logDetail::get_all(array('log_id','times'),"AND _log_id.user='$_user' AND _log_id._inserted='$_now'");
+				$check = array_filter($logs);
+
+				if(!empty($check)){
+					$range = round($logs[0]['times'] / 60,2).' jam';
+				}
+			}
+
+			$data['table'][$no-1]['tr'] = array('');
+			$data['table'][$no-1]['td'] = array(
+				'no'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Mulai'		=> array(
+					'center',
+					'17%',
+					conv_day_id($val['start_date']).', '.format_date_id($val['start_date']),
+					true
+				),
+				'Sampai'	=> array(
+					'center',
+					'17%',
+					conv_day_id($val['range_date']).', '.format_date_id($val['range_date']),
+					true
+				),
+				'Jenis'		=> array(
+					'left',
+					'20%',
+					permit_absen::_conv_type($val['type']),
+					true
+				),
+				'Keterangan'	=> array(
+					'left',
+					'auto',
+					$val['note'],
+					true
+				),
+				'Lama'		=> array(
+					'center',
+					'10%',
+					$range,
+					true
+				),
+			);
+		}
+
+		$args = array(
+			'title'		=> 'History',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
+
+	private static function _alphaForm($idx=0,$sdate='',$fdate='',$limit=''){
+		$where = "AND user='$idx' AND _inserted BETWEEN '$sdate' AND '$fdate'";
+		$args = array('user','shift','type','_inserted');
+
+		// Alpha
+		$history = sobad_user::get_logs($args,"type='0' ".$where);
+
+		// Tidak Absen Pulang
+		$logs = sobad_user::get_logs($args,"type='1' ".$where);
+		$history = array_merge($history,$logs);
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($history as $key => $val) {
+			$no += 1;
+
+			$user = sobad_user::get_id($val['user'],array('name'));
+			$user = $user[0]['name'];
+
+			$day = date('w',strtotime($val['_inserted']));
+			$work = sobad_work::get_id($val['shift'],array('time_in','time_out'),"AND days='$day'");
+			$work = $work[0];
+
+			$data['table'][$no-1]['tr'] = array('');
+			$data['table'][$no-1]['td'] = array(
+				'No'			=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Nama'			=> array(
+					'left',
+					'auto',
+					$user,
+					true
+				),
+				'Hari'			=> array(
+					'left',
+					'10%',
+					conv_day_id($val['_inserted']),
+					true
+				),
+				'Tanggal'		=> array(
+					'left',
+					'25%',
+					format_date_id($val['_inserted']),
+					true
+				),
+				'Jam Masuk'	=> array(
+					'center',
+					'10%',
+					$work['time_in'],
+					true
+				),
+				'Jam Pulang'	=> array(
+					'center',
+					'10%',
+					$work['time_out'],
+					true
+				),
+				'Keterangan'	=> array(
+					'left',
+					'15%',
+					$val['type']==0?'Alpha':'Tidak Absen Pulang',
+					true
+				)
+			);
+		}
+
+		$args = array(
+			'title'		=> 'History',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(),
+			'func'		=> array('sobad_table'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
 	}
 
 // --------------------------------------------------
@@ -768,12 +1013,13 @@ class employeeReport_absen extends _page{
 
 	// Report Monthly -----------------------------------------
 	public function _monthlyReport($idx=0){
+		$now = date('Y-m');
 		?>
 			<div id="monthly-report" class="bag-report">
 				<div class="row">
 					<div class="col-md-12">
 						<div style="display: inline-flex;float: right;" class="input-group input-medium date date-picker" data-date-format="yyyy-mm" data-date-viewmode="months">
-							<input type="text" class="form-control reportpicker" value="2021-03" data-sobad="_filter" data-load="monthly-report" data-type="month" data-index="<?php print($idx) ;?>" name="filter_date" onchange="filter_report(this)">
+							<input type="text" class="form-control reportpicker" value="<?php print($now) ;?>" data-sobad="_filter" data-load="monthly-report" data-type="month" data-index="<?php print($idx) ;?>" name="filter_date" onchange="filter_report(this)">
 						</div>
 					</div>
 				</div>
@@ -781,12 +1027,12 @@ class employeeReport_absen extends _page{
 					<?php self::_graphMonthly($idx) ;?>
 					<div class="col-md-6">
 						<div id="history-monthly" class="history-report">
-							<?php self::_history_monthly(date('Y-m'),$idx) ;?>
+							<?php self::_history_monthly($now,$idx) ;?>
 						</div>
 					</div>
 				</div>
 				<div id="permit-monthly" class="row">
-					<?php self::_dahsMonthly(date('Y-m'),$idx) ;?>
+					<?php self::_dahsMonthly($now,$idx) ;?>
 				</div>
 			</div>
 		<?php
@@ -837,6 +1083,7 @@ class employeeReport_absen extends _page{
 		$label = array();$data = array();
 		for($i=$sDay;$i<$fDay;$i++){
 			$no += 1;
+			$pcolor = 'rgba(21,73,154,1)';
 			$label[] = date('M-d',strtotime($i.' days',$default));
 			$data[0]['data'][$no] = 0;
 			$data[1]['data'][$no] = 0;
@@ -854,7 +1101,12 @@ class employeeReport_absen extends _page{
 
 				$data[0]['data'][$no] = $time_in;
 				$data[1]['data'][$no] = $time_out;
+
+				$work_in = 8;
+				$pcolor = $time_in>=$work_in?'rgba(255, 99, 132,1)':$pcolor;
 			}
+
+			$data[0]['pBgColor'][$no] = $pcolor;
 		}
 
 		$data[0]['label'] = 'Entry Hours';
@@ -873,7 +1125,7 @@ class employeeReport_absen extends _page{
 			'type'		=> 'bar',
 			'label'		=> $label,
 			'data'		=> $data,
-			'option'	=> ''
+			'option'	=> 'opt_monthAbsen'
 		);
 		
 		return $args;
@@ -1067,7 +1319,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $dayoff,
 				'desc'		=> 'Leaving of<br>Absence',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_3','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'month_3','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1079,7 +1331,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $izin,
 				'desc'		=> 'Permission',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_4','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'month_4','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1091,7 +1343,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $sick,
 				'desc'		=> 'Sick',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_48','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'month_48','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1103,7 +1355,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $outcity,
 				'desc'		=> 'Luar Kota',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_5','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'month_5','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1115,7 +1367,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $alpha,
 				'desc'		=> 'Off',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_0','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'month_0','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 
@@ -1124,12 +1376,13 @@ class employeeReport_absen extends _page{
 
 	// Report Monthly -----------------------------------------
 	public function _yearlyReport($idx=0){
+		$now = date('Y');
 		?>
 			<div id="yearly-report" class="bag-report">
 				<div class="row">
 					<div class="col-md-12">
 						<div style="display: inline-flex;float: right;" class="input-group input-medium date date-picker" data-date-format="yyyy" data-date-viewmode="years">
-							<input type="text" class="form-control yearlypicker" value="2021" data-sobad="_filter" data-load="yearly-report" data-type="year" data-index="<?php print($idx) ;?>" name="filter_date" onchange="filter_report(this)">
+							<input type="text" class="form-control yearlypicker" value="<?php print($now) ;?>" data-sobad="_filter" data-load="yearly-report" data-type="year" data-index="<?php print($idx) ;?>" name="filter_date" onchange="filter_report(this)">
 						</div>
 					</div>
 				</div>
@@ -1137,12 +1390,12 @@ class employeeReport_absen extends _page{
 					<?php self::_graphYearly($idx) ;?>
 					<div class="col-md-6">
 						<div id="history-yearly" class="history-report">
-							<?php self::_history_yearly(date('Y'),$idx) ;?>
+							<?php self::_history_yearly($now,$idx) ;?>
 						</div>
 					</div>
 				</div>
 				<div id="permit-yearly" class="row">
-					<?php self::_dahsYearly(date('Y'),$idx) ;?>
+					<?php self::_dahsYearly($now,$idx) ;?>
 				</div>
 			</div>
 		<?php
@@ -1177,44 +1430,30 @@ class employeeReport_absen extends _page{
 		return metronic_layout::sobad_chart($chart);
 	}
 
-	public function dash_absenYearly($date=''){
+	public function dash_absenYearly($year=''){
 		$idx = isset($_POST['type'])?$_POST['type']:0;
 
-		$date = empty($date)?date('Y-m'):$date;
-		$date = report_absen::get_range($date);
-
-		$default = $date['finish_year'].'-'.$date['finish_month'].'-01';
-		$default = strtotime($default);
-
-		$sDay = $date['number_day'];
-		$fDay = $date['finish_day'];
+		$year = empty($year)?date('Y'):$year;		
 
 		$no = -1;
 		$label = array();$data = array();
-		for($i=$sDay;$i<$fDay;$i++){
+		for($i=1;$i<=12;$i++){
 			$no += 1;
-			$label[] = date('M-d',strtotime($i.' days',$default));
-			$data[0]['data'][$no] = 0;
-			$data[1]['data'][$no] = 0;
-			
-			$now = date('Y-m-d',strtotime($i.' days',$default));
-			$user = sobad_user::get_id($idx,array('shift','time_in','time_out'),"AND _inserted='$now'");
-			
-			$check = array_filter($user);
-			if(!empty($check)){
-				$time_in = _conv_time('00:00:00',$user[0]['time_in'],2);
-				$time_out = _conv_time('00:00:00',$user[0]['time_out'],2);
+			$date = report_absen::get_range($year.'-'.$i);
 
-				$time_in = round($time_in/60,2);
-				$time_out = round($time_out/60,2);
+			$start = $date['start_date'];
+			$finish = $date['finish_date'];
 
-				$data[0]['data'][$no] = $time_in;
-				$data[1]['data'][$no] = $time_out;
-			}
+			$scoreA = self::_score_entryHours($idx,"AND _inserted BETWEEN $start AND $finish");
+			$scoreB = self::_score_leftHours($idx,"AND _inserted BETWEEN $start AND $finish");
+			
+			$label[] = conv_month_id($i);
+			$data[0]['data'][$no] = $scoreA['nominal'];
+			$data[1]['data'][$no] = $scoreB['nominal'];
 		}
 
-		$data[0]['label'] = 'Entry Hours';
-		$data[1]['label'] = 'Left Hours';
+		$data[0]['label'] = 'Score Entry';
+		$data[0]['label'] = 'Score Left';
 
 		$data[0]['type'] = 'line';
 		$data[1]['type'] = 'line';
@@ -1387,11 +1626,18 @@ class employeeReport_absen extends _page{
 		$alpha = count($logs);
 
 		// Check Tidak Absen Pulang
-		$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND type='1' AND _inserted BETWEEN '".$start."' AND '".$finish."'");
-		$cnt = count($logs);
-		$cnt = floor($cnt/3);
+		for($v=1;$v<=12;$v++) {
+			$_date = report_absen::get_range($date.'-'.$v);
 
-		$alpha += $cnt;
+			$_start = $_date['start_date'];
+			$_finish = $_date['finish_date'];
+
+			$logs = sobad_user::get_logs(array('ID'),"user='$idx' AND type='1' AND _inserted BETWEEN '".$_start."' AND '".$_finish."'");
+			$cnt = count($logs);
+			$cnt = floor($cnt/3);
+
+			$alpha += $cnt;
+		}
 
 		// Get Icon
 		ob_start();
@@ -1419,7 +1665,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $dayoff,
 				'desc'		=> 'Leaving of<br>Absence',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_3','func' => '_permitMonth','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'year_3','func' => '_permitYear','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1431,7 +1677,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $izin,
 				'desc'		=> 'Permission',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_4','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'year_4','func' => '_permitYear','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1443,7 +1689,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $sick,
 				'desc'		=> 'Sick',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_48','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'year_48','func' => '_permitYear','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1455,7 +1701,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $outcity,
 				'desc'		=> 'Luar Kota',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_5','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'year_5','func' => '_permitYear','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 		
@@ -1467,7 +1713,7 @@ class employeeReport_absen extends _page{
 				'qty'		=> $alpha,
 				'desc'		=> 'Off',
 				'column'	=> $column,
-				'button'	=> button_toggle_block(array('ID' => 'absen_0','func' => '_view_block','status' => 'data-type="'.$idx.'"'))
+				'button'	=> button_toggle_block(array('ID' => 'year_0','func' => '_permitYear','status' => 'data-type="'.$idx.'"'))
 			)
 		);
 
