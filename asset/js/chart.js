@@ -24,6 +24,9 @@
 						pointRadius : typeof data['data'][i]['pRadius']=='object'?data['data'][i]['pRadius']:3
 					}
 				};
+				
+				$('#'+id).remove(); // this is my <canvas> element
+  				$('#chart_content_'+id).append('<canvas id="'+id+'" style="height: 228px;"></canvas>');
 
 				var ctx = document.getElementById(id).getContext('2d');
 				var opts = typeof(window[data['option']])=='function'?window[data['option']]():data['option'];

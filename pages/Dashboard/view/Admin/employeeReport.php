@@ -444,7 +444,7 @@ class employeeReport_absen extends _page{
 			$day = date('w',$date);
 
 			$work = sobad_work::get_id($val['shift'],array($_time),"AND days='$day'");
-			$time = _conv_time($val[$_time],$work[0][$_time],2);
+			$time = $_time=='time_in'?_conv_time($val[$_time],$work[0][$_time],2):_conv_time($work[0][$_time],$val[$_time],2);
 			$time += 5;
 
 			$score += ($time * 4);
@@ -718,6 +718,22 @@ class employeeReport_absen extends _page{
 		);
 		
 		return modal_admin($args);
+	}
+
+// --------------------------------------------------
+// Function Score perform ---------------------------
+// --------------------------------------------------
+
+	// 1. Waktu Kedatangan	
+	public static function _score_performEntry($idx=0,$date='',$limit=''){
+		$date = empty($date)?date('Y-m'):$date;
+		$date = report_absen::get_range($date);
+
+		$start = $date['start_date'];
+		$finish = $date['finish_date'];
+
+		$whr = "user='$idx' AND _inserted BETWEEN '$start' AND '$finish' ".$limit;
+		$logs = sobad_user::get_logs(array(),$whr);
 	}
 
 // --------------------------------------------------
@@ -1176,11 +1192,11 @@ class employeeReport_absen extends _page{
 		$data[1]['bgColor'] = 'rgba(255,174,0,1)';
 		$data[1]['brdColor'] = 'rgba(255,174,0,1)';
 
-		$data[2]['bgColor'] = 'rgba(69,196,35,0.5)';
-		$data[2]['brdColor'] = 'rgba(69,196,35,0.5)';
+		$data[2]['bgColor'] = 'rgba(69,196,35,0.3)';
+		$data[2]['brdColor'] = 'rgba(69,196,35,0.3)';
 
-		$data[3]['bgColor'] = 'rgba(255,0,0,0.5)';
-		$data[3]['brdColor'] = 'rgba(255,0,0,0.5)';
+		$data[3]['bgColor'] = 'rgba(255,0,0,0.3)';
+		$data[3]['brdColor'] = 'rgba(255,0,0,0.3)';
 
 		$args = array(
 			'type'		=> 'bar',

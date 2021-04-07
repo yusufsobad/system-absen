@@ -98,7 +98,7 @@ class punishment_absen extends _page{
 			$whr = $lmt."ORDER BY `abs-log-detail`.date_schedule DESC ".$limit;
 		}else{
 			$lmt = '';
-			$whr = "AND `abs-log-detail`.status IN ('0','2') ORDER BY `abs-log-detail`.date_schedule ASC";
+			$whr = "AND `abs-log-detail`.status IN ('0','2') AND _user.status!='0' ORDER BY `abs-log-detail`.date_schedule ASC";
 		}
 
 		$args = sobad_logDetail::get_punishments(array(),$whr);
@@ -808,7 +808,9 @@ class punishment_absen extends _page{
 				if(!empty($val['ID'])){
 					$q = sobad_db::_update_single($val['ID'],'abs-log-detail',$val);
 				}else{
-					$q = sobad_db::_insert_table('abs-log-detail',$val);
+					if($val['log_id']>0){
+						$q = sobad_db::_insert_table('abs-log-detail',$val);
+					}
 				}
 			}
 		}

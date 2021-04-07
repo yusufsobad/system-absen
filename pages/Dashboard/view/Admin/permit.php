@@ -767,7 +767,7 @@ class permit_absen extends _page{
 		}
 	}
 
-	protected function _check_dayoff($idx=0,$cuti=0,$start=''){
+	protected static function _check_dayoff($idx=0,$cuti=0,$start=''){
 		$_user = sobad_user::get_id($idx,array('ID','dayOff','work_time'));
 		$dayOff = $_user[0]['dayOff'];
 
@@ -786,10 +786,10 @@ class permit_absen extends _page{
 
 			//Ganti Jam
 			if($cuti>0){
-				$_date = $start;
+				$_date = strtotime($start);
 				$_reff = $_user[0]['work_time'];
 
-				$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday>='$_date'");
+				$holidays = sobad_holiday::get_all(array('ID','holiday'),"AND holiday>='$start'");
 
 				$holiday = array();
 				foreach ($holidays as $key => $val) {
@@ -829,14 +829,14 @@ class permit_absen extends _page{
 								'user' 		=> $_user[0]['ID'],
 								'shift' 	=> $_reff,
 								'type'		=> 4,
-								'_inserted'	=> $_date,
+								'_inserted'	=> $date,
 							)
 						);
 
 					// Insert ganti jam
 					sobad_db::_insert_table('abs-log-detail',array(
 						'log_id'		=> $_idx,
-						'date_schedule'	=> $_date,
+						'date_schedule'	=> $date,
 						'times'			=> $_work,
 						'type_log'		=> 2
 					));
