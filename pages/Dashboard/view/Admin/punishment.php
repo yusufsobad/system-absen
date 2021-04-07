@@ -1046,7 +1046,7 @@ class punishment_absen extends _page{
 		$awal = $date.'-01';
 		$akhir = $date.'-'.sprintf("%02d",$sum);
 
-		$whr = "AND `abs-log-detail`.status IN ('0','2') OR (`abs-log-detail`.type_log='1' AND `abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') AND _user.status!='0' ORDER BY `abs-log-detail`.date_schedule ASC";
+		$whr = "AND `abs-log-detail`.status IN ('0','2') AND _user.status!='0' OR (`abs-log-detail`.type_log='1' AND `abs-log-detail`.status='1' AND date_schedule BETWEEN '$awal' AND '$akhir') ORDER BY `abs-log-detail`.date_schedule ASC";
 
 		$args = sobad_logDetail::get_punishments(array(),$whr);
 
