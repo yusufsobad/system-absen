@@ -152,13 +152,18 @@ class absensi{
 		if(!empty($check)){
 			//Check Setting Auto Shift
 			$_userid = $users[0]['ID'];
-			$shift = sobad_permit::get_all(array('note'),"AND user='$_userid' AND type='9' AND start_date<='$date' AND range_date>='$date'");
+			$worktime = $users[0]['work_time'];
+
+			$shift = sobad_permit::get_all(array('user','note'),"AND ( (user='$_userid' AND type='9') OR (user='0' AND note LIKE '".$worktime.":%') ) AND start_date<='$date' AND range_date>='$date'");
 			
 			$check = array_filter($shift);
 			if(!empty($check)){
-				$worktime = $shift[0]['note'];
-			}else{
-				$worktime = $users[0]['work_time'];
+				if($shift[0]['user']==0){
+					$_nt = explode(':',$shift[0]['note']);
+					$worktime = $_nt[1];
+				}else{
+					$worktime = $shift[0]['note'];
+				}
 			}
 
 			$work = sobad_work::get_id($worktime,array('time_in','time_out','status'),"AND days='$day'");

@@ -81,6 +81,13 @@ class shift_absen extends _page{
 				'label'	=> 'hapus',
 			);
 
+			if($val['user']==0){
+				$_note = explode(':', $val['note']);
+				$val['note'] = $_note[1];
+
+				$_work = sobad_work::get_id($_note[0],array('ID','name'));
+				$val['name_user'] = 'Jam Kerja : '.$_work[0]['name'];
+			}
 
 			$work = sobad_work::get_id($val['note'],array('ID','name'));
 			$worktime = array(
@@ -199,6 +206,7 @@ class shift_absen extends _page{
 		$vals = array(0,array(),date('d-m-Y'),date('d-m-Y'),0);
 		$vals = array_combine(self::_array(),$vals);
 		
+		$vals['shift'] = 0;
 		$args = array(
 			'title'		=> 'Tambah data',
 			'button'	=> '_btn_modal_save',
@@ -215,6 +223,13 @@ class shift_absen extends _page{
 		$check = array_filter($vals);
 		if(empty($check)){
 			return '';
+		}
+
+		$vals['shift'] = 0;
+		if($vals['user']==0){
+			$note = explode(':',$vals['note']);
+			$vals['shift'] = $note[0];
+			$vals['note'] = $note[1];
 		}
 		
 		$args = array(
@@ -278,6 +293,15 @@ class shift_absen extends _page{
 			array(
 				'func'			=> 'opt_select',
 				'data'			=> $shift,
+				'key'			=> 'shift',
+				'label'			=> 'Shift',
+				'class'			=> 'input-circle',
+				'select'		=> $vals['shift'],
+				'status'		=> ''
+			),
+			array(
+				'func'			=> 'opt_select',
+				'data'			=> $shift,
 				'key'			=> 'note',
 				'label'			=> 'Jam Kerja',
 				'class'			=> 'input-circle',
@@ -297,11 +321,17 @@ class shift_absen extends _page{
 		);
 
 		if($type){
-			$data[2]['func'] = 'opt_select';
-			$data[2]['data'] = $groups;
-			$data[2]['group'] = true;
-			$data[2]['searching'] = true;
-			$data[2]['status'] = '';
+			if($vals['user']==0){
+				unset($data[2]);
+			}else{
+				$data[2]['func'] = 'opt_select';
+				$data[2]['data'] = $groups;
+				$data[2]['group'] = true;
+				$data[2]['searching'] = true;
+				$data[2]['status'] = '';
+
+				unset($data[3]);
+			}
 		}
 		
 		$args['func'] = array('sobad_form');
@@ -386,6 +416,11 @@ class shift_absen extends _page{
 			unset($args['words']);
 		}
 
+		if(!isset($args['user']) || empty($args['user'])){
+			$args['note'] = $args['shift'].':'.$args['note'];
+			$args['user'] = 0;
+		}
+
 		$data = array(
 			'start_date'	=> $args['start_date'],
 			'range_date'	=> $args['range_date'],
@@ -403,5 +438,14 @@ class shift_absen extends _page{
 			$pg = isset($_POST['page'])?$_POST['page']:1;
 			return parent::_get_table($pg,$src);
 		}
+	}
+
+	protected static function _callback($args=array()){
+		if(!isset($args['user']) || empty($args['user'])){
+			$args['note'] = $args['shift'].':'.$args['note'];
+			$args['user'] = 0;
+		}
+
+		return $args;
 	}
 }

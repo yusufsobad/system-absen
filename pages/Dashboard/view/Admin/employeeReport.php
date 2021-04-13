@@ -1107,6 +1107,9 @@ class employeeReport_absen extends _page{
 		$label = array();$data = array();
 		for($i=$sDay;$i<$fDay;$i++){
 			$no += 1;
+
+			$time_in = 0;
+			$time_out = 0;
 			
 			$work_in = 0;
 			$work_out = 0;
@@ -1133,16 +1136,19 @@ class employeeReport_absen extends _page{
 				$data[1]['data'][$no] = $time_out;
 
 				$work_in = 8;
-				$pcolor = $time_in>=$work_in?'rgba(255,0,0,1)':$pcolor;
 			}
 
 			// Work Time
-			$_shift = sobad_permit::get_all(array('start_date','range_date','note'),"AND user='$idx' AND start_date<='$now' AND range_date>='$now'");
+			$wTime = $_user[0]['work_time'];
+			$_shift = sobad_permit::get_all(array('user','note'),"AND ( (user='$idx' AND type='9') OR (user='0' AND note LIKE '".$wTime.":%') ) AND start_date<='$now' AND range_date>='$now'");
 			$check = array_filter($_shift);
 			if(!empty($check)){
-				$wTime = $_shift[0]['note'];
-			}else{
-				$wTime = $_user[0]['work_time'];
+				if($_shift[0]['user']==0){
+					$_nt = explode(':',$_shift[0]['note']);
+					$wTime = $_nt[1];
+				}else{
+					$wTime = $_shift[0]['note'];
+				}
 			}
 
 			if($_user[0]['_entry_date']<=$now){
@@ -1158,6 +1164,8 @@ class employeeReport_absen extends _page{
 					$work_out = _conv_time('00:00:00',$work_out,2);
 				}
 			}
+
+			$pcolor = $time_in>=$work_in?'rgba(255,0,0,1)':$pcolor;
 
 			if($work_in!=0){
 				$work_in = round($work_in/60,2);
