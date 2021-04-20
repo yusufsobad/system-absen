@@ -1572,6 +1572,8 @@ class history_absen extends _page{
 											$check = array_filter($permit);
 											if(!empty($check)){
 												$note = $permit[0]['note'];
+											}else{
+												$note = '';
 											}
 										}
 
