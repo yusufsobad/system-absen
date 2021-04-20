@@ -1563,8 +1563,16 @@ class history_absen extends _page{
 								<?php
 									if(isset($log[$i-1])){
 										$note = unserialize($log[$i-1]['note_log_']);
-										if(!empty($note)){
+										if(isset($note['permit']) && !empty($note['permit'])){
 											$note = isset($note['permit'])?$note['permit']:'';
+										}else{
+											$_start = $log[$i-1]['date_schedule'];
+											$permit = sobad_permit::get_all(array('note'),"AND user='$idx' AND start_date='$_start' AND type='4'");
+
+											$check = array_filter($permit);
+											if(!empty($check)){
+												$note = $permit[0]['note'];
+											}
 										}
 
 										echo $note;
