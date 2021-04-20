@@ -56,7 +56,7 @@ abstract class _class{
 		return $args;
 	}
 
-	public static function count($limit='1=1 ',$args=array()){
+	public static function count($limit='1=1 ',$args=array(),$type=''){
 		$inner = '';$meta = false;
 		$limit = empty($limit)?"1=1 ":$limit;
 
@@ -71,7 +71,7 @@ abstract class _class{
 			}
 		}
 
-		$check = array_filter(self::list_meta());
+		$check = array_filter(self::list_meta($type));
 		if(!empty($check)){
 			$inner .= "LEFT JOIN `".static::$tbl_meta."` ON `".static::$table."`.ID = `".static::$tbl_meta."`.meta_id ";
 			$limit .= static::$group;

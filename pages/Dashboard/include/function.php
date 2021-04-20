@@ -64,6 +64,23 @@ function style_history(){
 	<?php
 }
 
+function style_gantiJam(){
+	?>
+		table.table {
+		    width: 100%;
+		}
+
+		.table-bordered thead tr th, .table-bordered tbody tr td {
+		    padding: 5px;
+		}
+
+		.table-bordered thead tr th {
+			font-size:16px;
+		    font-family: calibriBold;
+		}
+	<?php
+}
+
 function get_rule_absen($first='00:00:00',$last='00:00:00',$worktime=0,$day=0){
 	$waktu = _conv_time($first,$last,2);
 

@@ -454,7 +454,7 @@ class history_absen extends _page{
 		$opt = array(
 			'title'		=> self::head_title(),
 			'style'		=> array(''),
-			'script'	=> array('')
+			'script'	=> array(self::$object,'_script')
 		);
 
 		return tabs_admin($opt,$tabs);
@@ -511,6 +511,32 @@ class history_absen extends _page{
 
 		return print_button($print);
 	}
+
+	public function _script(){
+		?>
+			<script type="text/javascript">
+				function print_gantijam(val){
+					var pre = $(val).attr('data-sobad');
+					var tp = $(val).attr('data-type');
+
+					var arr = [];
+					$("input:checkbox[name=checkHistory]:checked").each(function(){
+					    arr.push($(this).val());
+					});
+
+					arr = {"ID":$(val).attr('id'),"data":arr};
+					var data = JSON.stringify(arr);
+					data = "page="+pre+"&object="+object+"&data="+data+"&type="+tp+"&filter="+filter;
+
+			        sobad_preview(url_preview,data,'');
+			    }
+			</script>
+		<?php
+	}
+
+// ------------------------------------------------------------
+// Form History -----------------------------------------------
+// ------------------------------------------------------------	
 
 	public function _filter($date=''){
 		ob_start();
@@ -805,14 +831,54 @@ class history_absen extends _page{
 // Database -----------------------------------------------------
 // --------------------------------------------------------------
 	public function _history($id=0){
-		$data = self::_historyTable($id);
+		$table = self::_historyTable($id);
+		$print = array(
+			'ID'	=> 'print_'.$id,
+			'func'	=> '_print',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-print',
+			'label'	=> 'Print',
+			'script'=> 'print_gantijam(this)'
+		);
+
+		$type = explode('#', $_POST['type']);
+		$type = str_replace("history_", '', $type[0]);
+		switch ($type) {
+			case 1:
+				$label = 'Punishment';
+				break;
+
+			case 2:
+				$label = 'Ganti Jam';
+				break;
+
+			case 3:
+				$label = 'Lembur';
+				break;
+
+			case 4:
+				$label = 'Reward';
+				break;
+			
+			default:
+				$label = 'Punishment';
+				break;
+		}
+
+		$data = array(
+			'label'		=> $label,
+			'tool'		=> '',
+			'action'	=> print_button($print),
+			'func'		=> 'sobad_table',
+			'data'		=> $table
+		);
 
 		$args = array(
 			'id'		=> 'history_portlet',
 			'title'		=> 'History ',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(),
-			'func'		=> array('sobad_table'),
+			'func'		=> array('_portlet'),
 			'data'		=> array($data)
 		);
 		
@@ -948,6 +1014,12 @@ class history_absen extends _page{
 
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
+				'Check'			=> array(
+					'center',
+					'5%',
+					'<input type="checkbox" name="checkHistory" value="'.$val['ID'].'">',
+					false
+				),
 				'No'			=> array(
 					'center',
 					'5%',
@@ -1021,6 +1093,7 @@ class history_absen extends _page{
 
 			if(self::$type!='history_2'){
 				unset($data['table'][$key]['td']['Waktu']);
+				unset($data['table'][$key]['td']['Check']);
 			}
 		}
 
@@ -1405,6 +1478,114 @@ class history_absen extends _page{
 			<?php
 				metronic_layout::sobad_table($data);
 			?>
+			</page>
+		<?php
+	}
+
+	// ----------------------------------------------------------
+	// Print data history ---------------------------------------
+	// ----------------------------------------------------------
+
+	public function _print($data=array()){
+		$_SESSION[_prefix.'development'] = 0;
+
+		$data = json_decode($data,true);	
+		$args = array(
+			'data'		=> $data,
+			'style'		=> array('style_type2','style_gantiJam'),
+			'object'	=> self::$object,
+			'html'		=> '_printForm',
+			'setting'	=> array(
+				'posisi'	=> 'landscape',
+				'layout'	=> 'A5',
+			),
+			'name save'	=> 'Form Ganti Jam'
+		);
+
+		return sobad_convToPdf($args);
+	}	
+
+	public function _printForm($data=array()){
+		$idx = str_replace('print_history_', '', $data['ID']);
+		$user = sobad_user::get_id($idx,array('name','no_induk','divisi'));
+		$user = $user[0];
+
+		$_data = implode(',', $data['data']);
+		$whr = empty($_data)?"AND ID='0'":"AND ID IN ($_data)";
+		$log = sobad_logDetail::get_all(array('date_schedule','times'),$whr);
+
+		$total = 0;
+		foreach ($log as $key => $val) {
+			$total += round($val['times']/60,1);
+		}
+
+		?>
+			<page backtop="5mm" backbottom="5mm" backleft="5mm" backright="5mm" pagegroup="new">
+				<div style="text-align:center;width:100%;">
+					<h3 style="margin-bottom: 0px;"> KARTU GANTI JAM PEGAWAI </h3>
+					<h3 style="margin-top: 0px;">PT. SOLO ABADI INDONESIA</h3>
+				</div><br>
+				<table style="width:100%;font-family: calibri">
+					<tr>
+						<td style="width:70%;font-family: calibriBold;font-size: 18px;">NIP/NAMA : <?php echo $user['no_induk'].' / '.$user['name'] ;?></td>
+						<td style="width:30%;font-family: calibriBold;font-size: 18px;">Divisi : <?php print($user['meta_value_divi']) ;?></td>
+					</tr>
+				</table>
+				<table class="table-bordered sobad-punishment" style="width:100%;font-family: calibri">
+					<thead>
+						<tr>
+							<th rowspan="2" style="text-align:center;width:5%;font-family: calibriBold;">No</th>
+							<th rowspan="2" style="text-align:center;width:11%;font-family: calibriBold;">Tanggal Ijin</th>
+							<th rowspan="2" style="text-align:center;width:15%;font-family: calibriBold;">Alasan</th>
+							<th rowspan="2" style="text-align:center;width:7%;font-family: calibriBold;">Durasi Jam</th>
+							<th rowspan="2" style="text-align:center;width:5%;font-family: calibriBold;">No</th>
+							<th rowspan="2" style="text-align:center;width:12%;font-family: calibriBold;">Tanggal Ganti Jam</th>
+							<th rowspan="2" style="text-align:center;width:22%;font-family: calibriBold;">Uraian Pekerjaan</th>
+							<th colspan="2" style="text-align:center;width:10%;font-family: calibriBold;">Durasi</th>
+							<th rowspan="2" style="text-align:center;width:8%;font-family: calibriBold;">TTd KDiv</th>
+						</tr>
+						<tr>
+							<th>Mulai</th>
+							<th>Berakhir</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php for($i=1;$i<=7;$i++){ ;?>
+						<tr>
+							<td><?php print($i) ;?>.</td>
+							<td>
+								<?php 
+									$_date = isset($log[$i-1])?strtotime($log[$i-1]['date_schedule']):'';
+									echo empty($_date)?'':date('d/m/Y');
+								?>
+							</td>
+							<td>&nbsp;</td>
+							<td style="text-align: center;"><?php echo isset($log[$i-1])?round($log[$i-1]['times']/60,1):'' ;?></td>
+							<?php for($j=5;$j<=10;$j++){ ;?>
+							<td>&nbsp;</td>
+							<?php } ;?>
+						</tr>
+						<?php } ;?>
+						<tr>
+							<td colspan="3" style="font-family: calibriBold;text-align: right;">Total :</td>
+							<td style="text-align: center;"><?php print($total) ;?></td>
+							<td colspan="3" style="font-family: calibriBold;text-align: right;">Total :</td>
+							<td colspan="3" style="font-family: calibriBold;text-align: right;">Jam</td>
+						</tr>
+					</tbody>
+				</table>
+				<table style="width: 100%;margin-top: 20px;">
+					<tr>
+						<td style="width:30%;font-family: calibriBold;text-align: center;">Diserahkan Oleh : <br><br><br><br>(<i style="margin-left: 100px;">&nbsp;</i>)</td>
+						<td style="width:40%;font-family: calibriBold;text-align: center;">&nbsp;</td>
+						<td style="width:30%;font-family: calibriBold;text-align: center;">Diketahui Oleh : <br><br><br><br>HRD</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="font-family: calibri;">
+							<i style="margin-left: 20px;margin-top: 10px;">&nbsp;</i>NB: Detail Pekerjaan bisa di tuliskan pada bagian belakang halaman
+						</td>
+					</tr>
+				</table>
 			</page>
 		<?php
 	}

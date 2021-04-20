@@ -44,13 +44,13 @@ abstract class _page{
 
 		$meta = array();
 		if(property_exists(new static, 'table')){
-			$object = static::$table;
-			$meta = $object::list_meta();
-
 			$post = '';
 			if(property_exists(new static, 'post')){
 				$post = static::$post;
 			}
+
+			$object = static::$table;
+			$meta = $object::list_meta($post);
 
 			$blueprint = $object::blueprint($post);
 			if(isset($blueprint['detail'])){
@@ -254,6 +254,10 @@ abstract class _page{
 
 		if(property_exists($object, 'tbl_meta')){
 			$q = sobad_db::_delete_multiple("meta_id='$id'",$object::$tbl_meta);
+		}
+
+		if(property_exists($object, 'tbl_join')){
+			$q = sobad_db::_delete_multiple("reff='$id'",$object::$tbl_join);
 		}
 
 		$q = sobad_db::_delete_single($id,$table);

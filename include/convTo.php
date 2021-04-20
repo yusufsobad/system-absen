@@ -35,7 +35,7 @@ function sobad_convToPdf($args = array()){
 			
 			if(is_callable(array(new $object(),$args['html']))){
 				$func = $args['html'];
-				$object::{$func}();
+				$object::{$func}($args['data']);
 			}
 		}
 	}
