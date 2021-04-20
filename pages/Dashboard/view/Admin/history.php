@@ -1511,8 +1511,8 @@ class history_absen extends _page{
 		$user = $user[0];
 
 		$_data = implode(',', $data['data']);
-		$whr = empty($_data)?"AND ID='0'":"AND ID IN ($_data)";
-		$log = sobad_logDetail::get_all(array('date_schedule','times'),$whr);
+		$whr = empty($_data)?"AND `abs-log-detail`.ID='0'":"AND `abs-log-detail`.ID IN ($_data)";
+		$log = sobad_logDetail::get_all(array('log_id','date_schedule','times'),$whr);
 
 		$total = 0;
 		foreach ($log as $key => $val) {
@@ -1559,7 +1559,18 @@ class history_absen extends _page{
 									echo empty($_date)?'':date('d/m/Y');
 								?>
 							</td>
-							<td>&nbsp;</td>
+							<td>
+								<?php
+									if(isset($log[$i-1])){
+										$note = unserialize($log[$i-1]['note_log_']);
+										if(!empty($note)){
+											$note = isset($note['permit'])?$note['permit']:'';
+										}
+
+										echo $note;
+									}
+								?>
+							</td>
 							<td style="text-align: center;"><?php echo isset($log[$i-1])?round($log[$i-1]['times']/60,1):'' ;?></td>
 							<?php for($j=5;$j<=10;$j++){ ;?>
 							<td>&nbsp;</td>
@@ -1568,7 +1579,7 @@ class history_absen extends _page{
 						<?php } ;?>
 						<tr>
 							<td colspan="3" style="font-family: calibriBold;text-align: right;">Total :</td>
-							<td style="text-align: center;"><?php print($total) ;?></td>
+							<td style="text-align: center;"><?php echo empty($total)?'':$total ;?></td>
 							<td colspan="3" style="font-family: calibriBold;text-align: right;">Total :</td>
 							<td colspan="3" style="font-family: calibriBold;text-align: right;">Jam</td>
 						</tr>
