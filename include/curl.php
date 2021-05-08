@@ -1,22 +1,14 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
 
-/*
-	array(
-		'object'	=> '',
-		'func'		=> '',
-		'data'		=> array(
-			0 => '', 1 => '', 2 => '', 3 => '', 4 => ''
-		)
-	);
-*/
-
 header("Content-Type:application/json");
 $json = json_decode(file_get_contents('php://input'), true);
 
 // Setting 
 
 	define('AUTHPATH',$_SERVER['SERVER_NAME']);
+	define('DEFPATH',$_SERVER['SERVER_NAME']);
+	
 	require 'config/hostname.php';
 	require 'class_db.php';
 
@@ -56,7 +48,7 @@ function sobad_curl($args=array()){
     
     $object = $args['object'];
 	$ajax_func = $args['func'];
-	$dt = $args['data'];
+	$_data = $args['data'];
 
 	if(!method_exists($object,$func)){
 		$data = array(
@@ -76,8 +68,9 @@ function sobad_curl($args=array()){
     	return json_encode($data);
 	}
 
+	$dt = array('','','','','');
 	for($i=0;$i<5;$i++){
-		$dt[$i] = isset($dt[$i])$dt[$i]:'';
+		$dt[$i] = isset($_data[$i])?$_data[$i]:'';
 	}
 	
 	$msg = $object::{$ajax_func}($dt[0],$dt[1],$dt[2],$dt[3],$dt[4]);
