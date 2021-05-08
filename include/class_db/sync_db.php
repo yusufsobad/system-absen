@@ -5,22 +5,26 @@ include 'list_table.php';
 
 class sobad_db extends conn{
 
-	public static function _create_file_list(){
+	public static function _create_file_list($schema=array()){
 		//Check file
 		if(!file_exists(dirname(__FILE__).'/list_table.php')){
 			$file = fopen(dirname(__FILE__)."/list_table.php", "w");
 			self::_create_list_table('sobad_table');
+			return true;
 		}
 
 		//Check file
 		if(!class_exists('sobad_table')){
-			self::_update_file_list();
+			self::_update_file_list($schema);
+			return true;
 		}
+
+		return false;
 	}
 
-	public static function _update_file_list(){
-		self::_create_list_table('sobad_table');
-		include 'list_table.php';
+	public static function _update_file_list($schema=array()){
+		self::_create_list_table('sobad_table',$schema);
+		return true;
 	}
 	
 	public static function _table_db($table){
@@ -223,11 +227,11 @@ class sobad_db extends conn{
 	// ---- Table Query -----------------------------------------------------
 	// ----------------------------------------------------------------------
 
-	private static function _get_table_name(){
+	private static function _get_table_name($db='',$limit=''){
+		$GLOBALS['DB_NAME'] = $db;
 		$conn = parent::connect();
-		$db = constant('DB_NAME');
 		
-		$where = "WHERE TABLE_SCHEMA = '$db' GROUP BY `TABLE_NAME`";
+		$where = "WHERE TABLE_SCHEMA = '$db' $limit GROUP BY `TABLE_NAME`";
 		$query = sprintf("SELECT %s FROM %s %s",'TABLE_NAME','INFORMATION_SCHEMA.COLUMNS',$where);
 		$q = $conn->query($query)or die("Gagal mengambil schema");
 
@@ -241,9 +245,9 @@ class sobad_db extends conn{
 		return $table;
 	}
 
-	private static function _get_column_table($table=''){
+	private static function _get_column_table($db='',$table=''){
+		$GLOBALS['DB_NAME'] = $db;
 		$conn = parent::connect();
-		$db = constant('DB_NAME');
 		
 		$where = "WHERE TABLE_SCHEMA = '$db' AND TABLE_NAME='$table'";
 		$query = sprintf("SELECT %s FROM %s %s",'COLUMN_NAME,DATA_TYPE,COLUMN_KEY','INFORMATION_SCHEMA.COLUMNS',$where);
@@ -262,40 +266,49 @@ class sobad_db extends conn{
 		return $table;
 	}
 
-	private static function _create_list_table($class=''){
-		$table = self::_get_table_name();	
-		self::_list_table_schema($class,$table);
+	private static function _create_list_table($class='',$schema=array()){
+		$check = array_filter($schema);
+		$schema = empty($check)?array(0 => array('db' => DB_NAME, 'where' => '')):$schema;
+
+		$data = array();
+		foreach ($schema as $key => $val) {
+			$data[$val['db']] = self::_get_table_name($val['db'],$val['where']);
+		}
+
+		self::_list_table_schema($class,$data);
 	}
 
-	private static function _list_table_schema($class='',$table=array()){
+	private static function _list_table_schema($class='',$data=array()){
 		$php = "<?php
 (!defined('AUTHPATH'))?exit:'';\n\r";
 
 		$list_tbl = '';
 		$_column = '';
-		foreach ($table['table_name'] as $ky => $val) {
-			$nm_tbl = str_replace('-', '_', $val)."()";
-			$list_tbl .= "
-			'$val'		=> self::".$nm_tbl.",";
+		foreach ($data as $_db => $table) {
+			foreach ($table['table_name'] as $ky => $val) {
+				$nm_tbl = str_replace('-', '_', $val)."()";
+				$list_tbl .= "
+				'$val'		=> self::".$nm_tbl.",";
 
-			$_column .= "
-	private static function ".$nm_tbl."{
-		\$list = array(";
+				$_column .= "
+		private static function ".$nm_tbl."{
+			\$list = array(";
 
-			$columns = self::_get_column_table($val);
-			foreach ($columns as $ky => $vl) {
-				if($vl['COLUMN_KEY']!='PRI'){
-					$_column .= "
-			'".$vl['COLUMN_NAME']."'	=> ".self::_convert_default_dataType($vl['DATA_TYPE']).",";
+				$columns = self::_get_column_table($_db,$val);
+				foreach ($columns as $ky => $vl) {
+					if($vl['COLUMN_KEY']!='PRI'){
+						$_column .= "
+				'".$vl['COLUMN_NAME']."'	=> ".self::_convert_default_dataType($vl['DATA_TYPE']).",";
+					}
 				}
-			}
 
-			$_column .="	
-		);
-		
-		return \$list;
-	}\n\r";
-		
+				$_column .="	
+			);
+			
+			return \$list;
+		}\n\r";
+			
+			}
 		}
 
 		$func = "

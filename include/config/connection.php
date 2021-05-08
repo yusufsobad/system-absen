@@ -11,5 +11,5 @@ define('USERNAME',"root");
 define('PASSWORD','');
 
 // set Database
-//define('DB_NAME','absen2020');
-$GLOBALS['DB_NAME'] = 'absen2020';
+define('DB_NAME','absen2020');
+$GLOBALS['DB_NAME'] = DB_NAME;
