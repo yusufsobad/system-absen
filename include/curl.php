@@ -50,7 +50,7 @@ function sobad_curl($args=array()){
 	$ajax_func = $args['func'];
 	$_data = $args['data'];
 
-	if(!method_exists($object,$func)){
+	if(!method_exists($object,$ajax_func)){
 		$data = array(
 	        'status'    => 'error',
 	        'msg'       => 'Function undefined : '.$ajax_func
