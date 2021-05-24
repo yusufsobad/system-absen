@@ -478,29 +478,25 @@ abstract class absen_control{
 						data['data']['from'] = "1";
 					}
 
-					switch(data['data']['from']){
-						case "1":
+						if(data['data']['from']=="1" || data['data']['from']==1){
 							var _notwork = notwork;
-							break;
+						
 
-						case "3":
+						}else if(data['data']['from']=="3" || data['data']['from']==3){
 							var _docID = 'user-dayoff';
 							var _idxcls = 'absen-dayoff-'+_idx;
 							var _notwork = dayoff;
-							break;
-
-						case "4":
+						
+						}else if(data['data']['from']=="4" || data['data']['from']==4){
 							var _docID = 'user-permit';
 							var _idxcls = 'absen-permit-'+_idx;
 							var _notwork = permit;
-							break;
-
-						case "5":
+						
+						}else if(data['data']['from']=="5" || data['data']['from']==5){
 							var _docID = 'user-outcity';
 							var _idxcls = 'absen-outcity-'+_idx;
 							var _notwork = outcity;
-							break;
-					}
+						}
 
 					if(typeof _notwork[_idx] === 'undefined'){
 						toastr.error("ID tidak terdaftar!!!");
@@ -614,38 +610,33 @@ abstract class absen_control{
 						$('#employee-animation').html('');
 
 					//pause slide to animation
-						switch(data['data']['from']){
-							case "1":
+							if(data['data']['from']=="1" || data['data']['from']==1){
 								delete notwork[_idx];
-								break;
 
-							case "3":
+							}else if(data['data']['from']=="3" || data['data']['from']==3){
 								delete dayoff[_idx];
 
 								if(Object.keys(dayoff).length<=0){
 									$('#title-dayoff').hide();
 									$('#user-dayoff').hide();
 								}
-								break;
 
-							case "4":
+							}else if(data['data']['from']=="4" || data['data']['from']==4){
 								delete permit[_idx];
 
 								if(Object.keys(permit).length<=0){
 									$('#title-permit').hide();
 									$('#user-permit').hide();
 								}
-								break;
 
-							case "5":
+							}else if(data['data']['from']=="5" || data['data']['from']==5){
 								delete outcity[_idx];
 
 								if(Object.keys(outcity).length<=0){
 									$('#title-outcity').hide();
 									$('#user-outcity').hide();
 								}
-								break;
-						}
+							}
 
 					// Set Karyawan Masuk
 						set_total_absen();
@@ -746,8 +737,7 @@ abstract class absen_control{
 					var _dt_user = {"class":"col-md-6","group":_grp,"name":work[_grp][_idx]['name'],"image":work[_grp][_idx]['image']}
 
 					//Add notwork
-					switch(_to){
-						case 3:
+						if(_to==3 || _to=='3'){
 							dayoff[_idx] = _dt_user;
 							var _docID = 'user-dayoff';
 							var _idxcls = 'absen-dayoff' + _idx;
@@ -758,9 +748,7 @@ abstract class absen_control{
 								$('#'+_docID).show();
 							}
 
-							break;
-
-						case 4:
+						}else if(_to==4 || _to=='4'){
 							permit[_idx] = _dt_user;
 							var _docID = 'user-permit';
 							var _idxcls = 'absen-permit-' + _idx;
@@ -771,9 +759,7 @@ abstract class absen_control{
 								$('#'+_docID).show();
 							}
 
-							break;
-
-						case 5:
+						}else if(_to==5 || _to=='5'){
 							outcity[_idx] = _dt_user;
 							var _docID = 'user-outcity';
 							var _idxcls = 'absen-outcity-' + _idx;
@@ -784,8 +770,7 @@ abstract class absen_control{
 								$('#'+_docID).show();
 							}
 
-							break;
-					}
+						}
 
 					//Get position
 					var _pos_animate = $('#'+_docID).position();

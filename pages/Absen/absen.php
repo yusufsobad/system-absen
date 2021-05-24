@@ -410,7 +410,7 @@ class absensi{
 							'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">'.$label.' ya, \''.$user['_nickname'].'\'?</div>
 											<div class="row" style="text-align:center;">
 												<div class="col-md-12">
-													<button style="width:30%;" type="button" class="btn btn-info" onclick="send_request('.$index.')">Ya</button>
+													<button id="absen_center" style="width:30%;" type="button" class="btn btn-info" data-request="'.$index.'" onclick="send_request('.$index.')">Ya</button>
 												</div>
 											</div>',
 							'modal'		=> true,
@@ -470,13 +470,13 @@ class absensi{
 						'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau Kemana \''.$user['_nickname'].'\'? <span id="note-textarea"> </span></div>
 										<div class="row" style="text-align:center;">
 											<div class="col-md-4">
-												<button style="width:80%;" type="button" class="btn btn-info" onclick="send_request(5)">Luar Kota</button>
+												<button id="absen_left" style="width:80%;" type="button" class="btn btn-info" data-request="5" onclick="send_request(5)">Luar Kota</button>
 											</div>
 											<div class="col-md-4">
-												<button style="width:80%;" type="button" class="btn btn-warning" onclick="send_request(4)">Izin</button>
+												<button id="absen_center" style="width:80%;" type="button" class="btn btn-warning" data-request="4" onclick="send_request(4)">Izin</button>
 											</div>
 											<div class="col-md-4">
-												<button style="width:80%;" type="button" class="btn btn-danger" onclick="send_request(2)">Pulang</button>
+												<button id="absen_right" style="width:80%;" type="button" class="btn btn-danger" data-request="2" onclick="send_request(2)">Pulang</button>
 											</div>
 											<div class="col-md-12">
 												<p style="margin-top: 20px;" id="recording-instructions">Press the <strong>Start Recognition</strong> button and allow access.</p>
@@ -602,13 +602,13 @@ class absensi{
 				'msg' 		=> '<div style="text-align:center;margin-bottom:20px;font-size:20px;">Mau pilih yang mana, \''.$_nickname.'\'?</div>
 									<div class="row" style="text-align:center;">
 										<div class="col-md-4">
-											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(38)">Izin Sakit</button>
+											<button id="absen_left" style="width:60%;" type="button" class="btn btn-warning" data-request="38" onclick="send_request(38)">Izin Sakit</button>
 										</div>
 										<div class="col-md-4">
-											<button style="width:60%;" type="button" class="btn btn-info" onclick="send_request(3)">Cuti</button>
+											<button id="absen_center" style="width:60%;" type="button" class="btn btn-info" data-request="3" onclick="send_request(3)">Cuti</button>
 										</div>
 										<div class="col-md-4">
-											<button style="width:60%;" type="button" class="btn btn-warning" onclick="send_request(8)">Ganti Jam</button>
+											<button id="absen_right" style="width:60%;" type="button" class="btn btn-warning" data-request="8" onclick="send_request(8)">Ganti Jam</button>
 										</div>
 								</div>',
 				'modal'		=> true

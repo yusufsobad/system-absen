@@ -138,6 +138,24 @@ class absen_sobad{
 				$("#qrscanner").on('change',function(){
 					setcookie("sidemenu","absensi");
 
+					// Check value
+					if(this.value=='')return '';
+
+					// --------- Jika value b || bb || bbb -> Klik tombol modal
+					if(this.value=='b' || this.value=='bb' || this.value=='bbb'){
+						var arrModal = {"b":"absen_left","bb":"absen_center","bbb":"absen_right"};
+						var reqModal = 0;
+
+						if(this.value in arrModal){
+							reqModal = $('#'+arrModal[this.value]).attr('data-request');
+							if(typeof reqModal !== 'undefined')send_request(reqModal);
+						}
+
+						$('#qrscanner').val('');
+						return '';
+					}
+
+					// Absensi Karyawan
 					if(typeof notwork[this.value] == 'undefined'){
 						var _group = null;
 					}else{
@@ -166,6 +184,18 @@ class absen_sobad{
 
 					this.value = '';
 					sobad_ajax('#absensi',data,set_absen,false);
+				});
+			});
+
+			jQuery(document).ready(function() { 
+				$("#qrscanner").focus();   
+				$("#qrscanner").on('keyup',function(){
+					sobad_load_togle('#myModal');
+					if(this.value!=''){
+						setTimeout(function(){
+							$('#qrscanner').change();
+						},600);
+					}
 				});
 			});
 
@@ -239,6 +269,11 @@ class absen_sobad{
 		);
 		
 		?> 
+			<style type="text/css">
+				#myModal .modal-dialog {
+				    margin-top: 38%;
+				}
+			</style>
 			<input id="qrscanner" type="text" value="" style="opacity:0;position: absolute;">
 		<?php
 		print(sobad_absen::load_here($args));
