@@ -194,7 +194,7 @@ class absen_sobad{
 					if(this.value!=''){
 						setTimeout(function(){
 							$('#qrscanner').change();
-						},600);
+						},800);
 					}
 				});
 			});

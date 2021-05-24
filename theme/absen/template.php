@@ -665,38 +665,75 @@ abstract class absen_control{
 					var _qty = 0;
 					var _pos = 0;
 
-					//Get Group
-					for(var i in work){
-						for(var j in work[i]){
+					if(typeof data['data']['from'] === "undefined"){
+						//Get Group
+						for(var i in work){
+							for(var j in work[i]){
+								if(j==_idx){
+									_pos = work[i][_idx]['position'];
+									_grp = i;
+									_qty = Object.keys(work[_grp]).length;
+									break;
+								}
+							}
+
 							if(j==_idx){
-								_pos = work[i][_idx]['position'];
-								_grp = i;
-								_qty = Object.keys(work[_grp]).length;
 								break;
 							}
 						}
 
-						if(j==_idx){
-							break;
+						if(Object.keys(work[_grp]).length>12){
+							$('#workgroup-'+_grp).multislider('pause');
+							$('#workgroup-'+_grp+'>.MS-content>div:nth-child(1)').before($('#work-'+_idx));
+							_pos = 1;
+						}else{
+							_pos = (_qty-_pos);
 						}
-					}
 
-					if(Object.keys(work[_grp]).length>12){
-						$('#workgroup-'+_grp).multislider('pause');
-						$('#workgroup-'+_grp+'>.MS-content>div:nth-child(1)').before($('#work-'+_idx));
-						_pos = 1;
+						//Get position Group
+						work[_grp][_idx]['class'] = '';
+						var _pos_grp = $("#workgroup-"+_grp).position();	
+						layout_user(idx,work[_grp][_idx]);
+
+						$("#workgroup-"+_grp+" #work-"+_idx).css("opacity","0");
+						$('div#employee-animation>.absen-content').css("top",(_pos_grp.top+57) + "px");
+						$('div#employee-animation>.absen-content').css("left",((_pos_grp.left+45) + (_pos*73))+ "px");
 					}else{
-						_pos = (_qty-_pos);
+						var _notwork = '';
+						if(_idx in permit){
+							var _docID = 'user-permit';
+							var _idxcls = 'absen-permit-'+_idx;
+							var _notwork = permit;
+						}else if(_idx in outcity){
+							var _docID = 'user-outcity';
+							var _idxcls = 'absen-outcity-'+_idx;
+							var _notwork = outcity;
+						}
+
+						var _grp = _notwork[_idx]['group'];
+						work[_grp][_idx] = _notwork[_idx];
+
+						layout_user(idx,_notwork[_idx]);
+						$('div#employee-animation').css("z-index","10");
+
+						var _cnt = Object.keys(_notwork).length;
+						for(var k = 1; k <= _cnt; k++){
+							if($('#'+_docID+'>.item:nth-child('+k+')').attr('id') == _idxcls){
+								_cnt = k;
+								break;
+							}
+						}
+
+						var _pos_animate = $('#'+_docID).position();
+						var _width_work = $('#employee-work').width();
+
+						var _top = _pos_animate.top + (Math.floor(_cnt/2) * 90);
+						var _left = (_width_work + _pos_animate.left) + ((_cnt%2) * 78);
+
+						$('#'+_docID+'>.item:nth-child('+_cnt+')').remove();
+						$('div#employee-animation>.absen-content').css("top",_top + "px");
+						$('div#employee-animation>.absen-content').css("left",_left+ "px");
 					}
-
-					//Get position Group
-					work[_grp][_idx]['class'] = '';
-					var _pos_grp = $("#workgroup-"+_grp).position();	
-					layout_user(idx,work[_grp][_idx]);
-
-					$("#workgroup-"+_grp+" #work-"+_idx).css("opacity","0");
-					$('div#employee-animation>.absen-content').css("top",(_pos_grp.top+57) + "px");
-					$('div#employee-animation>.absen-content').css("left",((_pos_grp.left+45) + (_pos*73))+ "px");
 
 					$('#employee-animation').animate({"z-index":"2"},'slow',function(){
 						if(data['data']['type']==2){
@@ -831,7 +868,7 @@ abstract class absen_control{
 
 				function set_absen(data,id){
 					if(data['data']!=null){
-						if(typeof data['absen'] !== 'undefined'){
+						if(typeof data['absen'] !== "undefined"){
 							$('#myModal').modal('hide');
 
 							if(data['data']['type']==1){
