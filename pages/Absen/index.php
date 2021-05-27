@@ -198,7 +198,7 @@ class absen_sobad{
 					if(this.value!='' && stsclick==true){
 						stsclick = false;
 						setTimeout(function(){
-							//$('#qrscanner').change();
+							$('#qrscanner').change();
 						},800);
 					}else{
 						this.value = '';
