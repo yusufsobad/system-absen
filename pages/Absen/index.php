@@ -142,8 +142,8 @@ class absen_sobad{
 					if(this.value=='')return '';
 
 					// --------- Jika value b || bb || bbb -> Klik tombol modal
-					if(this.value=='b' || this.value=='bb' || this.value=='bbb'){
-						var arrModal = {"b":"absen_left","bb":"absen_center","bbb":"absen_right"};
+					if(this.value=='L' || this.value=='C' || this.value=='R'){
+						var arrModal = {"L":"absen_left","C":"absen_center","R":"absen_right"};
 						var reqModal = 0;
 
 						if(this.value in arrModal){
