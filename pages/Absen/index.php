@@ -72,6 +72,7 @@ class absen_sobad{
 			var stsnow = true;
 			var stsganti = true;
 			var stsabsen = true;
+			var stsclick = true;
 
 			setInterval(function(){
 				var currentdate = new Date(); 
@@ -139,15 +140,16 @@ class absen_sobad{
 					setcookie("sidemenu","absensi");
 
 					// Check value
-					if(this.value=='')return '';
+					stsclick = true;
+					if(this.value=="")return console.log('undefined');
 
-					// --------- Jika value b || bb || bbb -> Klik tombol modal
-					if(this.value=='L' || this.value=='C' || this.value=='R'){
+					// --------- Jika value L || C || R -> Klik tombol modal
+					if(this.value=="L" || this.value=="C" || this.value=="R"){
 						var arrModal = {"L":"absen_left","C":"absen_center","R":"absen_right"};
 						var reqModal = 0;
 
 						if(this.value in arrModal){
-							reqModal = $('#'+arrModal[this.value]).attr('data-request');
+							reqModal = $('#'+arrModal[this.value]).attr('data-request');	
 							if(typeof reqModal !== 'undefined')send_request(reqModal);
 						}
 
@@ -188,13 +190,18 @@ class absen_sobad{
 			});
 
 			jQuery(document).ready(function() { 
-				$("#qrscanner").focus();   
+				$("#qrscanner").focus();
 				$("#qrscanner").on('keyup',function(){
-					sobad_load_togle('#myModal');
-					if(this.value!=''){
+					var _load = '<div class="modal-loading"><div class="position-load"><img src="asset/img/loading-spinner-grey.gif" alt="" class="loading"><span> &nbsp;&nbsp;Loading... </span></div></div>';
+						$('#myModal>.modal-dialog>.modal-content>.modal-body>.box-loading').html(_load);
+
+					if(this.value!='' && stsclick==true){
+						stsclick = false;
 						setTimeout(function(){
-							$('#qrscanner').change();
+							//$('#qrscanner').change();
 						},800);
+					}else{
+						this.value = '';
 					}
 				});
 			});
@@ -272,6 +279,26 @@ class absen_sobad{
 			<style type="text/css">
 				#myModal .modal-dialog {
 				    margin-top: 38%;
+				}
+
+				#myModal .modal-dialog .box-loading{
+					position: absolute;
+				    display: block;
+				    width: 95%;
+				    height: 100%;
+				    z-index: 10;
+				    top: 0;
+				}
+
+				#myModal .box-loading>.modal-loading{
+					background: rgba(0,0,0,0.4);
+				    color: #fff;
+				    height: inherit;
+				    width: 100%;
+				}
+
+				.modal-loading>.position-load {
+				    transform: translate(42%, 70px);
 				}
 			</style>
 			<input id="qrscanner" type="text" value="" style="opacity:0;position: absolute;">

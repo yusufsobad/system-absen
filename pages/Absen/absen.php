@@ -481,7 +481,8 @@ class absensi{
 											<div class="col-md-12">
 												<p style="margin-top: 20px;" id="recording-instructions">Press the <strong>Start Recognition</strong> button and allow access.</p>
 											</div>
-										</div>',
+										</div>
+										<div class="box-loading"></div>',
 						'modal'		=> true
 					);
 				}
