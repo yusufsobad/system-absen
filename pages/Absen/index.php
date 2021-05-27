@@ -141,6 +141,7 @@ class absen_sobad{
 
 					// Check value
 					stsclick = true;
+					console.log(this.value);
 					if(this.value=="")return console.log('undefined');
 
 					// --------- Jika value L || C || R -> Klik tombol modal
