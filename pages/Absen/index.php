@@ -199,7 +199,7 @@ class absen_sobad{
 						stsclick = false;
 						setTimeout(function(){
 							$('#qrscanner').change();
-						},800);
+						},1000);
 					}else{
 						this.value = '';
 					}
