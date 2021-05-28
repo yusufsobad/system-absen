@@ -1556,7 +1556,7 @@ class history_absen extends _page{
 							<td>
 								<?php 
 									$_date = isset($log[$i-1])?strtotime($log[$i-1]['date_schedule']):'';
-									echo empty($_date)?'':date('d/m/Y');
+									echo empty($_date)?'':date('d/m/Y',$_date);
 								?>
 							</td>
 							<td>
