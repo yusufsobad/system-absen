@@ -597,7 +597,7 @@ class history_absen extends _page{
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_add_lembur',
-				'load'		=> 'history_portlet',
+				'load'		=> 'hist_table_portlet',
 				'type'		=> $_POST['type']
 			)
 		);
@@ -641,7 +641,7 @@ class history_absen extends _page{
 			array(
 				'func'			=> 'opt_input',
 				'type'			=> 'price',
-				'key'			=> 'time',
+				'key'			=> '_time',
 				'label'			=> 'Waktu (Jam)',
 				'class'			=> 'input-circle',
 				'value'			=> $vals[3],
@@ -866,6 +866,7 @@ class history_absen extends _page{
 		}
 
 		$data = array(
+			'ID'		=> 'hist_table_portlet',
 			'label'		=> $label,
 			'tool'		=> '',
 			'action'	=> print_button($print),
@@ -1311,18 +1312,18 @@ class history_absen extends _page{
 			$data = array(
 				'log_id'		=> $logid,
 				'date_schedule'	=> $date,
-				'times'			=> $args['time'],
+				'times'			=> $args['_time'],
 				'status'		=> 1,
 				'log_history'	=> serialize($history),
 				'type_log'		=> 3
 			);
 
 			if($args['ID']==0){
-				if($args['time']>0){
+				if($args['_time']>0){
 					sobad_db::_insert_table('abs-log-detail',$data);
 				}
 			}else{
-				if($args['time']>0){
+				if($args['_time']>0){
 					sobad_db::_update_single($args['ID'],'abs-log-detail',$data);
 				}else{
 					self::_delete($args['ID']);

@@ -611,7 +611,8 @@ class absensi{
 										<div class="col-md-4">
 											<button id="absen_right" style="width:60%;" type="button" class="btn btn-warning" data-request="8" onclick="send_request(8)">Ganti Jam</button>
 										</div>
-								</div>',
+								</div>
+								<div class="box-loading"></div>',
 				'modal'		=> true
 			);
 		}

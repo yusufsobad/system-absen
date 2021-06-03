@@ -167,6 +167,7 @@ abstract class absen_control{
 				var dayoff = [%dayoff%];
 				var permit = [%permit%];
 				var _request = '';
+				var _timeout = '';
 
 			</script>
 		<?php
@@ -880,6 +881,11 @@ abstract class absen_control{
 						}
 
 						if(typeof data['modal'] !== 'undefined'){
+							if(_timeout!=''){
+								clearTimeout(_timeout);
+								_timeout = '';
+							}
+
 							_request = data['id'];
 							$('#myModal .modal-content>.modal-body').html(data['msg']);
 							$('#myModal').modal('show');
@@ -892,7 +898,7 @@ abstract class absen_control{
 							//setting_microphone();
 							//recognition.start();
 
-							setTimeout(function(){ $('#myModal').modal('hide'); }, data['timeout']);
+							_timeout = setTimeout(function(){ $('#myModal').modal('hide'); }, data['timeout']);
 						}
 					}
 

@@ -61,6 +61,7 @@ class create_table{
 		$func = isset($data['func'])?empty($data['func'])?'_search':$data['func']:'_search'; //function
 		$load = isset($data['load'])?empty($data['load'])?'sobad_portlet':$data['load']:'sobad_portlet'; //load hasil request
 		$search = isset($data['name'])?$data['name']:''; //name search
+		$val_src = isset($data['value'])?$data['value']:''; //value search
 
 		?>
 			<div class="row search-form-default">
@@ -73,7 +74,7 @@ class create_table{
 							<span class="input-group-btn">
 								<?php
 									if(!empty($check)){
-										self::_dropdown($args,$search);
+										self::_dropdown($args,$search,$val_src);
 									}
 								?>
 								<button data-sobad="<?php print($func) ;?>" type="button" class="btn green-haze" data-load="<?php print($load) ;?>" data-type="<?php print($type) ;?>" data-object="<?php print($obj) ;?>" onclick="sobad_search(this)">
@@ -96,8 +97,7 @@ class create_table{
 		<?php
 	}
 	
-	private static function _dropdown($args = array(),$search=''){
-		$check = 'checked';
+	private static function _dropdown($args = array(),$search='',$value=0){
 		?>
 			<div class="btn-group">
 				<button type="button" class="btn blue dropdown-toggle" data-toggle="dropdown" aria-expanded="true"><i class="fa fa-cogs"></i></button>
@@ -108,6 +108,8 @@ class create_table{
 							continue;
 						}
 						
+						$check = $value==$key?'checked':'';
+
 						$idx = 'inp_src'.$key;
 					?>
 						<label for="<?php print($idx) ;?>" class="mouse_click">
@@ -162,45 +164,43 @@ class create_table{
 			</thead>
 		<?php
 	}
-
-	public static function tbody($args=array()){
-		?>
-			<tbody>
-				<?php self::_content($args) ;?>
-			</tbody>
-		<?php 
-	}
 	
-	public static function _content($args=array()){
+private static function tbody($args=array()){
 		$len = count($args);
-		for($i=0;$i<$len;$i++){
-			$hsl = $i % 2;
-			$cls = 'odd';
-			if($hsl == 1){
-				$cls = 'even';
-			}
-						
-			$cls1 = isset($args[$i]['tr'])?$args[$i]['tr']:'';
-			$cls1 = isset($cls1[0])?$cls1[0]:'';
-						
-			echo '<tr role="row" class="'.$cls.' '.$cls1.'">';
-						
-			$tbody = isset($args[0]['td'])?$args[0]['td']:$args[0];
-			foreach($args[$i]['td'] as $key => $val){
-				$colspan = '';
-				if(isset($val[4])){
-					$colspan = 'colspan="'.$val[4].'"';
-				}
+	?>
+		<tbody>
+			<?php
+				for($i=0;$i<$len;$i++){
+					$hsl = $i % 2;
+					$cls = 'odd';
+					if($hsl == 1){
+						$cls = 'even';
+					}
+					
+					$cls1 = isset($args[$i]['tr'])?$args[$i]['tr']:'';
+					$cls1 = isset($cls1[0])?$cls1[0]:'';
+					
+					echo '<tr role="row" class="'.$cls.' '.$cls1.'">';
+					
+						$tbody = isset($args[0]['td'])?$args[0]['td']:$args[0];
+						foreach($args[$i]['td'] as $key => $val){
+							$colspan = '';
+							if(isset($val[4])){
+								$colspan = 'colspan="'.$val[4].'"';
+							}
 
-				$rowspan = '';
-				if(isset($val[5])){
-					$rowspan = 'rowspan="'.$val[5].'"';
-				}
+							$rowspan = '';
+							if(isset($val[5])){
+								$rowspan = 'rowspan="'.$val[5].'"';
+							}
 
-				echo '<td '.$colspan.' '.$rowspan.' style="text-align:'.$val[0].'">'.$val[2].'</td>';
-			}
-			echo '</tr>';
-		}
+							echo '<td '.$colspan.' '.$rowspan.' style="text-align:'.$val[0].'">'.$val[2].'</td>';
+						}
+					echo '</tr>';
+				}
+			?>
+		</tbody>
+	<?php
 	}
 	
 	public static function _pagination($args=array()){
@@ -275,17 +275,9 @@ class create_table{
 		<?php
 	}
 	
-	private static function _scrolldown($args=array()){
-
+	private static function _scrolldown(){
 		?>
-			<script type="text/javascript">
-				if($(window).scrollTop() + 1 >= $(document).height() - $(window).height()) {
-					page += 1;
-					if(status!=1){
-						
-					}
-				}
-			</script>
+			
 		<?php
 	}
 }
