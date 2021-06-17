@@ -412,7 +412,8 @@ class absensi{
 												<div class="col-md-12">
 													<button id="absen_center" style="width:30%;" type="button" class="btn btn-info" data-request="'.$index.'" onclick="send_request('.$index.')">Ya</button>
 												</div>
-											</div>',
+											</div>
+											<div class="box-loading"></div>',
 							'modal'		=> true,
 							'absen'		=> true
 						);
