@@ -124,8 +124,8 @@ class absen_sobad{
 				if(stsganti){
 					if(time=="1:0"){
 						stsganti = false;
-						//var data = "ajax=_checkGantiJam&object=report_absen&data=0";
-						//sobad_ajax('#my',data,'html',false,'','');
+						var data = "ajax=_checkGantiJam&object=report_absen&data=0";
+						sobad_ajax('#my',data,'html',false,'','');
 					}
 				}
 
