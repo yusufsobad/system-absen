@@ -3,6 +3,7 @@ class dash_head2{
 	public static function _layout(){
 		metronic_layout::sobad_chart(self::_data());
 		self::_birthday();
+		self::_contract();
 		self::_massDayOff();
 	}
 
@@ -74,6 +75,69 @@ class dash_head2{
 															</div>
 															<div>
 																 <?php echo format_date_id(date('Y').$birthday).' ('.$umur.')' ;?>
+															</div>
+														</div>
+													</div>
+												<?php
+											}
+										?>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+		<?php
+	}
+
+	public static function _contract(){
+		$today = date('Y-m-d');
+
+		$whr = "AND `abs-user`.status IN (1,2,3)";
+		$user = sobad_user::get_all(array('name','picture','status','_entry_date'),$whr);
+
+		?>
+			<div class="col-md-4 col-sm-4">
+					<div class="portlet light ">
+						<div class="portlet-title">
+							<div class="caption">
+								<i class="icon-share font-blue-steel hide"></i>
+								<span class="caption-subject font-blue-steel bold uppercase">Habis Kontrak</span>
+							</div>
+							<div class="actions">
+							</div>
+						</div>
+						<div class="portlet-body">
+							<div class="slimScrollDiv">
+								<div class="scroller">
+									<div class="row">
+										<?php
+											foreach ($user as $key => $val) {
+												$life = employee_absen::_check_lifetime($val['status'],$val['_entry_date']);
+												if($life['masa']<-10){
+													continue;
+												}
+
+												$masa = empty($life['masa'])?'':$life['masa'].' Hari';
+												$end_date = $life['end_date'];
+
+												if($end_date>=$today){
+													$status = '<span class="label label-sm label-success label-mini">Kontrak</span>';
+												}else{
+													$status = '<span class="label label-sm label-info">Next</span>';
+												}
+												
+												$img = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
+												?>
+													<div class="col-md-12 user-info">
+														<img style="width:50px;" alt="" src="asset/img/user/<?php print($img) ;?>" class="img-responsive">
+														<div class="details">
+															<div>
+																<a href="javascript:;"><?php print($val['name']) ;?></a>
+																<?php print($status) ;?>
+															</div>
+															<div>
+																 <?php echo format_date_id($life['end_date']).' ('.$masa.')' ;?>
 															</div>
 														</div>
 													</div>
