@@ -71,6 +71,14 @@ function menu_general(){
 		'child'		=> NULL
 	);
 
+	$args['mutasi'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Mutasi',
+		'func'		=> 'mutasi_absen',
+		'child'		=> NULL
+	);
+
 	$args['worktime'] = array(
 		'status'	=> '',
 		'icon'		=> '',

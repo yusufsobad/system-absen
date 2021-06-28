@@ -1047,7 +1047,19 @@ class report_absen extends _page{
 
 	public function _changeStatus($id=0,$count=0,$note=0){
 		$_data = 0;
+/*
+		$y = date('Y');$m = date('m');
+		$date = "AND YEAR(meta_date)='$y' AND MONTH(meta_date)='$m'";
+		$limit = "AND meta_value='$note' $date";
 
+	// Check SP bulan ini (code sama)	
+		$meta = sobad_history::check_meta($id,'_warning',$limit);
+		$check = array_filter($meta);
+		if(!empty($check)){
+			return false;
+		}
+*/
+	// Check SP bulan ini (code beda)	
 		$meta = sobad_user::check_meta($id,'_warning');
 		$check = array_filter($meta);
 		if(empty($check)){
@@ -1057,6 +1069,11 @@ class report_absen extends _page{
 				'meta_value' 	=> $_data
 			));
 		}
+
+	//	$_count = count($meta);
+	//	$_count = $meta[$_count-1]['meta_value'];
+
+	//	$count += $_count;
 
 		if($count==3){
 			$_data = 1;

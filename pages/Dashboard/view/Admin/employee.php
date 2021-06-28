@@ -748,6 +748,7 @@ class employee_absen extends _file_manager{
 				'label'			=> 'Jabatan',
 				'class'			=> 'input-circle',
 				'select'		=> $vals['divisi'],
+				'searching'		=> true,
 				'status'		=> $vals['ID']==0?'':'disabled'
 			),
 			array(

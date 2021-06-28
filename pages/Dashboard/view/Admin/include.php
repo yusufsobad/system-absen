@@ -17,3 +17,4 @@ require 'punishment.php';
 require 'study program.php';
 require 'university.php';
 require 'work.php';
+require 'mutasi.php';
