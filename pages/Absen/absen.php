@@ -789,7 +789,8 @@ class absensi{
 				}
 			}else{
 				$_date = date($val['inserted']);
-				$user[$key]['no_induk'] = internship_absen::_conv_no_induk($val['no_induk'],$val['inserted']);
+				$user[$key]['no_induk'] = internship_absen::_conv_no_induk($val['no_induk'],$val['inserted'],$val['divisi']);
+				$user[$key]['divisi'] = 0;
 
 				if(isset($val['_resign_date'])){
 					if($date>$val['_resign_date']){

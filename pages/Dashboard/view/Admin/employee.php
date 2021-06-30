@@ -1027,16 +1027,26 @@ class employee_absen extends _file_manager{
 	public static function _check_noInduk($id=0){
 		//Check user ---> employee atau internship
 		$whr = "AND no_induk='$id'";
-		if(preg_match("/^M[0-9]{4}/", $id)){
-			$_id = preg_replace("/^M/", "", $id);
+		if(preg_match("/^(P|I|T)[0-9]{4}/", $id)){
+			$_id = preg_replace("/^(P|I|T)/", "", $id);
 
 			$year = preg_replace("/[0-9]{2}\z/","", $_id);
 			$year = "20".$year;
 
 			$_id = preg_replace("/^[0-9]{2}/","", $_id);
-			intval($_id);			
+			intval($_id);
 
-			$whr = "AND YEAR(`abs-user`.inserted)='$year' AND no_induk='$_id'";
+			if (strpos($id, 'P') !== false) {
+    			$div = 1;
+			}else if(strpos($id, 'I') !== false){
+				$div = 2;
+			}else if(strpos($id, 'T') !== false){
+				$div = 3;
+			}else{
+				$div = 0;
+			}
+
+			$whr = "AND YEAR(`abs-user`.inserted)='$year' AND no_induk='$_id' AND divisi='$div'";
 		}else{
 			$_id = $id;
 		}

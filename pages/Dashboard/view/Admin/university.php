@@ -150,11 +150,11 @@ class university_absen extends _page{
 
 	private function head_title(){
 		$args = array(
-			'title'	=> 'Universitas <small>data universitas</small>',
+			'title'	=> 'Universitas / Sekolah <small>data universitas / sekolah</small>',
 			'link'	=> array(
 				0	=> array(
 					'func'	=> self::$object,
-					'label'	=> 'universitas'
+					'label'	=> 'universitas / sekolah'
 				)
 			),
 			'date'	=> false
@@ -167,7 +167,7 @@ class university_absen extends _page{
 		$data = self::table();
 		
 		$box = array(
-			'label'		=> 'Data Universitas',
+			'label'		=> 'Data Universitas / Sekolah',
 			'tool'		=> '',
 			'action'	=> parent::action(),
 			'func'		=> 'sobad_table',
@@ -201,7 +201,7 @@ class university_absen extends _page{
 		}
 		
 		$args = array(
-			'title'		=> 'Tambah data universitas',
+			'title'		=> 'Tambah data universitas / sekolah',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> $func,
@@ -219,7 +219,7 @@ class university_absen extends _page{
 		}
 		
 		$args = array(
-			'title'		=> 'Edit data universitas',
+			'title'		=> 'Edit data universitas / sekolah',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_update_db',
@@ -259,7 +259,7 @@ class university_absen extends _page{
 				'label'			=> 'Nama',
 				'class'			=> 'input-circle',
 				'value'			=> $vals['name'],
-				'data'			=> 'placeholder="Nama Universitas"'
+				'data'			=> 'placeholder="Nama Universitas atau Sekolah"'
 			),
 			array(
 				'func'			=> 'opt_textarea',

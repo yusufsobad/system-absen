@@ -18,7 +18,7 @@ function sidemenu_dashboard(){
 		'child'		=> menu_general()
 	);
 
-	$args['data_intern'] = array(
+	$args['internship'] = array(
 		'status'	=> '',
 		'icon'		=> 'fa fa-university',
 		'label'		=> 'Internship',
@@ -108,11 +108,11 @@ function menu_general(){
 
 function menu_internship(){
 	$args = array();
-	$args['prodi'] = array(
+	$args['university'] = array(
 		'status'	=> '',
 		'icon'		=> '',
-		'label'		=> 'Prodi',
-		'func'		=> 'prodi_absen',
+		'label'		=> 'University / Sekolah',
+		'func'		=> 'university_absen',
 		'child'		=> NULL
 	);
 
@@ -124,18 +124,18 @@ function menu_internship(){
 		'child'		=> NULL
 	);
 
-	$args['university'] = array(
+	$args['prodi'] = array(
 		'status'	=> '',
 		'icon'		=> '',
-		'label'		=> 'University',
-		'func'		=> 'university_absen',
+		'label'		=> 'Prodi / Jurusan',
+		'func'		=> 'prodi_absen',
 		'child'		=> NULL
 	);
 
-	$args['internship'] = array(
+	$args['carier'] = array(
 		'status'	=> '',
 		'icon'		=> '',
-		'label'		=> 'Internship',
+		'label'		=> 'Karir',
 		'func'		=> 'internship_absen',
 		'child'		=> NULL
 	);

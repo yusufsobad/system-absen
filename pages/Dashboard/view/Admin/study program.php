@@ -127,11 +127,11 @@ class prodi_absen extends _page{
 
 	private function head_title(){
 		$args = array(
-			'title'	=> 'Prodi <small>data prodi</small>',
+			'title'	=> 'Prodi / Jurusan <small>data prodi / jurusan</small>',
 			'link'	=> array(
 				0	=> array(
 					'func'	=> self::$object,
-					'label'	=> 'prodi'
+					'label'	=> 'prodi / jurusan'
 				)
 			),
 			'date'	=> false
@@ -144,7 +144,7 @@ class prodi_absen extends _page{
 		$data = self::table();
 		
 		$box = array(
-			'label'		=> 'Data Prodi',
+			'label'		=> 'Data Prodi / Jurusan',
 			'tool'		=> '',
 			'action'	=> parent::action(),
 			'func'		=> 'sobad_table',
@@ -177,7 +177,7 @@ class prodi_absen extends _page{
 		}
 		
 		$args = array(
-			'title'		=> 'Tambah data prodi',
+			'title'		=> 'Tambah data prodi / jurusan',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> $func,
@@ -201,7 +201,7 @@ class prodi_absen extends _page{
 		);
 		
 		$args = array(
-			'title'		=> 'Edit data prodi',
+			'title'		=> 'Edit data prodi / jurusan',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_update_db',
@@ -229,7 +229,7 @@ class prodi_absen extends _page{
 				'func'			=> 'opt_input',
 				'type'			=> 'text',
 				'key'			=> 'meta_value',
-				'label'			=> 'Nama Prodi',
+				'label'			=> 'Nama Prodi atau Jurusan',
 				'class'			=> 'input-circle',
 				'value'			=> $vals[1],
 				'data'			=> 'placeholder="ex: Tehnik Mesin"'

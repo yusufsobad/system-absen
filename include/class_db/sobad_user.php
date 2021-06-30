@@ -86,7 +86,7 @@ class sobad_user extends _class{
 	}
 	
 	public static function get_divisi($id=0,$args=array(),$limit=''){
-		$where = "WHERE divisi='$id' $limit";
+		$where = "WHERE (divisi='$id' AND status='0' AND end_status!='7') OR (divisi='$id' AND status!='7' AND end_status='0') $limit";
 		return parent::_check_join($where,$args);
 	}
 
@@ -107,10 +107,10 @@ class sobad_user extends _class{
 		return $data[0]['nik'];
 	}
 
-	public static function get_maxNIM(){
+	public static function get_maxNIM($divisi=1){
 		$year = date('Y');
 		$args = array('MAX(no_induk) as nim');
-		$where = "WHERE divisi = '0' AND status IN ('0','7') AND YEAR(inserted)='$year'";
+		$where = "WHERE divisi = '$divisi' AND status IN ('0','7') AND YEAR(inserted)='$year'";
 		
 		$data = parent::_get_data($where,$args);
 		$check = array_filter($data);

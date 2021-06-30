@@ -63,7 +63,8 @@ class divisi_absen extends _page{
 			$no += 1;
 			$id = $val['ID'];
 
-			$qty = sobad_user::count("divisi='$id' AND status!='0'");
+			$whr = "(divisi='$id' AND status!='7' AND end_status='0')";
+			$qty = sobad_user::count($whr);
 
 			$edit = array(
 				'ID'	=> 'edit_'.$id,
@@ -258,7 +259,8 @@ class divisi_absen extends _page{
 		$id = str_replace('detail_', '', $id);
 		intval($id);
 
-		$args = sobad_user::get_all(array('picture','no_induk','name','status'),"AND divisi='$id'");
+		$whr = "AND (divisi='$id' AND status='0' AND end_status!='7') OR (divisi='$id' AND status!='7' AND end_status='0')";
+		$args = sobad_user::get_all(array('picture','no_induk','name','status'),$whr);
 
 		$data['class'] = '';
 		$data['table'] = array();

@@ -44,7 +44,8 @@ class internship_absen extends _file_manager{
 			'work_time',
 			'inserted',
 			'_resign_date',
-			'_entry_date'
+			'_entry_date',
+			'divisi'
 		);
 
 		return $args;
@@ -52,7 +53,7 @@ class internship_absen extends _file_manager{
 
 	protected function table(){
 		$data = array();
-		$args = array('ID','name','no_induk','_address','phone_no','picture','status','inserted','_entry_date','_resign_date','_province','_city','_subdistrict','_postcode');
+		$args = array('ID','name','no_induk','_address','divisi','phone_no','picture','status','inserted','_entry_date','_resign_date','_province','_city','_subdistrict','_postcode');
 
 		$start = intval(self::$page);
 		$nLimit = intval(self::$limit);
@@ -124,7 +125,7 @@ class internship_absen extends _file_manager{
 			);
 
 			$status = ($val['status']==0)?"Non Aktif":"Aktif";
-			$no_induk = self::_conv_no_induk($val['no_induk'],$val['inserted']);
+			$no_induk = self::_conv_no_induk($val['no_induk'],$val['inserted'],$val['divisi']);
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 
 			$masa = format_date_id($val['_entry_date']).'<br> - <br>'.format_date_id($val['_resign_date']);
@@ -208,11 +209,11 @@ class internship_absen extends _file_manager{
 
 	private function head_title(){
 		$args = array(
-			'title'	=> 'Internship <small>data internship</small>',
+			'title'	=> 'Karir <small>data karir</small>',
 			'link'	=> array(
 				0	=> array(
 					'func'	=> self::$object,
-					'label'	=> 'internship'
+					'label'	=> 'karir'
 				)
 			),
 			'date'	=> false,
@@ -226,7 +227,7 @@ class internship_absen extends _file_manager{
 		$data = self::table();
 		
 		$box = array(
-			'label'		=> 'Data Internship',
+			'label'		=> 'Data Karir',
 			'tool'		=> '',
 			'action'	=> parent::action(),
 			'func'		=> 'sobad_table',
@@ -259,18 +260,59 @@ class internship_absen extends _file_manager{
 		$opt = array(
 			'title'		=> self::head_title(),
 			'style'		=> array(),
-			'script'	=> array('')
+			'script'	=> array(self::$object,'_script')
 		);
 		
 		return tabs_admin($opt,$tabs);
 	}
 
-	public function _conv_no_induk($no=0,$date=''){
+	public function _conv_no_induk($no=0,$date='',$div=0){
 		$date = date($date);
 		$date = strtotime($date);
 		$date = date('y',$date);
 
-		return 'M'.$date.sprintf("%02d",$no);
+		$args = array('X','P','I','T');
+		$div = isset($args[$div])?$args[$div]:'X';
+
+		return $div.$date.sprintf("%02d",$no);
+	}
+
+	public function _script(){
+		?>
+			<script type="text/javascript">
+				function type_internship(data,id){
+					$(id).val(data['input']);
+
+					if(data['divisi']==1){
+						$('#box_opt_education0').prop('disabled',false);
+						$('#box_opt_education1').prop('disabled',true);
+						$('#box_opt_education2').prop('disabled',true);
+						$('#box_opt_education3').prop('disabled',true);
+
+						$('select#faculty').prop('disabled',true);
+						$('select#prodi').prop('disabled',false);
+					}else if(data['divisi']==2){
+						$('#box_opt_education0').prop('disabled',true);
+						$('#box_opt_education1').prop('disabled',false);
+						$('#box_opt_education2').prop('disabled',false);
+						$('#box_opt_education3').prop('disabled',false);
+
+						$('select#faculty').prop('disabled',false);
+						$('select#prodi').prop('disabled',false);
+					}else if(data['divisi']==3){
+						$('#box_opt_education0').prop('disabled',true);
+						$('#box_opt_education1').prop('disabled',true);
+						$('#box_opt_education2').prop('disabled',true);
+						$('#box_opt_education3').prop('disabled',true);
+
+						$('select#faculty').prop('disabled',true);
+						$('select#prodi').prop('disabled',true);
+					}
+
+					$('.bs-select').selectpicker('refresh');
+				}
+			</script>
+		<?php
 	}
 
 	// ----------------------------------------------------------
@@ -280,7 +322,7 @@ class internship_absen extends _file_manager{
 		$year = date('Y');
 		$no = sobad_user::get_maxNIM();
 
-		$vals = array(0,0,'','',$no+1,'male','','',0,0,0,0,'',0,0,0,0,0,0,7,0,date('Y-m-d'),date('Y-m-d'),date('Y-m-d'));
+		$vals = array(0,0,'','',$no+1,'male','','',0,0,0,0,'',0,0,0,0,0,0,7,0,date('Y-m-d'),date('Y-m-d'),date('Y-m-d'),1);
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
@@ -367,12 +409,22 @@ class internship_absen extends _file_manager{
 				'value'			=> $vals['no_induk']
 			),
 			array(
+				'func'			=> 'opt_select',
+				'data'			=> array(1 => 'Prakerin','Internship','Teacher'),
+				'key'			=> 'divisi',
+				'label'			=> 'Karir',
+				'class'			=> 'input-circle',
+				'select'		=> $vals['divisi'],
+				'status'		=> 'data-sobad="option_divisi" data-load="karir_div" data-attribute="type_internship" '
+			),
+			array(
+				'id'			=> 'karir_div',
 				'func'			=> 'opt_input',
 				'type'			=> 'text',
 				'key'			=> 'nim',
 				'label'			=> 'No Induk',
 				'class'			=> 'input-circle',
-				'value'			=> self::_conv_no_induk($vals['no_induk'],$vals['inserted']),
+				'value'			=> self::_conv_no_induk($vals['no_induk'],$vals['inserted'],$vals['divisi']),
 				'data'			=> 'placeholder="No Induk Magang" disabled',
 			),
 			array(
@@ -533,6 +585,7 @@ class internship_absen extends _file_manager{
 
 		$tab3 = array(
 			0 => array(
+				'id'			=> 'education_int',
 				'func'			=> 'opt_box',
 				'type'			=> 'radio',
 				'key'			=> '_education',
@@ -541,17 +594,21 @@ class internship_absen extends _file_manager{
 				'value'			=> $vals['_education'],
 				'data'			=> array(
 					0	=> array(
-						'title'		=> 'S1',
-						'value'		=> 'S1'
+						'title'		=> 'SMK',
+						'value'		=> 'SMK'
 					),
 					1	=> array(
 						'title'		=> 'D3',
 						'value'		=> 'D3'
 					),
 					2	=> array(
-						'title'		=> 'SMK',
-						'value'		=> 'SMK'
-					)
+						'title'		=> 'D4',
+						'value'		=> 'D4'
+					),
+					3	=> array(
+						'title'		=> 'S1',
+						'value'		=> 'S1'
+					),
 				)
 			),
 			array(
@@ -559,7 +616,7 @@ class internship_absen extends _file_manager{
 				'func'			=> 'opt_select',
 				'data'			=> $univ,
 				'key'			=> '_university',
-				'label'			=> 'Universitas',
+				'label'			=> 'Universitas / Sekolah',
 				'class'			=> 'input-circle',
 				'button'		=> _modal_button($add_univ,3),
 				'searching'		=> true,
@@ -583,7 +640,7 @@ class internship_absen extends _file_manager{
 				'func'			=> 'opt_select',
 				'data'			=> $major,
 				'key'			=> '_study_program',
-				'label'			=> 'Jurusan',
+				'label'			=> 'Prodi / Jurusan',
 				'class'			=> 'input-circle',
 				'button'		=> _modal_button($add_prodi,3),
 				'searching'		=> true,
@@ -657,6 +714,19 @@ class internship_absen extends _file_manager{
 	}
 
 	// ----------------------------------------------------------
+	// Option change Divisi -------------------------------------
+	// ----------------------------------------------------------	
+
+	public static function option_divisi($div=0){
+		$no = sobad_user::get_maxNIM($div);
+		$date = date('Y-m-d');
+		return array(
+			'input' 	=> self::_conv_no_induk($no,$date,$div),
+			'divisi'	=> $div
+		);
+	}
+
+	// ----------------------------------------------------------
 	// Option Universitas ---------------------------------------
 	// ----------------------------------------------------------
 
@@ -665,7 +735,7 @@ class internship_absen extends _file_manager{
 	}
 
 	public function _add_university($args=array()){
-		return university_absen::_add_db($args,'_option_university');
+		return university_absen::_add_db($args,'_option_university',self::$object);
 	}
 
 	public function _option_university(){
@@ -687,7 +757,7 @@ class internship_absen extends _file_manager{
 	}
 
 	public function _add_faculty($args=array()){
-		return faculty_absen::_add_db($args,'_option_faculty');
+		return faculty_absen::_add_db($args,'_option_faculty',self::$object);
 	}
 
 	public function _option_faculty(){
@@ -709,7 +779,7 @@ class internship_absen extends _file_manager{
 	}
 
 	public function _add_prodi($args=array()){
-		return prodi_absen::_add_db($args,'_option_prodi');
+		return prodi_absen::_add_db($args,'_option_prodi',self::$object);
 	}
 
 	public function _option_prodi(){

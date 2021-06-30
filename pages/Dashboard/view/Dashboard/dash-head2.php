@@ -28,7 +28,7 @@ class dash_head2{
 		$besuk = date('-m-d',strtotime('+1 days',$date));
 		$today = date('-m-d');
 
-		$whr = "AND (`abs-user-meta`.meta_key = '_birth_date' AND (`abs-user-meta`.meta_value LIKE '%$today%' OR `abs-user-meta`.meta_value LIKE '%$besuk%'))";
+		$whr = "AND `abs-user`.status!='0' AND (`abs-user-meta`.meta_key = '_birth_date' AND (`abs-user-meta`.meta_value LIKE '%$today%' OR `abs-user-meta`.meta_value LIKE '%$besuk%'))";
 		$user = sobad_user::get_all(array('name','picture','_birth_date'),$whr);
 		?>
 			<div class="col-md-4 col-sm-4">
