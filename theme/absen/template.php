@@ -27,6 +27,7 @@ abstract class absen_control{
 		$_group = array();
 		$group = array(); $work = array(); $notwork = array(); 
 		$outcity = array(); $dayoff = array(); $permit = array();
+		$sick = array(); $tugas = array(); $libur = array();
 
 		$group[0]['name'] = 'Internship';
 		$group[0]['group'] = 2;
@@ -138,6 +139,33 @@ abstract class absen_control{
 					'class'	=> 'col-md-6'
 				);
 			}
+
+			if($val['type']==6){
+				$libur[$val['no_induk']] = array(
+					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
+					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
+					'group'	=> self::_get_group($val['divisi']),
+					'class'	=> 'col-md-6'
+				);
+			}
+
+			if($val['type']==7){
+				$tugas[$val['no_induk']] = array(
+					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
+					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
+					'group'	=> self::_get_group($val['divisi']),
+					'class'	=> 'col-md-6'
+				);
+			}
+
+			if($val['type']==8){
+				$sick[$val['no_induk']] = array(
+					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
+					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
+					'group'	=> self::_get_group($val['divisi']),
+					'class'	=> 'col-md-6'
+				);
+			}
 		}
 
 		ob_start();
@@ -150,6 +178,9 @@ abstract class absen_control{
 		$json = str_replace("[%outcity%]", json_encode($outcity), $json);
 		$json = str_replace("[%dayoff%]", json_encode($dayoff), $json);
 		$json = str_replace("[%permit%]", json_encode($permit), $json);
+		$json = str_replace("[%libur%]", json_encode($libur), $json);
+		$json = str_replace("[%tugas%]", json_encode($tugas), $json);
+		$json = str_replace("[%sick%]", json_encode($sick), $json);
 
 		echo $json;
 		self::_layout();
@@ -166,6 +197,9 @@ abstract class absen_control{
 				var outcity = [%outcity%];
 				var dayoff = [%dayoff%];
 				var permit = [%permit%];
+				var tugas = [%tugas%];
+				var holiday = [%libur%];
+				var sick = [%sick%];
 				var _request = '';
 				var _timeout = '';
 
@@ -292,6 +326,9 @@ abstract class absen_control{
 					outCity();
 					dayOff();
 					_permit();
+					_sick();
+					_tugas();
+					_holiday();
 				}
 
 				function notWork(){
@@ -459,6 +496,84 @@ abstract class absen_control{
 					}
 				}
 
+				function _sick(){
+					var args = '';var display = 'none';var size = 0;
+					var idx = document.getElementById("employee-excity");
+
+					for(o in sick){
+						size += 1;
+					}
+
+					if(size>0){
+						display = 'block';
+					}
+
+					args = ['div',[['id','title-sick'],['class','employee title-content'],['style','margin-top: 20px;display:'+display]],'Sakit'];
+					ceAppend(idx,args);
+
+					args = ['div',[['id','user-sick'],['class','row'],['style','height:auto;display:'+display]],''];
+					idx = ceAppend(idx,args);
+
+					for(var i in sick){
+						args = ['div',[['id','absen-sick-'+i],['class','item'],['data-induk',i]],''];
+						a = ceAppend(idx,args);
+
+						layout_user(a,sick[i]);
+					}
+				}
+
+				function _tugas(){
+					var args = '';var display = 'none';var size = 0;
+					var idx = document.getElementById("employee-excity");
+
+					for(o in tugas){
+						size += 1;
+					}
+
+					if(size>0){
+						display = 'block';
+					}
+
+					args = ['div',[['id','title-tugas'],['class','employee title-content'],['style','margin-top: 20px;display:'+display]],'Tugas Luar'];
+					ceAppend(idx,args);
+
+					args = ['div',[['id','user-tugas'],['class','row'],['style','height:auto;display:'+display]],''];
+					idx = ceAppend(idx,args);
+
+					for(var i in tugas){
+						args = ['div',[['id','absen-tugas-'+i],['class','item'],['data-induk',i]],''];
+						a = ceAppend(idx,args);
+
+						layout_user(a,tugas[i]);
+					}
+				}
+
+				function _holiday(){
+					var args = '';var display = 'none';var size = 0;
+					var idx = document.getElementById("employee-excity");
+
+					for(o in holiday){
+						size += 1;
+					}
+
+					if(size>0){
+						display = 'block';
+					}
+
+					args = ['div',[['id','title-holiday'],['class','employee title-content'],['style','margin-top: 20px;display:'+display]],'Libur'];
+					ceAppend(idx,args);
+
+					args = ['div',[['id','user-holiday'],['class','row'],['style','height:auto;display:'+display]],''];
+					idx = ceAppend(idx,args);
+
+					for(var i in holiday){
+						args = ['div',[['id','absen-holiday-'+i],['class','item'],['data-induk',i]],''];
+						a = ceAppend(idx,args);
+
+						layout_user(a,holiday[i]);
+					}
+				}
+
 				load_absen();
 				set_total_absen();
 
@@ -497,6 +612,11 @@ abstract class absen_control{
 							var _docID = 'user-outcity';
 							var _idxcls = 'absen-outcity-'+_idx;
 							var _notwork = outcity;
+
+						}else if(data['data']['from']=="8" || data['data']['from']==8){
+							var _docID = 'user-sick';
+							var _idxcls = 'absen-sick-'+_idx;
+							var _notwork = sick;
 						}
 
 					if(typeof _notwork[_idx] === 'undefined'){
@@ -637,6 +757,13 @@ abstract class absen_control{
 									$('#title-outcity').hide();
 									$('#user-outcity').hide();
 								}
+							}else if(data['data']['from']=="8" || data['data']['from']==8){
+								delete sick[_idx];
+
+								if(Object.keys(sick).length<=0){
+									$('#title-sick').hide();
+									$('#user-sick').hide();
+								}
 							}
 
 					// Set Karyawan Masuk
@@ -709,6 +836,10 @@ abstract class absen_control{
 							var _docID = 'user-outcity';
 							var _idxcls = 'absen-outcity-'+_idx;
 							var _notwork = outcity;
+						}else if(_idx in sick){
+							var _docID = 'user-sick';
+							var _idxcls = 'absen-sick-'+_idx;
+							var _notwork = sick;
 						}
 
 						var _grp = _notwork[_idx]['group'];
@@ -805,6 +936,17 @@ abstract class absen_control{
 
 							if(_cnt==1){
 								$('#title-outcity').show();
+								$('#'+_docID).show();
+							}
+
+						}else if(_to==8 || _to=='8'){
+							sick[_idx] = _dt_user;
+							var _docID = 'user-sick';
+							var _idxcls = 'absen-sick-' + _idx;
+							var _cnt = Object.keys(sick).length;
+
+							if(_cnt==1){
+								$('#title-sick').show();
 								$('#'+_docID).show();
 							}
 

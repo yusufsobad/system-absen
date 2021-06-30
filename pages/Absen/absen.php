@@ -719,15 +719,14 @@ class absensi{
 				break;
 
 			case 38:
-				// sakit 38
-				$_args['type'] = 4;
-				$type = 4;
+				$_args['type'] = 8;
+				$type = 8;
 
 				sobad_db::_insert_table('abs-permit',array(
 					'user'			=> $_id,
 					'start_date'	=> date('Y-m-d'),
 					'range_date'	=> '00:00:00',
-					'type'			=> 48,
+					'type'			=> 8,
 				));
 
 				break;
@@ -774,7 +773,7 @@ class absensi{
 
 		$_permit = array(0 => 0);
 		foreach ($permit as $key => $val) {
-			if(!in_array($val['type'],array(3,5,6))){
+			if(!in_array($val['type'],array(3,5,6,7,8))){
 				$val['type'] = 4;
 			}
 
@@ -889,6 +888,9 @@ class absensi{
 			'izin'		=> self::_permitWork(),
 			'cuti'		=> self::_holidayWork(),
 			'luar kota'	=> self::_outCity(),
+			'sakit'		=> self::_sick(),
+//			'tugas'		=> self::_tugas(),
+//			'libur'		=> self::_holiday(),
 			'video'		=> $video
 		);
 
@@ -932,6 +934,24 @@ class absensi{
 	public static function _outCity(){
 		$date = date('Y-m-d');
 		$work = sobad_user::go_outCity(array('id_join'),"AND `abs-user-log`._inserted='$date'");
+		return count($work);
+	}
+
+	public static function _sick(){
+		$date = date('Y-m-d');
+		$work = sobad_user::go_sick(array('id_join'),"AND `abs-user-log`._inserted='$date'");
+		return count($work);
+	}
+
+	public static function _tugas(){
+		$date = date('Y-m-d');
+		$work = sobad_user::go_tugas(array('id_join'),"AND `abs-user-log`._inserted='$date'");
+		return count($work);
+	}
+
+	public static function _holiday(){
+		$date = date('Y-m-d');
+		$work = sobad_user::go_holiwork(array('id_join'),"AND `abs-user-log`._inserted='$date'");
 		return count($work);
 	}
 }

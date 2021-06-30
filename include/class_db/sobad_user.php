@@ -151,6 +151,21 @@ class sobad_user extends _class{
 		return parent::_check_join($where,$args);
 	}
 
+	public static function go_holiwork($args=array(),$limit=''){
+		$where = "WHERE `".self::$tbl_join."`.type='6' $limit";
+		return parent::_check_join($where,$args);
+	}
+
+	public static function go_tugas($args=array(),$limit=''){
+		$where = "WHERE `".self::$tbl_join."`.type='7' $limit";
+		return parent::_check_join($where,$args);
+	}
+
+	public static function go_sick($args=array(),$limit=''){
+		$where = "WHERE `".self::$tbl_join."`.type='8' $limit";
+		return parent::_check_join($where,$args);
+	}
+
 	public static function get_absen($args=array(),$date='',$limit=''){
 		$date = empty($date)?date('Y-m-d'):$date;
 

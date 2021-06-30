@@ -167,15 +167,21 @@ class sobad_absen extends absen_control{
 		$masuk = !isset($args['masuk'])?0:$args['masuk'];
 		$cuti = !isset($args['cuti'])?0:$args['cuti'];
 		$izin = !isset($args['izin'])?0:$args['izin'];
+		$sick = !isset($args['sakit'])?0:$args['sakit'];
 		$luar_kota = !isset($args['luar kota'])?0:$args['luar kota'];
+//		$tugas = !isset($args['tugas'])?0:$args['tugas'];
+//		$libur = !isset($args['libur'])?0:$args['libur'];
 
 		$video = !isset($args['video'])?array():$args['video'];
 
 		$args = array(
 		//	'Masuk' 	=> $masuk,
 			'absen-dayoff'	=> array('Cuti', $cuti),
+			'absen-sick'	=> array('Sakit', $sick),
 			'absen-permit'	=> array('Izin', $izin),
-			'absen-outcity'	=> array('Luar Kota', $luar_kota)
+			'absen-outcity'	=> array('Luar Kota', $luar_kota),
+//			'absen-tugas'	=> array('Tugas Luar', $tugas),
+//			'absen-holiday'	=> array('Libur', $libur),
 		);
 
 		?>
