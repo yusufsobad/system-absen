@@ -773,7 +773,7 @@ class absensi{
 
 		$_permit = array(0 => 0);
 		foreach ($permit as $key => $val) {
-			if(!in_array($val['type'],array(3,5,6,7,8))){
+			if(!in_array($val['type'],array(3,5,6,7,8,10))){
 				$val['type'] = 4;
 			}
 

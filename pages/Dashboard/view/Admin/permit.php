@@ -267,7 +267,7 @@ class permit_absen extends _page{
 	}
 
 	public static function _conv_type($id=0){
-		$args = array(3 => 'Cuti', 'Izin', 'Luar Kota', 'Libur','Tugas Luar','Sakit');
+		$args = array(3 => 'Cuti', 'Izin', 'Luar Kota', 'Libur','Tugas Luar','Sakit',10 => 'WFH');
 		$type = isset($args[$id])?$args[$id]:'';
 
 		if(!empty($type)){
@@ -351,7 +351,7 @@ class permit_absen extends _page{
 			'Internship'	=> $intern
 		);
 
-		$permit = array(3 => 'Cuti',4 => 'Izin (Ganti Jam)' ,5 => 'Luar Kota', 'Libur',8 => 'Sakit');
+		$permit = array(3 => 'Cuti',4 => 'Izin (Ganti Jam)' ,5 => 'Luar Kota', 'Libur',8 => 'Sakit',10 => 'WFH');
 		$dayOff = sobad_module::_gets('day_off',array('ID','meta_value'));
 		foreach ($dayOff as $key => $val) {
 			$idx = ($val['ID'] + 10);

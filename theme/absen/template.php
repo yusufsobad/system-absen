@@ -27,7 +27,7 @@ abstract class absen_control{
 		$_group = array();
 		$group = array(); $work = array(); $notwork = array(); 
 		$outcity = array(); $dayoff = array(); $permit = array();
-		$sick = array(); $tugas = array(); $libur = array();
+		$sick = array(); $tugas = array(); $libur = array();$wfh = array();
 
 		$group[0]['name'] = 'Internship';
 		$group[0]['group'] = 2;
@@ -166,6 +166,15 @@ abstract class absen_control{
 					'class'	=> 'col-md-6'
 				);
 			}
+
+			if($val['type']==10){
+				$wfh[$val['no_induk']] = array(
+					'name'	=> empty($val['_nickname'])?'no name':$val['_nickname'],
+					'image'	=> !empty($val['notes_pict'])?$val['notes_pict']:'no-profile.jpg',
+					'group'	=> self::_get_group($val['divisi']),
+					'class'	=> 'col-md-6'
+				);
+			}
 		}
 
 		ob_start();
@@ -181,6 +190,7 @@ abstract class absen_control{
 		$json = str_replace("[%libur%]", json_encode($libur), $json);
 		$json = str_replace("[%tugas%]", json_encode($tugas), $json);
 		$json = str_replace("[%sick%]", json_encode($sick), $json);
+		$json = str_replace("[%wfh%]", json_encode($wfh), $json);
 
 		echo $json;
 		self::_layout();
@@ -200,6 +210,7 @@ abstract class absen_control{
 				var tugas = [%tugas%];
 				var holiday = [%libur%];
 				var sick = [%sick%];
+				var wfh = [%wfh%];
 				var _request = '';
 				var _timeout = '';
 
@@ -329,6 +340,7 @@ abstract class absen_control{
 					_sick();
 					_tugas();
 					_holiday();
+					_workFromHome();
 				}
 
 				function notWork(){
@@ -574,6 +586,32 @@ abstract class absen_control{
 					}
 				}
 
+				function _workFromHome(){
+					var args = '';var display = 'none';var size = 0;
+					var idx = document.getElementById("employee-excity");
+
+					for(o in wfh){
+						size += 1;
+					}
+
+					if(size>0){
+						display = 'block';
+					}
+
+					args = ['div',[['id','title-wfh'],['class','employee title-content'],['style','margin-top: 20px;display:'+display]],'WFH'];
+					ceAppend(idx,args);
+
+					args = ['div',[['id','user-wfh'],['class','row'],['style','height:auto;display:'+display]],''];
+					idx = ceAppend(idx,args);
+
+					for(var i in wfh){
+						args = ['div',[['id','absen-wfh-'+i],['class','item'],['data-induk',i]],''];
+						a = ceAppend(idx,args);
+
+						layout_user(a,wfh[i]);
+					}
+				}
+
 				load_absen();
 				set_total_absen();
 
@@ -617,6 +655,10 @@ abstract class absen_control{
 							var _docID = 'user-sick';
 							var _idxcls = 'absen-sick-'+_idx;
 							var _notwork = sick;
+						}else if(data['data']['from']=="10" || data['data']['from']==10){
+							var _docID = 'user-wfh';
+							var _idxcls = 'absen-wfh-'+_idx;
+							var _notwork = wfh;
 						}
 
 					if(typeof _notwork[_idx] === 'undefined'){
@@ -763,6 +805,13 @@ abstract class absen_control{
 								if(Object.keys(sick).length<=0){
 									$('#title-sick').hide();
 									$('#user-sick').hide();
+								}
+							}else if(data['data']['from']=="10" || data['data']['from']==10){
+								delete wfh[_idx];
+
+								if(Object.keys(wfh).length<=0){
+									$('#title-wfh').hide();
+									$('#user-wfh').hide();
 								}
 							}
 
