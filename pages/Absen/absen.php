@@ -522,6 +522,9 @@ class absensi{
 				}
 
 			case 5:
+			case 6:
+			case 8:
+			case 10:
 				$type = 1;
 				if($work['status']){
 					if($time>=$work['time_out']){
