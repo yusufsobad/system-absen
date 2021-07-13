@@ -90,6 +90,23 @@ class sobad_user extends _class{
 		return parent::_check_join($where,$args);
 	}
 
+	public static function user_sentiment(){
+		$args = array('ID','name','_sex');
+		$where = "WHERE 1=1";
+		$data =  parent::_check_join($where,$args);
+
+		$sentiment = array();
+		foreach ($data as $key => $val) {
+			$sentiment[$key] = array(
+				'ID'		=> $val['ID'],
+				'name'		=> $val['name'],
+				'sex'		=> $val['_sex']=='male'?0:1
+			);
+		}
+
+		return $sentiment;
+	}
+
 // -----------------------------------------------------------------
 // --- Function User-log -------------------------------------------
 // -----------------------------------------------------------------
