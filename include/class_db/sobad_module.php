@@ -19,7 +19,8 @@ class sobad_module extends _class{
 				'faculty',
 				'study_program',
 				'group',
-				'day_off'
+				'day_off',
+				'division'
 			);
 
 			if(in_array($type, $args)){
@@ -37,6 +38,24 @@ class sobad_module extends _class{
 		}
 
 		return array();
+	}
+
+	public static function _get_divisions(){
+		$divisi = array();
+		$data = self::_gets('division',array('ID','meta_value','meta_note'));
+		foreach ($data as $key => $val) {
+			$detail = self::_conv_divisi($val['meta_note']);
+			$detail = implode(', ',$detail['ID']);
+			$args = sobad_user::get_all(array('ID','name','divisi'),"AND divisi IN ($detail) AND status!='0'");
+
+			$divisi[$key] = array(
+				'id'		=> $val['ID'],
+				'name'		=> $val['meta_value'],
+				'detail'	=> $args
+			);
+		}
+
+		return $divisi;
 	}
 
 	public static function _conv_divisi($data=''){

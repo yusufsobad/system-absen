@@ -7,10 +7,18 @@ $json = json_decode(file_get_contents('php://input'), true);
 // Setting 
 
 	define('AUTHPATH',$_SERVER['SERVER_NAME']);
-	define('DEFPATH',$_SERVER['SERVER_NAME']);
+	//define('DEFPATH',$_SERVER['SERVER_NAME']);
 	
 	require 'config/hostname.php';
-	require 'class_db.php';
+//	require 'class_db.php';
+
+	// Get Define
+	new hostname();
+
+	// get file component
+	new _component();
+
+	sobad_asset::_pages("../pages/");
 
 // End Setting
 

@@ -145,6 +145,14 @@ function menu_internship(){
 
 function menu_option(){
 	$args = array();
+	$args['opt-divisi'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Divisi',
+		'func'		=> 'optDivisi_absen',
+		'child'		=> NULL
+	);
+
 	$args['group'] = array(
 		'status'	=> '',
 		'icon'		=> '',
