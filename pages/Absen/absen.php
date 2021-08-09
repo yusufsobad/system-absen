@@ -784,6 +784,13 @@ class absensi{
 		}
 
 		foreach ($user as $key => $val) {
+			if(isset($val['_entry_date'])){
+				if($date<$val['_entry_date']){
+					unset($user[$key]);
+					continue;
+				}
+			}
+
 			if($val['status']!=7){
 				if(!in_array($val['divisi'],$_group)){
 					unset($user[$key]);
@@ -793,13 +800,6 @@ class absensi{
 				$_date = date($val['inserted']);
 				$user[$key]['no_induk'] = internship_absen::_conv_no_induk($val['no_induk'],$val['inserted'],$val['divisi']);
 				$user[$key]['divisi'] = 0;
-
-				if(isset($val['_entry_date'])){
-					if($date<$val['_entry_date']){
-						unset($user[$key]);
-						continue;
-					}
-				}
 
 				if(isset($val['_resign_date'])){
 					if($date>$val['_resign_date']){
