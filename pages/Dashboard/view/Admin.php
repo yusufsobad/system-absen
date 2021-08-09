@@ -303,7 +303,7 @@ class dash_absensi{
 				'NIK'		=> array(
 					'left',
 					'5%',
-					$val['status']==7?internship_absen::_conv_no_induk($val['no_induk'],$val['inserted']):$val['no_induk'],
+					$val['status']==7?internship_absen::_conv_no_induk($val['no_induk'],$val['inserted'],$val['divisi']):$val['no_induk'],
 					true
 				),
 				'Nama'		=> array(

@@ -757,7 +757,7 @@ class absensi{
 	public static function _data_employee(){
 		$date = date('Y-m-d');
 		$whr = "AND `abs-user`.status!=0";
-		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','work_time','inserted','status','_resign_date'),$whr);
+		$user = sobad_user::get_all(array('ID','divisi','_nickname','no_induk','picture','work_time','inserted','status','_resign_date','_entry_date'),$whr);
 		$permit = sobad_permit::get_all(array('user','type'),"AND type!='9' AND start_date<='$date' AND range_date>='$date' OR start_date<='$date' AND range_date='0000-00-00' AND num_day='0.0'");
 
 		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
@@ -793,6 +793,13 @@ class absensi{
 				$_date = date($val['inserted']);
 				$user[$key]['no_induk'] = internship_absen::_conv_no_induk($val['no_induk'],$val['inserted'],$val['divisi']);
 				$user[$key]['divisi'] = 0;
+
+				if(isset($val['_entry_date'])){
+					if($date<$val['_entry_date']){
+						unset($user[$key]);
+						continue;
+					}
+				}
 
 				if(isset($val['_resign_date'])){
 					if($date>$val['_resign_date']){

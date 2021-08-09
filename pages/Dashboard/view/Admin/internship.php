@@ -282,7 +282,8 @@ class internship_absen extends _file_manager{
 			<script type="text/javascript">
 				function type_internship(data,id){
 					$(id).val(data['input']);
-
+					$('#noinduk').val(data['induk']);
+					
 					if(data['divisi']==1){
 						$('#box_opt_education0').prop('disabled',false);
 						$('#box_opt_education1').prop('disabled',true);
@@ -403,6 +404,7 @@ class internship_absen extends _file_manager{
 				'value'			=> $vals['status']
 			),
 			array(
+				'id'			=> 'noinduk',
 				'func'			=> 'opt_hidden',
 				'type'			=> 'hidden',
 				'key'			=> 'no_induk',
@@ -719,9 +721,11 @@ class internship_absen extends _file_manager{
 
 	public static function option_divisi($div=0){
 		$no = sobad_user::get_maxNIM($div);
+		$no += 1;
 		$date = date('Y-m-d');
 		return array(
 			'input' 	=> self::_conv_no_induk($no,$date,$div),
+			'induk'		=> $no,
 			'divisi'	=> $div
 		);
 	}
