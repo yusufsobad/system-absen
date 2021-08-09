@@ -266,6 +266,11 @@ class internship_absen extends _file_manager{
 		return tabs_admin($opt,$tabs);
 	}
 
+	public static function _conv_divisi($div=0){
+		$args = array(1 => 'Prakerin','Internship','Teacher');
+		return isset($args[$div])?$args[$div]:'-';
+	}
+
 	public function _conv_no_induk($no=0,$date='',$div=0){
 		$date = date($date);
 		$date = strtotime($date);
@@ -283,7 +288,7 @@ class internship_absen extends _file_manager{
 				function type_internship(data,id){
 					$(id).val(data['input']);
 					$('#noinduk').val(data['induk']);
-					
+
 					if(data['divisi']==1){
 						$('#box_opt_education0').prop('disabled',false);
 						$('#box_opt_education1').prop('disabled',true);

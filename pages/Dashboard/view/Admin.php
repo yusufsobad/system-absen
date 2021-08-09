@@ -228,7 +228,7 @@ class dash_absensi{
 		$day = date('w');
 		$limit = '';
 
-		$args = array('ID','picture','no_induk','name','divisi','status','inserted');
+		$args = array('ID','picture','no_induk','name','divisi','status','inserted','_entry_date');
 		if($id!=0){
 			$args = array('ID','picture','no_induk','name','divisi','status','inserted','type','shift','_inserted','time_in');
 			$limit = "AND `abs-user-log`._inserted='$date' AND `abs-user-log`.type='$id'";
@@ -257,6 +257,14 @@ class dash_absensi{
 
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
 			$status = employee_absen::_conv_status($val['status']);
+			if(date('Y-m-d')<$val['_entry_date']){
+				$status = 'Masuk :<br>'.format_date_id($val['_entry_date']);
+			}
+
+			$divisi = $val['meta_value_divi'];
+			if($val['status']==7){
+				$divisi = internship_absen::_conv_divisi($val['divisi']);
+			}
 
 			$permit = '';
 			if($id==4){
@@ -315,7 +323,7 @@ class dash_absensi{
 				'Divisi'	=> array(
 					'left',
 					'20%',
-					$val['meta_value_divi'],
+					$divisi,
 					true
 				),
 				'Status'	=> array(
