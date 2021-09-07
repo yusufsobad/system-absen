@@ -40,6 +40,14 @@ function menu_optAdmin(){
 		'child'		=> NULL
 	);
 
+	$args['karir'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Karir',
+		'func'		=> 'internship_admin',
+		'child'		=> NULL
+	);
+
 	$args['dayoff'] = array(
 		'status'	=> '',
 		'icon'		=> '',

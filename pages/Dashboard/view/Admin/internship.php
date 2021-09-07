@@ -336,7 +336,7 @@ class internship_absen extends _file_manager{
 		}
 		
 		$args = array(
-			'title'		=> 'Tambah data internship',
+			'title'		=> 'Tambah data karir',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> $func,
@@ -355,7 +355,7 @@ class internship_absen extends _file_manager{
 		}
 
 		$args = array(
-			'title'		=> 'Edit data internship',
+			'title'		=> 'Edit data karir',
 			'button'	=> '_btn_modal_save',
 			'status'	=> array(
 				'link'		=> '_update_db',

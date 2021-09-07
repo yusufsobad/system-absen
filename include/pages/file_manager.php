@@ -96,8 +96,8 @@ abstract class _file_manager extends _page{
 		$status = is_array($_POST['args'])?true:false;
 		$args = sobad_asset::ajax_conv_array_json($_POST['args']);
 		$args = array(
-			'words'	=> $args['words'][0],
-			'search'=> $args['search'][0]
+			'words'	=> $args['words_file'][0],
+			'search'=> $args['search_file'][0]
 		);
 
 		parent::$search = $status;

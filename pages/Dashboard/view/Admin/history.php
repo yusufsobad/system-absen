@@ -1282,7 +1282,7 @@ class history_absen extends _page{
 			self::_calc_gantiJam($vl,$punish,$date,$args['note']);
 		}
 
-		$table = self::table();
+		$table = self::table($_POST['filter']);
 		return table_admin($table);
 	}
 
@@ -1334,7 +1334,7 @@ class history_absen extends _page{
 			}
 		}
 
-		$table = self::table();
+		$table = self::table($_POST['filter']);
 		return table_admin($table);
 	}
 
