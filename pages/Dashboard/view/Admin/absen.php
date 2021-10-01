@@ -168,7 +168,7 @@ class report_absen extends _page{
 							$status = 'Alpha';
 						}
 
-						if($args[0]['type']==7){
+						if($args[0]['type']==11){
 							$status = 'Tidak Absen';
 						}
 					}
@@ -671,7 +671,7 @@ class report_absen extends _page{
 			),
 			array(
 				'func'			=> 'opt_select',
-				'data'			=> array(0 => 'Alpha',7 => 'Tidak Absen', 3 => 'Cuti', 'Izin', 'Luar Kota','Libur'),
+				'data'			=> array(0 => 'Alpha',11 => 'Tidak Absen', 3 => 'Cuti', 4 => 'Izin', 5 => 'Luar Kota',6 => 'Libur'),
 				'key'			=> 'type',
 				'label'			=> 'Status',
 				'class'			=> 'input-circle',

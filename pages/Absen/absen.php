@@ -146,7 +146,7 @@ class absensi{
 
 		//get work
 		$work = array();
-		$users = sobad_user::get_all(array('ID','divisi','work_time'),$whr." AND status!='0'");
+		$users = sobad_user::get_all(array('ID','divisi','status','work_time'),$whr." AND status!='0'");
 
 		$check = array_filter($users);
 		if(!empty($check)){
@@ -167,7 +167,7 @@ class absensi{
 			}
 
 			$work = sobad_work::get_id($worktime,array('time_in','time_out','status'),"AND days='$day'");
-			$group = sobad_module::_get_group($users[0]['divisi']);
+			$group = sobad_module::_get_group($users[0]['divisi'],$users[0]['status']);
 		}
 
 		$check = array_filter($group);

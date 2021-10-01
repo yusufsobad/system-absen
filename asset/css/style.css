@@ -87,6 +87,34 @@ ul.dropdown-menu li a.btn_data_malika {
     display: none !important;
 }
 
+/* Custom Color Dashboard */
+.dashboard-stat.orange-dash {
+    background-color: #dfaf27;
+}
+
+.dashboard-stat.orange-dash .more {
+    color: #FFFFFF;
+    background-color: #dd9614;
+}
+
+.dashboard-stat.green-dash {
+    background-color: #23cd29;
+}
+
+.dashboard-stat.green-dash .more {
+    color: #FFFFFF;
+    background-color: #0db91a;
+}
+
+.dashboard-stat.purple-dash {
+    background-color: #d13a94;
+}
+
+.dashboard-stat.purple-dash .more {
+    color: #FFFFFF;
+    background-color: #cb1d9d;
+}
+
 /* Col Custom */
 @media (min-width: 1200px){
     .col-lg-20 {

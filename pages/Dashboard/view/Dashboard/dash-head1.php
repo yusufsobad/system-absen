@@ -13,9 +13,12 @@ class dash_head1{
 			'izin'		=> absensi::_permitWork(),
 			'cuti'		=> absensi::_holidayWork(),
 			'luar kota'	=> absensi::_outCity(),
+			'libur'		=> absensi::_holiday(),
+			'tugas'		=> absensi::_tugas(),
+			'sakit'		=> absensi::_sick()
 		);
 
-		$notAbsen = ($args['total'] + $args['intern']) - ($args['masuk'] + $args['pulang'] + $args['izin'] + $args['cuti'] + $args['luar kota']);
+		$notAbsen = ($args['total'] + $args['intern']) - ($args['masuk'] + $args['pulang'] + $args['izin'] + $args['cuti'] + $args['luar kota'] + $args['libur'] + $args['tugas'] + $args['sakit']);
 
 		$column	= array('lg' => 20,'md' => 20);
 
@@ -76,6 +79,42 @@ class dash_head1{
 				'desc'		=> 'Luar Kota',
 				'column'	=> $column,
 				'button'	=> button_toggle_block(array('ID' => 'absen_5','func' => '_view_block'))
+			)
+		);
+
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'purple-dash',
+				'qty'		=> $args['libur'],
+				'desc'		=> 'Libur',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_6','func' => '_view_block'))
+			)
+		);
+
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'green-dash',
+				'qty'		=> $args['tugas'],
+				'desc'		=> 'Tugas Luar',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_7','func' => '_view_block'))
+			)
+		);
+
+		$dash[] = array(
+			'func'	=> '_block_info',
+			'data'	=> array(
+				'icon'		=> '',
+				'color'		=> 'orange-dash',
+				'qty'		=> $args['sakit'],
+				'desc'		=> 'Sakit',
+				'column'	=> $column,
+				'button'	=> button_toggle_block(array('ID' => 'absen_8','func' => '_view_block'))
 			)
 		);
 		

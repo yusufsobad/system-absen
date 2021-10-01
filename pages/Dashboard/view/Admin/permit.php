@@ -335,10 +335,10 @@ class permit_absen extends _page{
 			return '';
 		}
 
-		$user = sobad_user::get_employees(array('ID','name'));
+		$user = sobad_user::get_employees(array('ID','name'),"AND status!='0'");
 		$user = convToOption($user,'ID','name');
 
-		$intern = sobad_user::get_internships(array('ID','name'));
+		$intern = sobad_user::get_internships(array('ID','name'),"AND status!='0'");
 		$intern = convToOption($intern,'ID','name');
 
 		$group = $user;

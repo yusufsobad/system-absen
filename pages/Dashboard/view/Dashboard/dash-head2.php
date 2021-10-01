@@ -137,7 +137,7 @@ class dash_head2{
 																<?php print($status) ;?>
 															</div>
 															<div>
-																 <?php echo format_date_id($life['end_date']).' ('.$masa.')' ;?>
+																 <?php echo $life['end_date'].' ('.$masa.')' ;?>
 															</div>
 														</div>
 													</div>
