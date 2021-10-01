@@ -115,6 +115,21 @@ ul.dropdown-menu li a.btn_data_malika {
     background-color: #cb1d9d;
 }
 
+.dashboard-stat.orange-dash .visual > i,
+.dashboard-stat.green-dash .visual > i,
+.dashboard-stat.purple-dash .visual > i {
+    color: #FFFFFF;
+    opacity: 0.1;
+    filter: alpha(opacity=10);
+}
+
+.dashboard-stat.orange-dash,
+.dashboard-stat.green-dash,
+.dashboard-stat.purple-dash {
+    color: #fff;
+    background-color: #888;
+}
+
 /* Col Custom */
 @media (min-width: 1200px){
     .col-lg-20 {
