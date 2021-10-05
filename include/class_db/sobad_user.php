@@ -80,7 +80,7 @@ class sobad_user extends _class{
 		$pass = $conn->real_escape_string($pass);
 
 		$inner = "LEFT JOIN `abs-module` ON `abs-user`.divisi = `abs-module`.ID ";
-		$where = $inner."WHERE `abs-user`.username='$user' AND `abs-user`.password='$pass' AND `abs-user`.status IN ('1','2','3','4')";
+		$where = $inner."WHERE `abs-user`.username='$user' AND `abs-user`.password='$pass' AND `abs-user`.end_status='0'";
 
 		return parent::_get_data($where,$args);
 	}
