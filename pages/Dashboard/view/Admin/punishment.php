@@ -621,6 +621,7 @@ class punishment_absen extends _page{
 
 		foreach ($args as $key => $val) {
 			$_detail = array(
+				'date_schedule'	=> '0000-00-00',
 				'log_id'		=> $val['ID'],
 				'times'			=> $val['punishment'],
 				'type_log'		=> 1
