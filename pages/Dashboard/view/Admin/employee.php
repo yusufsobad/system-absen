@@ -152,7 +152,16 @@ class employee_absen extends _file_manager{
 
 			$change = dropdown_button($drop);
 			if($val['status']==0){
-				$change = '';
+				$recall = array(
+					'ID'	=> 'recall_'.$val['ID'],
+					'func'	=> '_recall',
+					'color'	=> 'yellow',
+					'icon'	=> 'icon-call-out',
+					'label'	=> 'recall',
+					'type'	=> $tab
+				);
+
+				$change = _modal_button($recall);
 			}
 
 			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
@@ -948,7 +957,105 @@ class employee_absen extends _file_manager{
 	}
 
 	// ----------------------------------------------------------
-	// Function category to database -----------------------------
+	// Function recall form -------------------------------------
+	// ----------------------------------------------------------
+
+	public static function _recall($id=''){
+		$id = str_replace('recall_', '', $id);
+		intval($id);
+
+		$data = self::_recall_form($id);
+
+		$args = array(
+			'title'		=> 'Recall Karyawan',
+			'button'	=> '_btn_modal_save',
+			'status'	=> array(
+				'link'		=> '_add_recall',
+				'load'		=> 'sobad_portlet',
+				'type'		=> $_POST['type']
+			),
+			'func'		=> array('sobad_form'),
+			'data'		=> array($data)
+		);
+		
+		return modal_admin($args);
+	}
+
+	public static function _recall_form($id=0){
+		$data = array(
+			0	=> array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'ID',
+				'value'			=> $id
+			),
+			array(
+				'func'			=> 'opt_datepicker',
+				'key'			=> '_entry_date',
+				'label'			=> 'Tanggal Masuk (Kembali)',
+				'class'			=> 'input-circle',
+				'value'			=> date('Y-m-d')
+			),
+			array(
+				'func'			=> 'opt_select',
+				'data'			=> array(1 => 'Training', 'Kontrak 1', 'Kontrak 2', 'Tetap', 'Founder', 'Pensiun'),
+				'key'			=> 'status',
+				'label'			=> 'Status Mulai (Kembali)',
+				'class'			=> 'input-circle',
+				'select'		=> 1,
+			),
+			array(
+				'func'			=> 'opt_input',
+				'type'			=> 'text',
+				'key'			=> 'note',
+				'label'			=> 'Alasan (Kembali)',
+				'class'			=> 'input-circle',
+				'value'			=> '',
+				'data'			=> 'placeholder="Alasan"'
+			),
+		);
+
+		return $data;
+	}
+
+	public static function _add_recall($args=array()){
+		$args = sobad_asset::ajax_conv_json($args);
+		$id = $args['ID'];
+
+		// Get Data User
+		$user = sobad_user::get_id($id,array('end_status','_entry_date','_resign_date'));
+		$user = $user[0];
+
+		$user['user_id'] = $id;
+		$user['note'] = $args['note'];
+
+		// Insert data recall
+		$q = sobad_db::_insert_table('abs-user-recall',$user);
+
+		// Update data User Recall
+		$data = array(
+			'ID'			=> $id,
+			'status'		=> $args['status'],
+			'end_status'	=> 0
+		);
+		$q = sobad_db::_update_single($args['ID'],'abs-user',$data);
+
+		$meta = array('_entry_date' => $args['_entry_date'],'_resign_date' => '');
+		foreach ($meta as $key => $val) {
+			$idx = sobad_db::_update_multiple("meta_id='$id' AND meta_key='$key'",'abs-user-meta',array(
+				'meta_id'		=> $id,
+				'meta_value'	=> $val
+			));
+		}
+
+		if($q!==0){
+			$pg = isset($_POST['page'])?$_POST['page']:1;
+			return self::_get_table($pg);
+		}
+	}
+
+	// ----------------------------------------------------------
+	// Function category to database ----------------------------
 	// ----------------------------------------------------------
 
 	protected function _callback($args=array(),$_args=array()){
