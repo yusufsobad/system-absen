@@ -520,10 +520,15 @@ class employee_absen extends _file_manager{
 		if(empty($check)){
 			return '';
 		}
+
+		$button = '';
+		if($_POST['type']!='employee_9'){
+			$button = '_btn_modal_save';
+		}
 		
 		$args = array(
 			'title'		=> 'Edit data karyawan',
-			'button'	=> '_btn_modal_save',
+			'button'	=> $button,
 			'status'	=> array(
 				'link'		=> '_update_db',
 				'load'		=> 'sobad_portlet',
