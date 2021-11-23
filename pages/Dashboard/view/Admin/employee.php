@@ -357,6 +357,16 @@ class employee_absen extends _file_manager{
 	}
 
 	protected function action(){
+		$excel = array(
+			'ID'	=> 'excel_0',
+			'func'	=> '_export_excel',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-file-excel-o',
+			'label'	=> 'Export'
+		);
+
+		$excel = print_button($excel);
+
 		$import = array(
 			'ID'	=> 'import_0',
 			'func'	=> 'import_form',
@@ -380,7 +390,7 @@ class employee_absen extends _file_manager{
 		
 		$add = edit_button($add);
 
-		return $import.$add;
+		return $excel.$import.$add;
 	}
 
 	public function _conv_status($status=''){
@@ -1057,6 +1067,158 @@ class employee_absen extends _file_manager{
 			$pg = isset($_POST['page'])?$_POST['page']:1;
 			return self::_get_table($pg);
 		}
+	}
+
+	// ----------------------------------------------------------
+	// Function Export to Excel ---------------------------------
+	// ----------------------------------------------------------
+
+	protected function _table_export(){
+		$data = array();
+		$args = self::_array();
+
+		$where = "AND `abs-user`.status NOT IN ('0','7') AND `abs-user`.end_status!='7'";
+		$args = sobad_user::get_employees($args,$where,true);
+
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$_status = array('belum menikah','menikah','cerai mati','cerai hidup');
+		$_sex = array('male' => 'Laki - Laki','female' => 'Perempuan');
+		$_agama = array(1 => 'Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Kepercayaan');
+
+		$no = 0;$now = time();
+		foreach($args as $key => $val){
+			$no += 1;
+			
+			$umur = date($val['_birth_date']);
+			$umur = strtotime($umur);
+			$umur = $now - $umur;
+			$umur = floor($umur / (60 * 60 * 24 * 365))." Tahun";
+
+			// Check masa status
+			$status = self::_conv_status($val['status']);
+
+			$_address = sobad_wilayah::_conv_address($val['_address'],array(
+				'province'		=> $val['_province'],
+				'city'			=> $val['_city'],
+				'subdistrict'	=> $val['_subdistrict'],
+				'postcode'		=> $val['_postcode'],
+			));
+			$_address = $_address['result'];
+
+			$place = sobad_wilayah::get_city($val['_place_date']);
+			$place = $place[0]['tipe'] . " " . $place[0]['kabupaten'];
+
+			$jabatan = sobad_module::get_id($val['divisi'],array('meta_value'));
+			$jabatan = $jabatan[0]['meta_value'];
+			
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'No'		=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'NIK'		=> array(
+					'left',
+					'5%',
+					$val['no_induk'],
+					true
+				),
+				'Nama'		=> array(
+					'left',
+					'auto',
+					$val['name'],
+					true
+				),
+				'Panggilan'		=> array(
+					'left',
+					'auto',
+					$val['_nickname'],
+					true
+				),
+				'Jenis Kelamin'		=> array(
+					'left',
+					'10%',
+					$_sex[$val['_sex']],
+					true
+				),
+				'Agama'		=> array(
+					'left',
+					'15%',
+					$_agama[$val['_religion']],
+					true
+				),
+				'Tempat Lahir'	=> array(
+					'left',
+					'20%',
+					$place,
+					true
+				),
+				'Tanggal Lahir'	=> array(
+					'left',
+					'20%',
+					format_date_id($val['_birth_date']),
+					true
+				),
+				'Status Perkawinan'	=> array(
+					'left',
+					'14%',
+					$_status[$val['_marital']],
+					true
+				),
+				'Alamat'	=> array(
+					'left',
+					'20%',
+					$_address,
+					true
+				),
+				'No HP'		=> array(
+					'left',
+					'10%',
+					$val['phone_no'],
+					true
+				),
+				'Umur'	=> array(
+					'left',
+					'8%',
+					$umur,
+					true
+				),
+				'Jabatan'	=> array(
+					'left',
+					'15%',
+					$jabatan,
+					true
+				),
+				'Tanggal Masuk'	=> array(
+					'left',
+					'14%',
+					format_date_id($val['_entry_date']),
+					true
+				),
+				'Status'	=> array(
+					'left',
+					'14%',
+					$status,
+					true
+				),
+			);
+		}
+		
+		return $data;
+	}
+
+	public function _export_excel(){
+
+		ob_start();
+		header("Content-type: application/vnd-ms-excel");
+		header("Content-Disposition: attachment; filename=Data Karyawan.xls");
+
+		metronic_layout::sobad_table(self::_table_export());
+		return ob_get_clean();
 	}
 
 	// ----------------------------------------------------------
