@@ -241,8 +241,8 @@ class employee_admin extends _page{
 		return apply_button($import);
 	}
 
-	public function _conv_status($status=''){
-		$types = array('Non Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun','Internship');
+	public static function _conv_status($status=''){
+		$types = array(-1 => 'Tanda Tangan Kontrak',0 => 'Non Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun','Internship');
 		$label = isset($types[$status])?$types[$status]:'Berhenti';
 
 		return $label;

@@ -33,6 +33,7 @@
 		
 		$table = array(
 				'abs-about'		=> self::abs_about(),
+				'abs-contract'		=> self::abs_contract(),
 				'abs-history'		=> self::abs_history(),
 				'abs-holiday'		=> self::abs_holiday(),
 				'abs-log-detail'		=> self::abs_log_detail(),
@@ -58,6 +59,18 @@
 				'config_name'	=> '',
 				'config_value'	=> '',
 				'status'	=> 0,	
+			);
+			
+			return $list;
+		}
+
+		private static function abs_contract(){
+			$list = array(
+				'user_id'	=> 0,
+				'status'	=> 0,
+				'no_surat'	=> 0,
+				'inserted'	=> date('Y-m-d'),
+				'notes'	=> '',	
 			);
 			
 			return $list;

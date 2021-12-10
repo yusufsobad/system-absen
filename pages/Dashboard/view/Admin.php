@@ -203,6 +203,10 @@ class dash_absensi{
 	// Ajax request ---------------------------------------
 	// ----------------------------------------------------
 
+	public static function _preview($id=''){
+		return employee_absen::_contract($id);
+	}
+
 	public static function dash_punishment(){
 		return dash_head2::_statistic();
 	}

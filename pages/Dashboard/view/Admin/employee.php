@@ -119,6 +119,16 @@ class employee_absen extends _file_manager{
 				'status'=> '',
 				'type'	=> $tab
 			);
+
+			$btn_off = array(
+				'ID'	=> 'status_'.$val['ID'],
+				'func'	=> '_nextOff',
+				'icon'	=> 'fa fa-power-off',
+				'color'	=> '',
+				'label'	=> 'Menolak',
+				'status'=> '',
+				'type'	=> $tab
+			);
 			
 			$btn_sts = array(
 				'ID'	=> 'status_'.$val['ID'],
@@ -140,15 +150,36 @@ class employee_absen extends _file_manager{
 				'type'	=> $tab
 			);
 
-			$drop = array(
-				'label'		=> 'Change',
-				'color'		=> 'default',
-				'button'	=> array(
-					_click_button($btn_next),
-					_click_button($btn_sts),
-					_click_button($btn_miss)
-				)
+			$contract = array(
+				'ID'	=> 'preview_'.$val['ID'],
+				'func'	=> '_preview',
+				'color'	=> '',
+				'icon'	=> 'fa fa-print',
+				'label'	=> 'Kontrak',
+				'script'=> 'sobad_button_pre(this)'
 			);
+
+			if($val['status'] >= 0){
+				$drop = array(
+					'label'		=> 'Change',
+					'color'		=> 'default',
+					'button'	=> array(
+						_click_button($btn_next),
+						_click_button($btn_sts),
+						_click_button($btn_miss)
+					)
+				);
+			}else{
+				$drop = array(
+					'label'		=> 'Change',
+					'color'		=> 'default',
+					'button'	=> array(
+						_click_button($btn_next),
+						_click_button($btn_off),
+						print_button($contract)
+					)
+				);
+			}
 
 			$change = dropdown_button($drop);
 			if($val['status']==0){
@@ -184,7 +215,14 @@ class employee_absen extends _file_manager{
 				$end_date = ' - ';
 
 				if(!empty($val['_resign_date'])){
-					$masa = $val['_resign_status']==2?'<br>- Di Berhentikan':'<br>- Resign';
+					if($val['_resign_status']==1){
+						$masa = '<br>- Resign';
+					}else if($val['_resign_status']==2){
+						$masa = '<br>- Di Berhentikan';
+					}else{
+						$masa = '<br>- Menolak Kerja';
+					}
+
 					$end_date = format_date_id($val['_resign_date']);
 				}
 			}
@@ -327,8 +365,14 @@ class employee_absen extends _file_manager{
 			'qty'	=> sobad_user::count("status NOT IN ('0','7')")
 		);
 
+		$tabs[1] = array(
+			'key'	=> 'employee_-1',
+			'label'	=> 'Interview',
+			'qty'	=> sobad_user::count("status='-1'")
+		);
+
 		for($i=1;$i<7;$i++){
-			$tabs[$i] = array(
+			$tabs[$i + 1] = array(
 				'key'	=> 'employee_'.$i,
 				'label'	=> self::_conv_status($i),
 				'qty'	=> sobad_user::count("status='$i'")
@@ -393,11 +437,8 @@ class employee_absen extends _file_manager{
 		return $excel.$import.$add;
 	}
 
-	public function _conv_status($status=''){
-		$types = array('Non Aktif','Training','Kontrak 1','Kontrak 2','Tetap','Founder','Pensiun','Internship');
-		$label = isset($types[$status])?$types[$status]:'Berhenti';
-
-		return $label;
+	public static function _conv_status($status=''){
+		return employee_admin::_conv_status($status);
 	}
 
 	public function _check_lifetime($status=0,$entry=''){
@@ -505,7 +546,7 @@ class employee_absen extends _file_manager{
 		$no = sobad_user::get_maxNIK();
 		$no = sprintf("%03d",$no+1);
 
-		$vals = array(0,$no,1,'',0,1,0,'','','','','male',date('Y-m-d'),'',date('Y-m-d'),'',0,0,0,0,1,1,'',0,7);
+		$vals = array(0,$no,1,'',0,-1,0,'','','','','male',date('Y-m-d'),'',date('Y-m-d'),'',0,0,0,0,1,1,'',0,0);
 		$vals = array_combine(self::_array(), $vals);
 
 		if($func=='add_0'){
@@ -756,7 +797,7 @@ class employee_absen extends _file_manager{
 		$tab3 = array(
 			0 => array(
 				'func'			=> 'opt_select',
-				'data'			=> array(1 => 'Training', 'Kontrak 1', 'Kontrak 2', 'Tetap', 'Founder', 'Pensiun'),
+				'data'			=> array(-1 => 'Interview',1 => 'Training', 'Kontrak 1', 'Kontrak 2', 'Tetap', 'Founder', 'Pensiun'),
 				'key'			=> $_key,
 				'label'			=> $_label,
 				'class'			=> 'input-circle',
@@ -1240,9 +1281,12 @@ class employee_absen extends _file_manager{
 		}
 
 		$status = $user[0]['status'];
+		if($status == -1){
+			$status = 0;
+		}
 
 		$status += 1;
-		if($status==5){
+		if($status == 5){
 			$status = 6;
 		}
 
@@ -1260,6 +1304,10 @@ class employee_absen extends _file_manager{
 
 	public function _dismissed($id,$date=''){
 		return self::_status($id,2,$date);
+	}
+
+	public function _nextOff($id,$date=''){
+		return self::_status($id,3,$date);
 	}
 
 	private function _status($id,$type=0,$now=''){
@@ -1651,5 +1699,246 @@ class employee_absen extends _file_manager{
 		$data[$key] = formatting::sanitize($_data,$type);
 
 		return $data;
+	}
+
+	// ----------------------------------------------------------
+	// Print data training --------------------------------------
+	// ----------------------------------------------------------
+
+	private static function _array_surat(){
+		$args = array(
+			'ID',
+			'no_induk',
+			'divisi',
+			'name',
+			'status',
+			'_address',
+			'_entry_date',
+			'_place_date',
+			'_birth_date',
+			'_province',
+			'_city',
+			'_subdistrict',
+			'_postcode',
+		);
+
+		return $args;
+	}
+
+	private static function _conv_name_surat($status=0){
+		$args = array('','Kontrak 1','Kontrak 2','Karyawan Tetap');
+		return $args[$status];
+	}
+
+	private static function _conv_func_surat($status=0){
+		$args = array('','surat_kontrak1','surat_kontrak2','surat_tetap');
+		return $args[$status];
+	}
+
+	private static function _check_no_surat($id=0,$status=0,$no_surat=0){
+		if($status >= 1){
+			$no = sobad_contract::get_all(array('no_surat'),"AND status='$status'");
+			$check = array_filter($no);
+			if(empty($check)){
+				$no_surat = 200;
+			}else{
+				$no_surat = sobad_contract::get_maxSurat($status);
+				$no_surat += 1; 
+			}
+		}
+
+		$user = sobad_contract::get_all(array('no_surat'),"AND user_id='$id' AND status='$status'");
+		$check = array_filter($user);
+		if(empty($check)){
+			$no = $status == -1?$no:200;
+
+			$q = sobad_db::_insert_table('abs-contract',array(
+				'user_id'		=> $id,
+				'status'		=> $status,
+				'no_surat'		=> $no_surat
+			));
+			return $no_surat;
+		}
+
+		return $no[0]['no_surat'];
+	}
+
+	public static function _preview($id){
+		$_SESSION[_prefix.'development'] = 0;
+		$id = str_replace('preview_','',$id);
+		intval($id);
+		
+		$args = self::_array_surat();
+		
+		$object = self::$table;
+		$data = $object::get_id($id,$args);
+		$data = $data[0];
+	
+		$args = array(
+			'data'		=> $data,
+			'style'		=> array(''),
+			'html'		=> '_html',
+			'object'	=> self::$object,
+			'setting'	=> array(
+				'posisi'	=> 'potrait',
+				'layout'	=> 'A4',
+			),
+			'name save'	=> 'Masa Percobaan - '.$data['name']
+		);
+
+		return sobad_convToPdf($args);
+	}
+
+	public static function _html($post=array()){
+		$user = get_id_user();
+		$user = sobad_user::get_id($user,array('name','no_induk'));
+		$user = $user[0];
+
+		$config = self::_config_surat($user,$post);
+		$config['no-surat'] = $post['no_induk'];
+		
+		self::_template_surat('surat_training',$config);
+
+	}
+
+	// ----------------------------------------------------------
+	// Print data quotation -------------------------------------
+	// ----------------------------------------------------------
+
+	public static function _contract($id){
+		$_SESSION[_prefix.'development'] = 0;
+		$id = str_replace('preview_','',$id);
+		intval($id);
+		
+		$args = self::_array_surat();
+		
+		$object = self::$table;
+		$data = $object::get_id($id,$args);
+		$data = $data[0];
+
+		$title = self::_conv_name_surat($data['status']);
+	
+		$args = array(
+			'data'		=> $data,
+			'style'		=> array(''),
+			'html'		=> '_html_contract',
+			'object'	=> self::$object,
+			'setting'	=> array(
+				'posisi'	=> 'potrait',
+				'layout'	=> 'A4',
+			),
+			'name save'	=> $title . ' - '.$data['name']
+		);
+
+		return sobad_convToPdf($args);
+	}
+
+	public static function _html_contract($post=array()){
+		$user = get_id_user();
+		$user = sobad_user::get_id($user,array('name','no_induk'));
+		$user = $user[0];
+
+		if($post['status']==1){
+			$format1 = '+0 days';
+			$format2 = '+1 year';
+		}else if($post['status']==2){
+			$format1 = '+1 year';
+			$format2 = '+2 year';
+		}else{
+			$format1 = '+2 year';
+			$format2 = '';
+		}
+
+		$config = self::_config_surat($user,$post,$format2);
+
+		$entry = strtotime($post['_entry_date']);
+		$entry = date('Y-m-d',strtotime($format1,$entry));
+		$config['tanggal-masuk'] = format_date_id($entry);
+		
+		$func = self::_conv_func_surat($post['status']);
+		self::_template_surat($func,$config);
+
+	}	
+
+	public static function format_month_romawi($month=0){
+		intval($month);
+
+		$args = array('','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII');
+		return $args[$month];
+	}
+
+	public static function _config_surat($hrd=array(),$user=array(),$format='+3 month'){
+		$janji = date('Y-m-d');
+		$_janji = explode('-', $janji);
+
+		$hari = conv_day_id($janji);
+		$tanggal = $_janji[2];
+		$bulan = conv_month_id($_janji[1]);
+		$year = $_janji[0];
+
+		$_data = array(
+			'subdistrict'	=> $user['_subdistrict'],
+			'city'			=> $user['_city'],
+			'province'		=> $user['_province'],
+		);
+
+		$address = sobad_wilayah::_conv_address($user['_address'],$_data);
+
+		$place = sobad_wilayah::get_city($user['_place_date']);
+		$birth = format_date_id($user['_birth_date']);
+		$ttl = $place[0]['kabupaten'] . ', '. $birth;
+
+		$entry = $user['_entry_date'];
+		$tanggal_masuk = conv_day_id($entry) . ' tanggal ' . format_date_id($entry);
+
+		$contract = strtotime($user['_entry_date']);
+		$contract = date('Y-m-d',strtotime($format,$contract));
+
+		$jabatan = $user['meta_value_divi'];
+		$divi = sobad_module::_get_division($user['divisi']);
+
+		$divi = isset($divi['name'])?$divi['name']:'-';
+		if($user['status']!=3){
+			$divisi = $jabatan . ' / ' . $divi;
+		}else{
+			$divisi = $jabatan . ' ' . $divi;
+		}
+
+		$no_surat = self::_check_no_surat($user['ID'],$user['status'],$user['no_induk']);
+
+		$args = array(
+			'no-surat'			=> sprintf('%03d',$no_surat),
+			'no-hrd'			=> $hrd['no_induk'],
+			'name-hrd'			=> $hrd['name'],
+			'nip'				=> $user['no_induk'],
+			'name'				=> $user['name'],
+			'ttl'				=> $ttl,
+			'alamat'			=> _split_length_text($address['result'],68,'<br>'),
+			'divisi'			=> $divisi,
+			'tanggal-masuk'		=> $tanggal_masuk,
+			'tanggal-kontrak'	=> format_date_id($contract),
+			'romawi'			=> self::format_month_romawi(date('m')),
+			'now'				=> format_date_id($janji),
+			'hari'				=> $hari,
+			'tanggal'			=> $tanggal,
+			'bulan'				=> $bulan,
+			'year'				=> $year
+		);
+
+		return $args;
+	}
+
+	public static function _template_surat($func='',$config=array()){
+		ob_start();
+		if(is_callable($func)){
+			$func();
+		}
+		$template = ob_get_clean();
+
+		foreach ($config as $key => $val) {
+			$template = str_replace('{{' . $key .'}}', $val, $template);
+		}
+
+		echo $template;
 	}
 }

@@ -71,8 +71,12 @@ class sobad_module extends _class{
 		return array();
 	}
 
-	public static function _get_group($id=0,$status=0){
-		$group = sobad_module::_gets('group',array('ID','meta_value','meta_note'));
+	public static function _get_division($id=0,$status=0){
+		return self::_get_group($id,$status,'division');
+	}
+
+	public static function _get_group($id=0,$status=0,$type='group'){
+		$group = sobad_module::_gets($type,array('ID','meta_value','meta_note'));
 
 		if($status==7){
 			return array();

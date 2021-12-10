@@ -94,7 +94,7 @@ class dash_head2{
 		$today = date('Y-m-d');
 
 		$whr = "AND `abs-user`.status IN (1,2,3)";
-		$user = sobad_user::get_all(array('name','picture','status','_entry_date'),$whr);
+		$user = sobad_user::get_all(array('ID','name','picture','status','_entry_date'),$whr);
 
 		?>
 			<div class="col-md-4 col-sm-4">
@@ -133,7 +133,7 @@ class dash_head2{
 														<img style="width:50px;" alt="" src="asset/img/user/<?php print($img) ;?>" class="img-responsive">
 														<div class="details">
 															<div>
-																<a href="javascript:;"><?php print($val['name']) ;?></a>
+																<a id="preview_<?php print($val['ID']) ;?>" data-toggle="" data-sobad="_preview" data-load="sobad_preview" data-type="" data-alert="" href="javascript:;" class="" onclick="sobad_button_pre(this)"><?php print($val['name']) ;?></a>
 																<?php print($status) ;?>
 															</div>
 															<div>

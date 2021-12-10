@@ -1,5 +1,7 @@
 <?php
 
+include 'kontrak.php';
+
 function style_punishment(){
 	?>
 		table.sobad-punishment{
