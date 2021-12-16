@@ -427,7 +427,7 @@ if(!class_exists('vendor_script')){
 		private function _js_jhtree($idx=array()){
 			$loc = $this->lokasi();
 			$js = array(
-				'jhtree-jquery'			=> $loc.'jHTree/js/jquery-ui-1.10.4.custom.min.js',
+				//'jhtree-jquery'			=> $loc.'jHTree/js/jquery-ui-1.10.4.custom.min.js',
 				'jhtree-layout'			=> $loc.'jHTree/js/jQuery.jHTree.js',
 			);
 			

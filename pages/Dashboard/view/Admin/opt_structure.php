@@ -77,6 +77,7 @@ class optStructure_absen extends _page{
 
 	public static function _tree_layout(){
 		?>
+			<script src="vendor/jHTree/js/jquery-ui-1.10.4.custom.min.js"></script>
 			<div id="tree-sobad" style="overflow-x: auto;padding-bottom: 50px;"></div>
 		<?php
 	}
