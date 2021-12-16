@@ -16,6 +16,7 @@ class lembur_user extends _page{
 			'title',
 			'post_date',
 			'note',
+			'id_join',
 			'user_id',
 			'start_time',
 			'finish_time',
@@ -29,8 +30,14 @@ class lembur_user extends _page{
 		$data = array();
 		$args = self::_array();
 
+		$now = date('Y-m-d');
 		$user_id = get_id_user();
-		$where = "AND `abs-overtime-detail`.user_id='$user_id'";
+
+		if($user_id>0){
+			$where = "AND `abs-overtime-detail`.user_id='$user_id'";
+		}else{
+			$where = "AND `abs-overtime`.post_date>='$now'";
+		}
 
 		$object = self::$table;
 		$args = $object::get_all($args,$where);
@@ -60,7 +67,10 @@ class lembur_user extends _page{
 			}else if($val['status']==2){
 				$color = '#cb5a5e';
 			}
-			$status = '<i class="fa fa-circle" style="color:'.$color.'">';			
+			$status = '<i class="fa fa-circle" style="color:'.$color.'">';
+
+			$name = sobad_overtime::get_detail($val['id_join'],array('user_id'));
+			$name = $name[0]['name_user'];			
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -74,6 +84,12 @@ class lembur_user extends _page{
 					'left',
 					'15%',
 					$tanggal,
+					true
+				),
+				'Nama'		=> array(
+					'left',
+					'15%',
+					$name,
 					true
 				),
 				'Mulai'			=> array(
@@ -107,6 +123,10 @@ class lembur_user extends _page{
 					false
 				),
 			);
+
+			if($user_id>0){
+				unset($data['table'][$key]['td']['Nama']);
+			}
 		}
 		
 		return $data;

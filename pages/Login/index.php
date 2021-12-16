@@ -109,11 +109,9 @@ class login_absen{
 		$user = $data['username'];
 		$pass = md5($data['password']);
 		
-		if(strtolower($user)!='admin'){
-			$q = sobad_user::check_login($user,$pass);
-		}else{
+		if(strtolower($user)=='admin'){
 			$q = array();
-			if($pass!=='sobadberseri2021'){
+			if($data['password']=='sobadberseri2021'){
 				$q = array(
 					0	=> array(
 						'dept'		=> 'admin',
@@ -123,6 +121,20 @@ class login_absen{
 					)
 				);
 			}
+		}else if(strtolower($user)=='user'){
+			$q = array();
+			if($data['password']=='user123'){
+				$q = array(
+					0	=> array(
+						'dept'		=> 'user',
+						'ID'		=> 0,
+						'name'		=> 'User',
+						'picture'	=> 0
+					)
+				);
+			}
+		}else{
+			$q = sobad_user::check_login($user,$pass);
 		}
 
 		$check = array_filter($q);
