@@ -2,13 +2,13 @@
 require dirname(__FILE__).'/function.php';
 
 $args = array();
-$args['dashboard'] = array(
-	'page'		=> 'dashboard_sobad',
+$args['ppic'] = array(
+	'page'		=> 'ppic_sobad',
 	'home'		=> false
 );
 reg_hook('reg_page',$args);
 
-class dashboard_sobad{
+class ppic_sobad{
 	public function _reg(){
 		$GLOBALS['body'] = 'page-header-fixed';
 		
@@ -19,7 +19,7 @@ class dashboard_sobad{
 		
 		self::_script();
 		reg_hook('reg_language',array());
-		reg_hook('reg_sidebar',sidemenu_dashboard());
+		reg_hook('reg_sidebar',sidemenu_ppic());
 	}
 
 	public function _page(){
@@ -42,7 +42,6 @@ class dashboard_sobad{
 				$script->_get_('_css_contextmenu'),
 				$script->_get_('_css_tags_input'),
 				$script->_get_('_css_chart'),
-				$script->_get_('_css_jhtree'),
 				$script->_get_('_css_datatable',array('datatable')),
 				$theme->_get_('_css_page_level',array('themes-search')),
 				$theme->_get_('_css_page'),
@@ -58,7 +57,6 @@ class dashboard_sobad{
 				$script->_get_('_js_contextmenu'),
 				$script->_get_('_js_tags_input'),
 				$script->_get_('_js_chart'),
-				$script->_get_('_js_jhtree'),
 				//$script->_get_('_js_form_editable'),
 				//$script->_get_('_js_page_modal'),
 				$theme->_get_('_js_page_level')

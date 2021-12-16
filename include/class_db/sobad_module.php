@@ -75,6 +75,19 @@ class sobad_module extends _class{
 		return self::_get_group($id,$status,'division');
 	}
 
+	public static function _gets_tree_division($id=0){
+		$args = array();
+
+		$dept = self::_gets('department',array(),"AND meta_reff='$id'");		
+		foreach ($dept as $key => $val) {
+			$id = $val['ID'];
+			$args[$id] = $val;
+			$args[$id]['child'] = self::_gets_tree_division($id);
+		}
+
+		return $args;
+	}
+
 	public static function _get_group($id=0,$status=0,$type='group'){
 		$group = sobad_module::_gets($type,array('ID','meta_value','meta_note'));
 

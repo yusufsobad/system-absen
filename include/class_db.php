@@ -13,5 +13,6 @@ require 'class_db/sobad_logDetail.php';
 require 'class_db/sobad_recall.php';
 require 'class_db/sobad_user.php';
 require 'class_db/sobad_university.php';
+require 'class_db/sobad_overtime.php';
 require 'class_db/sobad_work.php';
 require 'class_db/sobad_wilayah.php';

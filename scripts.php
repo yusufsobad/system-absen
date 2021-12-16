@@ -167,6 +167,23 @@ if(!class_exists('vendor_script')){
 			
 			return $css;
 		}
+
+		private function _css_jhtree($idx=array()){
+			$loc = $this->lokasi();
+			$css = array(
+				'jhtree-theme'		=> $loc.'jHTree/css/cupertino.min.css',
+				'jhtree-layout'		=> $loc.'jHTree/css/jHTree.css'
+			);
+			
+			$check = array_filter($idx);
+			if(!empty($check)){
+				foreach($idx as $key){
+					$css[$key];
+				}
+			}
+			
+			return $css;
+		}
 		
 	// BEGIN CORE PLUGINS ---->	
 
@@ -395,6 +412,23 @@ if(!class_exists('vendor_script')){
 			$loc = $this->lokasi();
 			$js = array(
 				'contextmenu'			=> $loc.'multislider.min.js',
+			);
+			
+			$check = array_filter($idx);
+			if(!empty($check)){
+				foreach($idx as $key){
+					$js[$key];
+				}
+			}
+		
+			return $js;
+		}
+
+		private function _js_jhtree($idx=array()){
+			$loc = $this->lokasi();
+			$js = array(
+				'jhtree-jquery'			=> $loc.'jHTree/js/jquery-ui-1.10.4.custom.min.js',
+				'jhtree-layout'			=> $loc.'jHTree/js/jQuery.jHTree.js',
 			);
 			
 			$check = array_filter($idx);

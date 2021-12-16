@@ -62,11 +62,6 @@ function modal_admin($args = array()){
 }
 
 function table_admin($args=array()){
-	$check = array_filter($args);
-	if(empty($check)){
-		return '';
-	}
-
 	$metronic = new metronic_layout();
 
 	ob_start();

@@ -450,7 +450,7 @@ abstract class _page{
 				return self::_get_table($pg,$src);
 			}else{
 				if(is_callable(array($obj,$menu))){
-					return $obj::{$menu}();
+					return $obj::{$menu}($args);
 				}else{
 					die(_error::_alert_db("Object Not Found!!!"));
 				}

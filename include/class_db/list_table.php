@@ -38,6 +38,8 @@
 				'abs-holiday'		=> self::abs_holiday(),
 				'abs-log-detail'		=> self::abs_log_detail(),
 				'abs-module'		=> self::abs_module(),
+				'abs-overtime'		=> self::abs_overtime(),
+				'abs-overtime-detail'		=> self::abs_overtime_detail(),
 				'abs-permit'		=> self::abs_permit(),
 				'abs-post'		=> self::abs_post(),
 				'abs-university'		=> self::abs_university(),
@@ -119,6 +121,33 @@
 				'meta_value'	=> '',
 				'meta_note'	=> '',
 				'meta_reff'	=> 0,	
+			);
+			
+			return $list;
+		}
+
+		private static function abs_overtime(){
+			$list = array(
+				'title'	=> 0,
+				'user'	=> 0,
+				'approve'	=> 0,
+				'accept'	=> 0,
+				'post_date'	=> date('Y-m-d'),
+				'inserted'	=> date('Y-m-d H:i:s'),
+				'note'	=> '',	
+			);
+			
+			return $list;
+		}
+
+		private static function abs_overtime_detail(){
+			$list = array(
+				'over_id'	=> 0,
+				'user_id'	=> 0,
+				'start_time'	=> '',
+				'finish_time'	=> 0,
+				'status'	=> '',
+				'notes'	=> '',	
 			);
 			
 			return $list;

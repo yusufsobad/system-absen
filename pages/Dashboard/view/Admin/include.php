@@ -18,4 +18,6 @@ require 'study program.php';
 require 'university.php';
 require 'work.php';
 require 'mutasi.php';
+require 'overtime.php';
 require 'opt_divisi.php';
+require 'opt_structure.php';

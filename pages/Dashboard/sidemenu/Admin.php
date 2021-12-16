@@ -102,6 +102,14 @@ function menu_general(){
 		'func'		=> 'shift_absen',
 		'child'		=> NULL
 	);
+
+	$args['spt-lembur'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Tugas Lembur',
+		'func'		=> 'overtime_absen',
+		'child'		=> NULL
+	);
 	
 	return $args;
 }
@@ -145,6 +153,14 @@ function menu_internship(){
 
 function menu_option(){
 	$args = array();
+	$args['opt-structure'] = array(
+		'status'	=> '',
+		'icon'		=> '',
+		'label'		=> 'Struktur Organisasi',
+		'func'		=> 'optStructure_absen',
+		'child'		=> NULL
+	);
+
 	$args['opt-divisi'] = array(
 		'status'	=> '',
 		'icon'		=> '',
