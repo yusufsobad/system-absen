@@ -3,7 +3,9 @@
 class sobad_overtime extends _class{
 	public static $table = 'abs-overtime';
 
-	protected static $tbl_join = 'abs-overtime-detail';
+	public static $tbl_join = 'abs-overtime-detail';
+
+	public static $col_join = 'over_id';
 
 	protected static $join = "joined.over_id ";
 

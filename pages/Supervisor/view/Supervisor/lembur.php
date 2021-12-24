@@ -64,7 +64,7 @@ class lembur_supervisor extends _page{
 
 			$hapus = array(
 				'ID'	=> 'del_'.$id,
-				'func'	=> '_delete_lembur',
+				'func'	=> '_delete',
 				'color'	=> 'red',
 				'icon'	=> 'fa fa-trash',
 				'label'	=> 'hapus',
@@ -674,13 +674,5 @@ class lembur_supervisor extends _page{
 			$table = self::table();
 			return table_admin($table);
 		}
-	}
-
-	public static function _delete_lembur($id=0){
-		$id = str_replace('del_', '', $id);
-		intval($id);
-
-		$q = sobad_db::_delete_multiple("over_id='$id'",'abs-overtime-detail');
-		return self::_delete($id);
 	}
 }
