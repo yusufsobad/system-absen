@@ -48,14 +48,16 @@ class lembur_user extends _page{
 		$no = 0;
 		foreach($args as $key => $val){
 			$no += 1;
-			$id = $val['ID'];
+			$idx = $val['id_join'];
 
+			$status = $val['status']>0?'disabled':'';
 			$accept = array(
-				'ID'	=> 'acpt_'.$id,
+				'ID'	=> 'acpt_'.$idx,
 				'func'	=> '_accept_form',
 				'color'	=> 'blue',
 				'icon'	=> 'fa fa-check',
-				'label'	=> 'Sedia'
+				'label'	=> 'Sedia',
+				'status'=> $status
 			);
 
 			$tanggal = $val['post_date'];
@@ -69,8 +71,8 @@ class lembur_user extends _page{
 			}
 			$status = '<i class="fa fa-circle" style="color:'.$color.'">';
 
-			$name = sobad_overtime::get_detail($val['id_join'],array('user_id'));
-			$name = $name[0]['name_user'];			
+			$name = sobad_user::get_id($val['user_id'],array('name'));
+			$name = $name[0]['name'];			
 			
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -198,7 +200,7 @@ class lembur_user extends _page{
 		$id = str_replace('acpt_', '', $id);
 		intval($id);
 
-		$args = sobad_overtime::get_detail($id,array('status','notes'));
+		$args = sobad_overtime::get_detail($id,array('user_id','status','notes'));
 		$args = $args[0];
 
 		$data = array(
@@ -207,6 +209,12 @@ class lembur_user extends _page{
 				'type'			=> 'hidden',
 				'key'			=> 'ID',
 				'value'			=> $id
+			),
+			array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
+				'key'			=> 'user_id',
+				'value'			=> $args['user_id']
 			),
 			array(
 				'func'			=> 'opt_box',
@@ -246,6 +254,25 @@ class lembur_user extends _page{
 
 	public static function _update_lembur($args=array()){
 		$args = sobad_asset::ajax_conv_json($args);
+
+		// Buat Log Lembur
+		if($args['status']==1){
+			$user_id = $args['user_id'];
+			$where = "AND `abs-overtime-detail`.user_id='$user_id'";
+
+			$object = self::$table;
+			$log = $object::get_all(array('post_date','start_time','finish_time'),$where);
+			$log = $log[0];
+
+			$time = _conv_time($log['start_time'],$log['finish_time'],3);
+
+			$q = sobad_db::_insert_table('abs-log-detail',array(
+				'log_id'		=> $user_id,
+				'times'			=> $time,
+				'date_schedule'	=> $log['post_date'],
+				'type_log'		=> 4
+			));
+		}
 
 		$q = sobad_db::_update_single($args['ID'],'abs-overtime-detail',array(
 			'status'	=> $args['status'],

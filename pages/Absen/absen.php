@@ -145,7 +145,7 @@ class absensi{
 		$_userid = 0;
 
 		//get work
-		$work = array();
+		$work = array();$group = array();
 		$users = sobad_user::get_all(array('ID','divisi','status','work_time'),$whr." AND status!='0'");
 
 		$check = array_filter($users);
@@ -343,15 +343,18 @@ class absensi{
 
 			case 1:
 				if(empty($work['status'])){
+					spt_lembur:
+
 					// Update Lembur Pulang
 					$_logid = $user['id_join'];
-					$_logs = sobad_logDetail::get_all(array('ID'),"AND log_id='$_logid' AND type_log='3'");
+					$_logs = sobad_logDetail::get_all(array('ID'),"AND log_id='$_userid' AND type_log='4' AND date_schedule='$date'");
+					
+					// Check SPT Lembur
 					$check = array_filter($_logs);
-
 					if(!empty($check)){
-						$_logid = $_logs[0]['ID'];
+						$_idlog = $_logs[0]['ID'];
 						$_waktu = _conv_time($user['time_in'],$times,3);
-						sobad_db::_update_single($_logid,'abs-log-detail',array('times' => $_waktu, 'status' => 1));
+						sobad_db::_update_single($_idlog,'abs-log-detail',array('log_id' => $_logid, 'type_log' => 3,'status' => 1));
 
 						$history = unserialize($user['history']);
 						$history['logs'][] = array('type' => 2,'time' => $times);
@@ -359,16 +362,7 @@ class absensi{
 
 						sobad_db::_update_single($_logid,'abs-user-log',array('type' => 2,'time_out' => $times, 'history' => $history));
 
-						return array(
-							'id' 		=> $id,
-							'data' 		=> array(
-								'type' 		=> 2,
-								'date' 		=> $time
-							),
-							'status' 	=> 1,
-							'msg' 		=> '',
-							'absen'		=> true
-						);
+						goto pulang;
 					}
 				}
 
@@ -387,14 +381,7 @@ class absensi{
 
 						// Jika tidak ada ganti jam
 						if(empty($check)){
-							$label = 'Lembur';
-							$index = 9;
-
-							// jika kurang dari satu jam
-							$_out = _calc_time($work['time_out'],'1 hours');
-							if($time<$_out){
-								goto pulang;
-							}
+							goto spt_lembur;
 						}else{
 							$label = 'Ganti Jam';
 							$index = 7;
@@ -585,7 +572,12 @@ class absensi{
 		$data = $args[0];
 		$type = $args[1];
 
-		$user = sobad_user::get_all(array('ID','work_time','dayOff','_nickname','id_join','history'),"AND no_induk='$data' AND `abs-user-log`._inserted='$date'");
+		//Check user ---> employee atau internship
+		$check = employee_absen::_check_noInduk($data);
+		$nik_id = $check['id'];
+		$_whr = $check['where'];
+
+		$user = sobad_user::get_all(array('ID','work_time','dayOff','_nickname','id_join','history'),$_whr . " AND `abs-user-log`._inserted='$date'");
 
 		$_id = $user[0]['ID'];
 		$_worktime = $user[0]['work_time'];
