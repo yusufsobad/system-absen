@@ -249,8 +249,16 @@ abstract class _page{
 		$id = str_replace('del_','',$id);
 		intval($id);
 
+		$role=true;
 		$object = static::$table;
 		$table = $object::$table;
+
+		$post = '';
+		if(property_exists(new static, 'post')){
+			$post = static::$post;
+		}
+
+		$schema = $object::blueprint($post);
 
 		if(property_exists($object, 'tbl_meta')){
 			$q = sobad_db::_delete_multiple("meta_id='$id'",$object::$tbl_meta);
@@ -263,9 +271,11 @@ abstract class _page{
 
 		$q = sobad_db::_delete_single($id,$table);
 
-		if($q===1){
+		if($q===1 && $role==true){
 			$pg = isset($_POST['page'])?$_POST['page']:1;
 			return self::_get_table($pg);
+		}else{
+			return $id;
 		}
 	}
 
