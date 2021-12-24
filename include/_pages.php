@@ -257,13 +257,8 @@ abstract class _page{
 		}
 
 		if(property_exists($object, 'tbl_join')){
-			$column = 'reff';
-			if(property_exists($object, 'tbl_join')){
-				$column = $object::$col_join;
-			}
-
-			$column .= "='$id'";
-			$q = sobad_db::_delete_multiple($column,$object::$tbl_join);
+			$reff = $schema['joined']['key'];
+			$q = sobad_db::_delete_multiple($reff."='$id'",$object::$tbl_join);
 		}
 
 		$q = sobad_db::_delete_single($id,$table);
