@@ -520,7 +520,7 @@ class history_absen extends _page{
 					var tp = $(val).attr('data-type');
 
 					var arr = [];
-					$("input:checkbox[name=checkHistory]:checked").each(function(){
+					$("input:checkbox[name=checked_ids]:checked").each(function(){
 					    arr.push($(this).val());
 					});
 
@@ -1018,7 +1018,7 @@ class history_absen extends _page{
 				'Check'			=> array(
 					'center',
 					'5%',
-					'<input type="checkbox" name="checkHistory" value="'.$val['ID'].'">',
+					$val['ID'],
 					false
 				),
 				'No'			=> array(
