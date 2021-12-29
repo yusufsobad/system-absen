@@ -403,13 +403,13 @@ class employee_absen extends _file_manager{
 	protected function action(){
 		$excel = array(
 			'ID'	=> 'excel_0',
-			'func'	=> '_export_excel',
+			'func'	=> '_export_form',
 			'color'	=> 'btn-default',
 			'icon'	=> 'fa fa-file-excel-o',
 			'label'	=> 'Export'
 		);
 
-		$excel = print_button($excel);
+		$excel = _modal_button($excel,2);
 
 		$import = array(
 			'ID'	=> 'import_0',
@@ -1111,10 +1111,159 @@ class employee_absen extends _file_manager{
 	}
 
 	// ----------------------------------------------------------
+	// Function Export Form -------------------------------------
+	// ----------------------------------------------------------	
+
+	protected static function export_action(){
+		$excel = array(
+			'ID'	=> 'excel_0',
+			'func'	=> '_export_excel',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-file-excel-o',
+			'label'	=> 'Export',
+		//	'script'=> 'export_employee(this)'
+		);
+
+		return print_button($excel);
+	}
+
+	public static function _get_data_user($id=0){
+		$table = self::_config_table($id);
+		return table_admin($table);
+	}
+
+	public function _export_form(){
+		$args = array(
+			'title'		=> 'Export Data Karyawan',
+			'button'	=> '',
+			'status'	=> array(),
+			'func'		=> array('_layout_form_export'),
+			'object'	=> array(self::$object),
+			'data'		=> array('')
+		);
+		
+		return modal_admin($args);
+	}
+
+	public static function _layout_form_export(){
+		$form = self::_config_form();
+		$table = self::_config_table();
+
+		$portlet = array(
+			'ID'		=> 'export_user',
+			'label'		=> 'Data Karyawan',
+			'tool'		=> '',
+			'action'	=> self::export_action(),
+			'func'		=> 'sobad_table',
+			'data'		=> $table
+		);
+
+		metronic_layout::sobad_form($form);
+		?>
+			<form id="export_form_user" role="form" method="post" class="form-horizontal" enctype="multipart/form-data">
+				<?php metronic_layout::_portlet($portlet) ;?>
+			</form>
+		<?php
+	}
+
+	public static function _config_form(){
+		$data = array(
+			0 => array(
+				'func'			=> 'opt_select',
+				'data'			=> array(0 => 'Semua',1 => 'Training', 'Kontrak 1', 'Kontrak 2', 'Tetap', 'Founder', 'Pensiun'),
+				'key'			=> 'status',
+				'label'			=> 'Status',
+				'class'			=> 'input-circle',
+				'select'		=> 0,
+				'status'		=> 'data-sobad="_get_data_user" data-load="export_user" data-attribute="html" '
+			),
+		);
+
+		return $data;
+	}
+
+	public static function _config_table($idx=0){
+		$args = array(
+			'ID',
+			'no_induk',
+			'name',
+			'divisi',
+			'picture'
+		);
+
+		$where = $idx==0?"":"AND status='$idx'";
+		$args = sobad_user::get_employees($args,$where,true);
+
+		$data = array();
+		$data['class'] = '';
+		$data['table'] = array();
+
+		$no = 0;
+		foreach ($args as $key => $val) {
+			$no += 1;
+
+			$image = empty($val['notes_pict'])?'no-profile.jpg':$val['notes_pict'];
+
+			$data['table'][$key]['tr'] = array('');
+			$data['table'][$key]['td'] = array(
+				'check'		=> array(
+					'center',
+					'5%',
+					$val['ID'],
+					false
+				),
+				'No'		=> array(
+					'center',
+					'5%',
+					$no,
+					true
+				),
+				'Profile'	=> array(
+					'left',
+					'5%',
+					'<img src="asset/img/user/'.$image.'" style="width:100%">',
+					true
+				),
+				'NIK'		=> array(
+					'left',
+					'5%',
+					$val['no_induk'],
+					true
+				),
+				'Nama'		=> array(
+					'left',
+					'auto',
+					$val['name'],
+					true
+				),
+				'Jabatan'	=> array(
+					'left',
+					'20%',
+					$val['meta_value_divi'],
+					true
+				),
+			);
+		}
+
+		return $data;
+	}
+
+	// ----------------------------------------------------------
 	// Function Export to Excel ---------------------------------
 	// ----------------------------------------------------------
 
-	protected function _table_export(){
+	public function _export_excel($data=array()){
+		$data = sobad_asset::ajax_conv_array_json($data);
+
+		ob_start();
+		header("Content-type: application/vnd-ms-excel");
+		header("Content-Disposition: attachment; filename=Data Karyawan.xls");
+
+		content_html_employee($data);
+		return ob_get_clean();
+	}
+
+	protected function _table_export($form=array()){
 		$data = array();
 		$args = self::_array();
 
@@ -1250,16 +1399,6 @@ class employee_absen extends _file_manager{
 		}
 		
 		return $data;
-	}
-
-	public function _export_excel(){
-
-		ob_start();
-		header("Content-type: application/vnd-ms-excel");
-		header("Content-Disposition: attachment; filename=Data Karyawan.xls");
-
-		metronic_layout::sobad_table(self::_table_export());
-		return ob_get_clean();
 	}
 
 	// ----------------------------------------------------------

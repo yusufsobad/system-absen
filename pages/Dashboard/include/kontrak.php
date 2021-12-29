@@ -44,7 +44,7 @@ function surat_header(){
 
 function surat_kop($title='',$code=''){
 	?>
-		<div style="text-align:center;font-size: 11pt;font-family: calibriBold;">
+		<div style="text-align:center;font-size: 12pt;font-family: calibriBold;">
 			<label style="line-height: 1.2;">
 				PERJANJIAN KERJA<br>
 				<?php print($title) ;?><br>

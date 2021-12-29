@@ -251,3 +251,222 @@ function set_rule_cuti($num_day=0,$cuti=0,$args=array()){
 		'note'			=> $args['note']
 	));
 }
+
+// --------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------
+
+function content_html_employee($args=array()){
+	$user = 0;
+	$users = $args['checked_ids'];	
+	if(count($users)>0){
+		$user = implode(',', $users);
+	}
+
+	$where = "AND `abs-user`.ID IN ($user)";
+	$data = sobad_user::get_employees(array(),$where);
+
+	?>	
+		<table style="width:100%;border-collapse:collapse;" class="layout1">
+			<thead>
+				<tr>
+					<td rowspan="3" style="width:34px;font-family: calibriBold;text-align: center;border:1px solid #000;">No</td>
+					<td colspan="20" style="font-family: calibriBold;border:1px solid #000;background-color: #2986cc;">DATA PRIBADI</td>
+					<td colspan="8" style="font-family: calibriBold;border:1px solid #000;background-color: #ffc0cb;">Kontak Dalam Keadaan Darurat</td>
+					<td colspan="18" style="font-family: calibriBold;border:1px solid #000;background-color: #ff0000;">DATA PERUSAHAAN</td>
+				</tr>
+				<tr>
+					<!-- Biodata Diri -->
+					<td rowspan="2" style="width:160px;font-family: calibriBold;text-align: center;border:1px solid #000;">Nama Lengkap</td>
+					<td rowspan="2" style="width:96px;font-family: calibriBold;text-align: center;border:1px solid #000;">Nama Panggilan</td>
+					<td rowspan="2" style="width:137px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. KTP</td>
+					<td rowspan="2" style="width:137px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. KK</td>
+					<td rowspan="2" style="width:77px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. PASPOR</td>
+					<td rowspan="2" style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. NPWP</td>
+					<td rowspan="2" style="width:80px;font-family: calibriBold;text-align: center;border:1px solid #000;">Jenis Kelamin</td>
+					<td rowspan="2" style="width:64px;font-family: calibriBold;text-align: center;border:1px solid #000;">Agama</td>
+					<td rowspan="2" style="width:114px;font-family: calibriBold;text-align: center;border:1px solid #000;">Tempat Lahir</td>
+					<td rowspan="2" style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Tanggal Lahir</td>
+					<td rowspan="2" style="width:75px;font-family: calibriBold;text-align: center;border:1px solid #000;">UMUR</td>
+					<td rowspan="2" style="width:103px;font-family: calibriBold;text-align: center;border:1px solid #000;">GOLONGAN DARAH</td>
+					<td rowspan="2" style="width:110px;font-family: calibriBold;text-align: center;border:1px solid #000;">Status Perkawinan</td>
+					<td rowspan="2" style="width:416px;font-family: calibriBold;text-align: center;border:1px solid #000;">Alamat sesuai KTP</td>
+					<td rowspan="2" style="width:120px;font-family: calibriBold;text-align: center;border:1px solid #000;">Kota Asal</td>
+					<td rowspan="2" style="width:416px;font-family: calibriBold;text-align: center;border:1px solid #000;">Alamat Domisili</td>
+					<td rowspan="2" style="width:120px;font-family: calibriBold;text-align: center;border:1px solid #000;">KOTA DOMISILI</td>
+					<td rowspan="2" style="width:93px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. Telp Rumah</td>
+					<td rowspan="2" style="width:102px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. Handphone</td>
+					<td rowspan="2" style="width:227px;font-family: calibriBold;text-align: center;border:1px solid #000;">E-mail Pribadi</td>
+
+					<!-- Kontak Dalam Keadaan Darurat -->
+					<td colspan="4" style="font-family: calibriBold;text-align: center;border:1px solid #000;">KONTAK DARURAT 1</td>
+					<td colspan="4" style="font-family: calibriBold;text-align: center;border:1px solid #000;">KONTAK DARURAT 2</td>
+
+					<!-- Data Perusahaan -->
+					<td rowspan="2" style="width:65px;font-family: calibriBold;text-align: center;border:1px solid #000;background-color: #ff0000;">NIK</td>
+					<td rowspan="2" style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Masuk Tanggal</td>
+					<td rowspan="2" style="width:158px;font-family: calibriBold;text-align: center;border:1px solid #000;">Jabatan</td>
+					<td rowspan="2" style="width:224px;font-family: calibriBold;text-align: center;border:1px solid #000;">E-mail Perusahaan</td>
+					<td rowspan="2" style="width:87px;font-family: calibriBold;text-align: center;border:1px solid #000;">Status Karyawan</td>
+					<td rowspan="2" style="width:64px;font-family: calibriBold;text-align: center;border:1px solid #000;">Cuti</td>
+					<td colspan="2" style="font-family: calibriBold;text-align: center;border:1px solid #000;">Masa Percobaan</td>
+					<td colspan="2" style="font-family: calibriBold;text-align: center;border:1px solid #000;">Kontrak 1</td>
+					<td colspan="2" style="font-family: calibriBold;text-align: center;border:1px solid #000;">Kontrak 2</td>
+					<td rowspan="2" style="width:131px;font-family: calibriBold;text-align: center;border:1px solid #000;">Tetap</td>
+					<td colspan="3" style="font-family: calibriBold;text-align: center;border:1px solid #000;background-color: #40e0d0;">Data Rekening</td>
+					<td colspan="2" style="font-family: calibriBold;text-align: center;border:1px solid #000;background-color: #8ff991;">Data BPJS</td>
+				</tr>
+				<tr>
+					<!-- KONTAK DARURAT 1 -->
+					<td style="width:200px;font-family: calibriBold;text-align: center;border:1px solid #000;background-color: #ffc0cb;">Nama</td>
+					<td style="width:87px;font-family: calibriBold;text-align: center;border:1px solid #000;">Hubungan</td>
+					<td style="width:424px;font-family: calibriBold;text-align: center;border:1px solid #000;">Alamat Darurat</td>
+					<td style="width:112px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. HP</td>
+					
+					<!-- KONTAK DARURAT 2 -->
+					<td style="width:200px;font-family: calibriBold;text-align: center;border:1px solid #000;">Nama</td>
+					<td style="width:87px;font-family: calibriBold;text-align: center;border:1px solid #000;">Hubungan</td>
+					<td style="width:424px;font-family: calibriBold;text-align: center;border:1px solid #000;">Alamat Darurat</td>
+					<td style="width:112px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. HP</td>
+
+					<!-- Masa Percobaan -->
+					<td style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Mulai</td>
+					<td style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Berakhir</td>
+
+					<!-- Kontrak 1 -->
+					<td style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Mulai</td>
+					<td style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Berakhir</td>
+
+					<!-- Kontrak 2 -->
+					<td style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Mulai</td>
+					<td style="width:134px;font-family: calibriBold;text-align: center;border:1px solid #000;">Berakhir</td>
+
+					<!-- Data Rekening -->
+					<td style="width:136px;font-family: calibriBold;text-align: center;border:1px solid #000;background-color: #40e0d0;">Bank</td>
+					<td style="width:128px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. Rekening</td>
+					<td style="width:158px;font-family: calibriBold;text-align: center;border:1px solid #000;">Atas Nama</td>
+
+					<!-- Data BPJS -->
+					<td style="width:167px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. BPJS Kesehatan</td>
+					<td style="width:109px;font-family: calibriBold;text-align: center;border:1px solid #000;">No. BPJS TK</td>
+				</tr>
+			</thead>
+
+			<tbody>
+				<?php
+					$_status = array('belum menikah','menikah','cerai mati','cerai hidup');
+					$_sex = array('male' => 'Laki - Laki','female' => 'Perempuan');
+					$_agama = array(1 => 'Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Kepercayaan');
+
+					$no = 0;$now = time();
+					foreach ($data as $key => $val) {
+						$no += 1;
+
+						$umur = date($val['_birth_date']);
+						$umur = strtotime($umur);
+						$umur = $now - $umur;
+						$umur = floor($umur / (60 * 60 * 24 * 365))." Tahun";
+
+						$_sts_def = array('start'		=> '','finish'	=> '');
+						$_sts_masa = array();
+						for($m=1;$m<=4;$m++){
+							$_sts_masa[$m] = $_sts_def;
+						}
+
+						$_in_date = format_date_id($val['_entry_date']);
+						for($mi=1;$mi<=$val['status'];$mi++){
+							$life = employee_absen::_check_lifetime($mi,$val['_entry_date']);
+							$_sts_masa[$mi]['start'] = $_in_date;
+							$_sts_masa[$mi]['finish'] = $life['end_date'];
+
+							$_in_date = $life['end_date'];
+						}
+
+						$_address = sobad_wilayah::_conv_address($val['_address'],array(
+							'province'		=> $val['_province'],
+							'city'			=> $val['_city'],
+							'subdistrict'	=> $val['_subdistrict'],
+							'postcode'		=> $val['_postcode'],
+						));
+						$_address = $_address['result'];
+
+						$place = sobad_wilayah::get_city($val['_place_date']);
+						$place = $place[0]['tipe'] . " " . $place[0]['kabupaten'];
+
+						$jabatan = sobad_module::get_id($val['divisi'],array('meta_value'));
+						$jabatan = $jabatan[0]['meta_value'];
+
+						$kelamin = isset($_sex[$val['_sex']])?$_sex[$val['_sex']]:'-';
+						$status = employee_absen::_conv_status($val['status']);
+						$lahir = format_date_id($val['_birth_date']);
+						$entry_date = format_date_id($val['_entry_date']);
+						?>
+							<tr class="piutang_td">
+								<!-- BIODATA DIRI -->
+								<td style="border:1px solid #000;"><?php print($no) ;?>.</td>
+								<td style="border:1px solid #000;"><?php print($val['name']) ;?></td>
+								<td style="border:1px solid #000;"><?php print($val['_nickname']) ;?></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"><?php print($kelamin) ;?></td>
+								<td style="border:1px solid #000;"><?php print($_agama[$val['_religion']]) ;?></td>
+								<td style="border:1px solid #000;"><?php print($place) ;?></td>
+								<td style="border:1px solid #000;"><?php print($lahir) ;?></td>
+								<td style="border:1px solid #000;"><?php print($umur) ;?></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"><?php print($_status[$val['_marital']]) ;?></td>
+								<td style="border:1px solid #000;"><?php print($_address) ;?></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"><?php print($val['phone_no']) ;?></td>
+								<td style="border:1px solid #000;"></td>
+
+								<!-- KONTAK DARURAT 1 -->
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+
+								<!-- KONTAK DARURAT 2 -->
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+
+								<!-- Data Perusahaan -->
+								<td style="border:1px solid #000;"><?php print($val['no_induk']) ;?></td>
+								<td style="border:1px solid #000;"><?php print($entry_date) ;?></td>
+								<td style="border:1px solid #000;"><?php print($jabatan) ;?></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"><?php print($status) ;?></td>
+								<td style="border:1px solid #000;"><?php print($val['dayOff']) ;?> Hari</td>
+									<!-- Data Perusahaan :: Masa Percobaan -->
+								<td style="border:1px solid #000;"><?php print($_sts_masa[1]['start']) ;?></td>
+								<td style="border:1px solid #000;"><?php print($_sts_masa[1]['finish']) ;?></td>
+									<!-- Data Perusahaan :: Kontrak 1 -->
+								<td style="border:1px solid #000;"><?php print($_sts_masa[2]['start']) ;?></td>
+								<td style="border:1px solid #000;"><?php print($_sts_masa[2]['finish']) ;?></td>
+									<!-- Data Perusahaan :: Kontrak 2 -->
+								<td style="border:1px solid #000;"><?php print($_sts_masa[3]['start']) ;?></td>
+								<td style="border:1px solid #000;"><?php print($_sts_masa[3]['finish']) ;?></td>
+									<!-- Data Perusahaan :: Tetap -->
+								<td style="border:1px solid #000;"><?php print($_sts_masa[4]['start']) ;?></td>
+									<!-- Data Perusahaan :: Data Rekening -->
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+									<!-- Data Perusahaan :: Data BPJS -->
+								<td style="border:1px solid #000;"></td>
+								<td style="border:1px solid #000;"></td>
+							</tr>
+						<?php
+					}
+				?>
+			</tbody>
+		</table>
+	<?php
+}

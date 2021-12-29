@@ -57,7 +57,8 @@ class lembur_user extends _page{
 				'color'	=> 'blue',
 				'icon'	=> 'fa fa-check',
 				'label'	=> 'Sedia',
-				'status'=> $status
+				'status'=> $status,
+				'type'	=> $val['ID']
 			);
 
 			$tanggal = $val['post_date'];
@@ -213,6 +214,12 @@ class lembur_user extends _page{
 			array(
 				'func'			=> 'opt_hidden',
 				'type'			=> 'hidden',
+				'key'			=> 'reff',
+				'value'			=> $_POST['type']
+			),
+			array(
+				'func'			=> 'opt_hidden',
+				'type'			=> 'hidden',
 				'key'			=> 'user_id',
 				'value'			=> $args['user_id']
 			),
@@ -261,8 +268,13 @@ class lembur_user extends _page{
 			$where = "AND `abs-overtime-detail`.user_id='$user_id'";
 
 			$object = self::$table;
-			$log = $object::get_all(array('post_date','start_time','finish_time'),$where);
+			$log = $object::get_id($args['reff'],array('post_date','note','start_time','finish_time'),$where);
 			$log = $log[0];
+
+			$logs = array(
+				'user'	=> $user_id,
+				'note'	=> $log['note']
+			);
 
 			$time = _conv_time($log['start_time'],$log['finish_time'],3);
 
@@ -270,6 +282,7 @@ class lembur_user extends _page{
 				'log_id'		=> $user_id,
 				'times'			=> $time,
 				'date_schedule'	=> $log['post_date'],
+				'log_history'	=> serialize($logs),
 				'type_log'		=> 4
 			));
 		}
