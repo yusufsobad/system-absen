@@ -74,7 +74,7 @@ class sobad_user extends _class{
 
 	public static function check_login($user='',$pass=''){
 		$conn = conn::connect();
-		$args = array('`abs-user`.ID','`abs-user`.name','`abs-module`.meta_note AS dept','`abs-user`.picture');
+		$args = array('`abs-user`.ID','`abs-user`.name','`abs-module`.meta_note AS dept','`abs-module`.meta_value AS jabatan','`abs-user`.picture');
 
 		$user = $conn->real_escape_string($user);
 		$pass = $conn->real_escape_string($pass);
