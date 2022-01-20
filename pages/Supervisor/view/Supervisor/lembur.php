@@ -23,11 +23,12 @@ class lembur_supervisor extends _page{
 		return $args;
 	}
 
-	protected function table(){
+	protected function table($date=''){
 		$data = array();
 		$args = self::_array();
 
-		$m = date('m');$y = date('Y');
+		$date = empty($date)?date('Y-m-d'):$date;
+		$m = date('m',strtotime($date));$y = date('Y',strtotime($date));
 
 		$user_id = get_id_user();
 		$where = "AND `abs-overtime`.user='$user_id' AND YEAR(`abs-overtime`.post_date)='$y' AND MONTH(`abs-overtime`.post_date)='$m'";
@@ -235,6 +236,52 @@ class lembur_supervisor extends _page{
 		$user = convToOption($user,'ID','name');
 
 		return $user;
+	}
+
+	protected function action(){
+		$type = self::$type;
+		$date = date('Y-m');
+
+		$add = array(
+			'ID'	=> 'add_0',
+			'func'	=> 'add_form',
+			'color'	=> 'btn-default',
+			'icon'	=> 'fa fa-plus',
+			'label'	=> 'Tambah',
+			'type'	=> self::$type
+		);
+		
+		$edit = edit_button($add);
+
+		ob_start();
+		?>
+			<div style="display: inline-flex;" class="input-group input-medium date date-picker" data-date-format="yyyy-mm" data-date-viewmode="months">
+				<input id="monthpicker" type="text" class="form-control" value="<?php print($date); ?>" data-sobad="_filter" data-load="sobad_portlet" data-type="<?php print($type) ;?>" name="filter_date" onchange="sobad_filtering(this)">
+			</div>
+			<script type="text/javascript">
+				if(jQuery().datepicker) {
+		            $("#monthpicker").datepicker( {
+					    format: "yyyy-mm",
+					    viewMode: "months", 
+					    minViewMode: "months",
+					    rtl: Metronic.isRTL(),
+			            orientation: "right",
+			            autoclose: true
+					});
+		        };
+			</script>
+		<?php
+		$date = ob_get_clean();	
+		
+		return $date.' '.$edit;
+	}
+
+	public function _filter($date=''){
+		ob_start();
+		self::$type = '';
+		$table = self::table($date);
+		metronic_layout::sobad_table($table);
+		return ob_get_clean();
 	}
 
 	// ----------------------------------------------------------
