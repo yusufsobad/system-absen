@@ -1879,7 +1879,7 @@ class employee_absen extends _file_manager{
 			$no = sobad_contract::get_all(array('no_surat'),"AND status='$status'");
 			$check = array_filter($no);
 			if(empty($check)){
-				$no_surat = 200;
+				$no_surat = 149;
 			}else{
 				$no_surat = sobad_contract::get_maxSurat($status);
 				$no_surat += 1; 
@@ -1889,17 +1889,19 @@ class employee_absen extends _file_manager{
 		$user = sobad_contract::get_all(array('no_surat'),"AND user_id='$id' AND status='$status'");
 		$check = array_filter($user);
 		if(empty($check)){
-			$no = $status == -1?$no:200;
+			$no_surat = $status == -1?$no_surat:149;
 
 			$q = sobad_db::_insert_table('abs-contract',array(
 				'user_id'		=> $id,
 				'status'		=> $status,
 				'no_surat'		=> $no_surat
 			));
-			return $no_surat;
+
+		}else{
+			$no_surat = $user[0]['no_surat'];
 		}
 
-		return $no[0]['no_surat'];
+		return $no_surat;
 	}
 
 	public static function _preview($id){
@@ -2000,7 +2002,7 @@ class employee_absen extends _file_manager{
 	}	
 
 	public static function format_month_romawi($month=0){
-		intval($month);
+		$month = (int)$month;
 
 		$args = array('','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII');
 		return $args[$month];
