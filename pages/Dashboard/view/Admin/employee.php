@@ -1981,10 +1981,10 @@ class employee_absen extends _file_manager{
 
 		if($post['status']==1){
 			$format1 = '+0 days';
-			$format2 = '+1 year';
+			$format2 = '+1 year -1 days';
 		}else if($post['status']==2){
 			$format1 = '+1 year';
-			$format2 = '+2 year';
+			$format2 = '+2 year -1 days';
 		}else{
 			$format1 = '+2 year';
 			$format2 = '';
