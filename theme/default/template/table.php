@@ -2,6 +2,8 @@
 (!defined('THEMEPATH'))?exit:'';
 
 class create_table{
+
+	protected static $check = false;
 	
 	public static function _table ($args=array()){
 		
@@ -41,18 +43,20 @@ class create_table{
 				self::thead($args['table']);
 				self::tbody($args['table']) ;?>
 			</table>
-			<script>
-                  function metronic_check_all(){
-                    $('<?php print($_idx) ;?>.check-metronic').each(function () {
-                      if($(this).is(":checked")){
-                        $(this).prop('checked', false);	
-                      } else {
-                        $(this).prop('checked', true);	
-                      }
-                    });
-                  return false;
-                  }
-                </script>
+			<?php if(self::$check): ?>
+				<script>
+	                  function metronic_check_all(){
+	                    $('<?php print($_idx) ;?>.check-metronic').each(function () {
+	                      if($(this).is(":checked")){
+	                        $(this).prop('checked', false);	
+	                      } else {
+	                        $(this).prop('checked', true);	
+	                      }
+	                    });
+	                  return false;
+	                  }
+	            </script>
+	        <?php endif ;?>
 		</div>
 		<?php
 		
@@ -172,6 +176,8 @@ class create_table{
 							
 							if(strtolower($key)=='check'){
 								$key = '<input onchange="metronic_check_all()" type="checkbox" id="metronic-check-all" >';
+								self::$check = true;
+
 							}
 
 							print('<th '.$colspan.' '.$rowspan.' '.$att.' style="text-align:center;width:'.$val[1].';">'.$key.'</th>');
