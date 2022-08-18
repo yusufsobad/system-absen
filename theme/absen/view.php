@@ -169,7 +169,7 @@ class sobad_absen extends absen_control{
 		$izin = !isset($args['izin'])?0:$args['izin'];
 		$sick = !isset($args['sakit'])?0:$args['sakit'];
 		$luar_kota = !isset($args['luar kota'])?0:$args['luar kota'];
-//		$tugas = !isset($args['tugas'])?0:$args['tugas'];
+		$tugas = !isset($args['tugas'])?0:$args['tugas'];
 //		$libur = !isset($args['libur'])?0:$args['libur'];
 
 		$video = !isset($args['video'])?array():$args['video'];
@@ -180,7 +180,7 @@ class sobad_absen extends absen_control{
 			'absen-sick'	=> array('Sakit', $sick),
 			'absen-permit'	=> array('Izin', $izin),
 			'absen-outcity'	=> array('Luar Kota', $luar_kota),
-//			'absen-tugas'	=> array('Tugas Luar', $tugas),
+			'absen-tugas'	=> array('Tugas Luar', $tugas),
 //			'absen-holiday'	=> array('Libur', $libur),
 		);
 

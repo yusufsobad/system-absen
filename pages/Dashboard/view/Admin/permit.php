@@ -351,7 +351,7 @@ class permit_absen extends _page{
 			'Internship'	=> $intern
 		);
 
-		$permit = array(3 => 'Cuti',4 => 'Izin (Ganti Jam)' ,5 => 'Luar Kota', 'Libur',8 => 'Sakit',10 => 'WFH');
+		$permit = array(3 => 'Cuti',4 => 'Izin (Ganti Jam)' ,5 => 'Luar Kota', 'Libur', 'Tugas Luar', 'Sakit',10 => 'WFH');
 		$dayOff = sobad_module::_gets('day_off',array('ID','meta_value'));
 		foreach ($dayOff as $key => $val) {
 			$idx = ($val['ID'] + 10);
@@ -477,6 +477,7 @@ class permit_absen extends _page{
 				break;
 
 			case 5: // Luar Kota
+			case 7: // Tugas Luar
 				return array(
 					0 => array(
 						'id'		=> 'permit_date input',

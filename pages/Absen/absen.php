@@ -510,6 +510,7 @@ class absensi{
 
 			case 5:
 			case 6:
+			case 7:
 			case 8:
 			case 10:
 				$type = 1;
@@ -891,7 +892,7 @@ class absensi{
 			'cuti'		=> self::_holidayWork(),
 			'luar kota'	=> self::_outCity(),
 			'sakit'		=> self::_sick(),
-//			'tugas'		=> self::_tugas(),
+			'tugas'		=> self::_tugas(),
 //			'libur'		=> self::_holiday(),
 			'video'		=> $video
 		);
