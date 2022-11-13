@@ -1889,7 +1889,7 @@ class employee_absen extends _file_manager{
 		$user = sobad_contract::get_all(array('no_surat'),"AND user_id='$id' AND status='$status'");
 		$check = array_filter($user);
 		if(empty($check)){
-			$no_surat = $status == -1?$no_surat:149;
+			//$no_surat = $status == -1?$no_surat:149;
 
 			$q = sobad_db::_insert_table('abs-contract',array(
 				'user_id'		=> $id,
