@@ -1340,7 +1340,17 @@ class history_absen extends _page{
 
 	public static function _calc_gantiJam($_id=0,$ganti=0,$dateActual='',$note='Telah mengganti Jam'){
 		$dateActual = empty($dateActual)?date('Y-m-d'):$dateActual;
-		$_logs = sobad_logDetail::get_all(array('ID','log_id','times','status','date_actual','log_history'),"AND _log_id.user='$_id' AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1'");
+		$date_schedule = isset($_POST['filter']) ? $_POST['filter'] : '';
+
+		if(!empty($date_schedule)){
+			$_filter = strtotime($date_schedule);
+			$y = date('Y',strtotime($_filter));
+			$m = date('m',strtotime($_filter));
+
+			$date_schedule = "AND YEAR(`abs-log-detail`.date_schedule)='$y' AND MONTH(`abs-log-detail`.date_schedule)='$m'";
+		}
+
+		$_logs = sobad_logDetail::get_all(array('ID','log_id','times','status','date_actual','log_history'),"AND _log_id.user='$_id' AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1' " . $date_schedule);
 
 		$_check = $ganti % 30;
 		if($_check<=20){
