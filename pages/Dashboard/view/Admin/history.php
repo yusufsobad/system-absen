@@ -1340,12 +1340,12 @@ class history_absen extends _page{
 
 	public static function _calc_gantiJam($_id=0,$ganti=0,$dateActual='',$note='Telah mengganti Jam'){
 		$dateActual = empty($dateActual)?date('Y-m-d'):$dateActual;
-		$date_schedule = isset($_POST['filter']) ? $_POST['filter'] : '';
+		$date_schedule = isset($_POST['filter']) && !empty($_POST['filter']) ? $_POST['filter'] : '';
 
 		if(!empty($date_schedule)){
 			$_filter = strtotime($date_schedule);
-			$y = date('Y',strtotime($_filter));
-			$m = date('m',strtotime($_filter));
+			$y = date('Y',$_filter);
+			$m = date('m',$_filter);
 
 			$date_schedule = "AND YEAR(`abs-log-detail`.date_schedule)='$y' AND MONTH(`abs-log-detail`.date_schedule)='$m'";
 		}
