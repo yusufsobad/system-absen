@@ -285,7 +285,7 @@ class sobad_user extends _class{
 		$date = strtotime($date);
 		$date = date('Y-m-d',$date);
 
-		$where = "WHERE `".self::$tbl_join."`.user='$user' AND `".self::$tbl_join."`.inserted='$date'";
+		$where = "WHERE `".self::$tbl_join."`.user='$user' AND `".self::$tbl_join."`._inserted='$date'";
 		$data = parent::_check_join($where,array('ID','type'));
 
 		if(isset($data[0])){
