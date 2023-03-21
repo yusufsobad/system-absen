@@ -567,7 +567,7 @@ class history_absen extends _page{
 		return punishment_absen::_manual_form($args,$vals);
 	}
 
-	public function _manual_lembur($id=0){
+	public static function _manual_lembur($id=0){
 		$vals = array($id,date('Y-m-d'),0,0,'');
 		if($id!=0){
 			$logs = sobad_logDetail::get_id($id,array('log_id','date_schedule','times','log_history'));
@@ -605,7 +605,7 @@ class history_absen extends _page{
 		return self::_lembur_form($args,$vals);
 	}
 
-	public function _lembur_form($args=array(),$vals=array()){
+	public static function _lembur_form($args=array(),$vals=array()){
 		$check = array_filter($args);
 		if(empty($check)){
 			return '';
