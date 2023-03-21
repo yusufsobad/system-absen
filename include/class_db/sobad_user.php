@@ -284,9 +284,6 @@ class sobad_user extends _class{
 	public static function check_user_work($user=0,$date=''){
 		self::$table = 'abs-user-log';
 
-		$date = strtotime($date);
-		$date = date('Y-m-d',$date);
-
 		$where = "WHERE user='$user' AND inserted='$date'";
 		$data = parent::_check_join($where,array('ID','type'));
 
