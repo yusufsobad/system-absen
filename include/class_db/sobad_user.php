@@ -282,12 +282,11 @@ class sobad_user extends _class{
 	}
 
 	public static function check_user_work($user=0,$date=''){
-		self::$table = 'abs-user-log';
+		$date = strtotime($date);
+		$date = date('Y-m-d',$date);
 
-		$where = "WHERE user='$user' AND inserted='$date'";
+		$where = "WHERE `".self::$tbl_join."`.user='$user' AND `".self::$tbl_join."`.inserted='$date'";
 		$data = parent::_check_join($where,array('ID','type'));
-
-		self::$table = 'abs-user';
 
 		if(isset($data[0])){
 			if($data[0]['type']==1){
