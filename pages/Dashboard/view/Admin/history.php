@@ -10,7 +10,7 @@ class history_absen extends _page{
 	// Layout category  ------------------------------------------
 	// ----------------------------------------------------------
 
-	protected function _where($now=''){
+	public static function _where($now='',$limit=''){
 
 
 		$status = str_replace('history_', '', parent::$type);
@@ -34,7 +34,7 @@ class history_absen extends _page{
 			$whr = "AND (`abs-log-detail`.date_schedule BETWEEN '$sDate' AND '$fDate') ";
 		}
 
-		$where = "AND `abs-log-detail`.type_log='$status' $whr";
+		$where = "AND `abs-log-detail`.type_log='$status' $whr $limit";
 
 		return $where;
 	}

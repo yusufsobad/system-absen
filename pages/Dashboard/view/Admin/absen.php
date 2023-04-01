@@ -342,8 +342,8 @@ class report_absen extends _page{
 		$m = date('m',$date);
 
 		// Jika Februari sampai tgl 26 or 27 jika 28 or 29 bukan tanggal merah
-		$sDate = 29;
-		$fDate = 28;
+		$sDate = sum_days($m - 1,$y) - 1;
+		$fDate = sum_days($m,$y) - 2;
 
 		if($m==2 || $m=='02'){
 			$sum_days = sum_days($m,$y);

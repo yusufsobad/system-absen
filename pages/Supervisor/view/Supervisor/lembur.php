@@ -30,8 +30,12 @@ class lembur_supervisor extends _page{
 		$date = empty($date)?date('Y-m-d'):$date;
 		$m = date('m',strtotime($date));$y = date('Y',strtotime($date));
 
+		$range = report_absen::get_range($y.'-'.$m);
+		$sdate = $range['start_date'];
+		$fdate = $range['finish_date'];
+
 		$user_id = get_id_user();
-		$where = "AND `abs-overtime`.user='$user_id' AND YEAR(`abs-overtime`.post_date)='$y' AND MONTH(`abs-overtime`.post_date)='$m'";
+		$where = "AND `abs-overtime`.user='$user_id' AND `abs-overtime`.post_date BETWEEN '$sdate' AND '$fdate'";
 
 		$object = self::$table;
 		$args = $object::get_all($args,$where);
@@ -123,18 +127,18 @@ class lembur_supervisor extends _page{
 					$val['note'],
 					true
 				),
-				'PPIC'			=> array(
-					'center',
-					'7%',
-					$ppic,
-					true
-				),
-				'HRD'		=> array(
-					'center',
-					'7%',
-					$hrd,
-					true
-				),
+				// 'PPIC'			=> array(
+				// 	'center',
+				// 	'7%',
+				// 	$ppic,
+				// 	true
+				// ),
+				// 'HRD'		=> array(
+				// 	'center',
+				// 	'7%',
+				// 	$hrd,
+				// 	true
+				// ),
 				'Jumlah'	=> array(
 					'right',
 					'10%',
@@ -155,11 +159,11 @@ class lembur_supervisor extends _page{
 
 	private function head_title(){
 		$args = array(
-			'title'	=> 'Lembur <small>data lembur</small>',
+			'title'	=> 'Overtime <small>data overtime</small>',
 			'link'	=> array(
 				0	=> array(
 					'func'	=> self::$object,
-					'label'	=> 'lembur'
+					'label'	=> 'overtime'
 				)
 			),
 			'date'	=> false
@@ -172,7 +176,7 @@ class lembur_supervisor extends _page{
 		$data = self::table();
 		
 		$box = array(
-			'label'		=> 'Data Lembur',
+			'label'		=> 'Data Overtime',
 			'tool'		=> '',
 			'action'	=> self::action(),
 			'func'		=> 'sobad_table',
@@ -441,6 +445,14 @@ class lembur_supervisor extends _page{
 		$id = get_id_user();
 		$user = self::_conv_tree_user($id);
 
+		// Internship
+		$intern = sobad_user::get_all(array('ID','name'),"AND status='7'");
+		$intern = convToOption($intern,'ID','name');
+
+		foreach ($intern as $key => $val) {
+			$user[$key] = $val;
+		}
+
 		$data = array(
 			0 => array(
 				'func'			=> 'opt_hidden',
@@ -540,7 +552,7 @@ class lembur_supervisor extends _page{
 			$no += 1;
 			$id = $val['ID'];
 
-			$status = $val['status']>0?'disabled':'';
+			//$status = $val['status']>0?'disabled':'';
 
 			$edit = array(
 				'ID'	=> 'edit_'.$id,
@@ -548,7 +560,7 @@ class lembur_supervisor extends _page{
 				'color'	=> 'blue',
 				'icon'	=> 'fa fa-edit',
 				'label'	=> 'edit',
-				'status'=> $status
+			//	'status'=> $status
 			);
 
 			$hapus = array(
@@ -557,7 +569,7 @@ class lembur_supervisor extends _page{
 				'color'	=> 'red',
 				'icon'	=> 'fa fa-trash',
 				'label'	=> 'hapus',
-				'status'=> $status
+			//	'status'=> $status
 			);
 
 			$color = '#666';
@@ -567,6 +579,12 @@ class lembur_supervisor extends _page{
 				$color = '#cb5a5e';
 			}
 			$status = '<i class="fa fa-circle" style="color:'.$color.'">';
+
+			$hour = 0;
+			$logs = sobad_logDetail::get_all(array('time_over'),"AND id_over_detail='$id'");
+			foreach ($logs as $ky => $vl) {
+				$hour += $vl['time_over'];
+			}
 
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
@@ -606,6 +624,12 @@ class lembur_supervisor extends _page{
 					$status,
 					true
 				),
+				'Ganti Jam'	=> array(
+					'left',
+					'10%',
+					$hour . ' Jam',
+					true
+				),
 				'Keterangan'	=> array(
 					'left',
 					'20%',
@@ -640,7 +664,44 @@ class lembur_supervisor extends _page{
 
 	// ----------------------------------------------------------
 	// Database detail Lembur -----------------------------------
-	// ----------------------------------------------------------	
+	// ----------------------------------------------------------
+
+	public static function _check_change_hour($user=0,$start='',$finish='',$id_over=0){
+		$time = _conv_time($start,$finish,3);
+
+		// Get data ganti jam
+		$logs = sobad_logDetail::get_all(array('ID','log_id','times','status','log_history','id_over_detail','time_over'),"AND `abs-log-detail`.type_log='2' AND `abs-log-detail`.status!='1' AND `abs-log-detail`.id_over_detail IN (0,$id_over) AND _log_id.user='$user'");
+
+		$id_logs = array();
+		foreach ($logs as $key => $val) {
+			$_ctime = 0;
+			
+			if($val['status']==2){
+				$_logs = unserialize($val['log_history']);
+				foreach ($_logs as $ky => $vl) {
+					$_ctime += $vl['time'];
+				}
+
+				$_mod = $_ctime % 30;
+				$_ctime -= $_mod;
+			}
+
+			$_atime = $val['times'] - $_ctime;
+			$_atime = ($_atime / 60);
+
+			$_id = $time >= $_atime ? $id_over : 0;
+			$_hour = $time >= $_atime ? $_atime : $time;
+
+			sobad_db::_update_single($val['ID'],'abs-log-detail',array(
+				'id_over_detail'	=> $_id,
+				'time_over'			=> $_hour
+			));
+
+			$time -= $_atime;
+		}
+
+		return 1;
+	}	
 
 	public static function _editDetail($id=0){
 		$id = str_replace('edit_', '', $id);
@@ -676,8 +737,11 @@ class lembur_supervisor extends _page{
 				'user_id'		=> $val,
 				'over_id'		=> $reff,
 				'start_time'	=> $args['start_time'],
-				'finish_time'	=> $args['finish_time']
+				'finish_time'	=> $args['finish_time'],
+				'status'		=> 1
 			));
+
+			$hour = self::_check_change_hour($val,$args['start_time'],$args['finish_time'],$q);
 		}
 
 		if($q!==0){
@@ -690,12 +754,14 @@ class lembur_supervisor extends _page{
 		$args = sobad_asset::ajax_conv_json($args);
 		$reff = $args['over_id'];
 
+		$hour = self::_check_change_hour($args['user_id'],$args['start_time'],$args['finish_time'],$args['ID_reff']);
+
 		// Tambah detail Karyawan
 		$q = sobad_db::_update_single($args['ID_reff'],'abs-overtime-detail',array(
 				'user_id'		=> $args['user_id'],
 				'over_id'		=> $reff,
 				'start_time'	=> $args['start_time'],
-				'finish_time'	=> $args['finish_time']
+				'finish_time'	=> $args['finish_time'],
 			));
 
 		if($q!==0){

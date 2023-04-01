@@ -44,4 +44,12 @@ class sobad_logDetail extends _class{
 	public static function get_punishments($args=array(),$limit=''){
 		return parent::get_all($args,"AND `".self::$table."`.type_log='1' ".$limit);
 	}
+
+	public static function get_change_hour($id='',$args=array(),$limit=''){
+		return parent::get_id($id,$args,"AND `".self::$table."`.type_log='2' ".$limit);
+	}
+
+	public static function get_change_hours($args=array(),$limit=''){
+		return parent::get_all($args,"AND `".self::$table."`.type_log='2' ".$limit);
+	}
 }

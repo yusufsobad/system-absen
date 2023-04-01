@@ -10,10 +10,10 @@ function sidemenu_ppic(){
 		'child'		=> null
 	);
 	
-	$args['lembur'] = array(
+	$args['overtime'] = array(
 		'status'	=> '',
 		'icon'		=> 'fa fa-gears',
-		'label'		=> 'Lembur',
+		'label'		=> 'Overtime',
 		'func'		=> '#',
 		'child'		=> lembur_ppic()
 	);
