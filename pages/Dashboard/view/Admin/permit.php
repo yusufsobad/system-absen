@@ -698,10 +698,12 @@ class permit_absen extends _page{
 					$_num = $data['num_day'] - 1;
 					switch ($data['type_date']) {
 						case 2:
+							$_num += 1;
 							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' months');
 							break;
 
 						case 3:
+							$_num += 1;
 							$data['range_date'] = _calc_date($data['start_date'],'+'.$_num.' years');
 						
 						default:
