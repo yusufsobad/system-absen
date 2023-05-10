@@ -605,10 +605,12 @@ class permit_absen extends _page{
 					$_num = $args['num_day'] - 1;
 					switch ($args['type_date']) {
 						case 2:
+							$_num += 1;
 							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' months');
 							break;
 
 						case 3:
+							$_num += 1;
 							$args['range_date'] = _calc_date($args['start_date'],'+'.$_num.' years');
 						
 						default:
