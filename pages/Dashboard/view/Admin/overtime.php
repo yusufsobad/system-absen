@@ -262,7 +262,7 @@ class overtime_absen extends _page{
 			$holiday = holiday_absen::_check_holiday($val['post_date']);
 
 			$lembur = sobad_overtime::get_details($val['ID'],array('ID','user_id','start_time','finish_time','status'),"AND `abs-overtime-detail`.status='1'");
-			
+
 			foreach ($lembur as $ky => $vl) {
 				if($vl['status']==1){
 					if(!isset($overtime[$code])){
@@ -282,6 +282,7 @@ class overtime_absen extends _page{
 						$ctime = ($otime * 2);
 					}
 
+					$id = $vl['ID'];
 					$logs = sobad_logDetail::get_all(array('time_over'),"id_over_detail='$id'");
 					foreach ($logs as $ky => $vl) {
 						$otime -= $vl['time_over'];
