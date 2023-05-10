@@ -283,7 +283,7 @@ class overtime_absen extends _page{
 					}
 
 					$id = $vl['ID'];
-					$logs = sobad_logDetail::get_all(array('time_over'),"id_over_detail='$id'");
+					$logs = sobad_logDetail::get_all(array('time_over'),"AND id_over_detail='$id'");
 					foreach ($logs as $ky => $vl) {
 						$otime -= $vl['time_over'];
 					}
