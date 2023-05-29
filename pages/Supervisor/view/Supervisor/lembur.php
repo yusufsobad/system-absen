@@ -586,6 +586,8 @@ class lembur_supervisor extends _page{
 				$hour += $vl['time_over'];
 			}
 
+			$no_induk = $val['status_user'] == 7 ||  $val['end_status_user'] == 7 ? internship_absen::_conv_no_induk($val['no_induk_user'],$val['inserted_user'],$val['divisi_user']) : $val['no_induk_user'];
+
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
 				'No'		=> array(
@@ -597,7 +599,7 @@ class lembur_supervisor extends _page{
 				'NIK'		=> array(
 					'left',
 					'5%',
-					$val['no_induk_user'],
+					$no_induk,
 					true
 				),
 				'Nama'		=> array(

@@ -49,7 +49,7 @@ class sobad_overtime extends _class{
 					'user_id'	=> array(
 						'key'		=> 'ID',
 						'table'		=> 'abs-user',
-						'column'	=> array('name','divisi','no_induk'),
+						'column'	=> array('name','divisi','no_induk','status','end_status','inserted'),
 						'detail'	=> array(
 							'divisi'	=> array(
 								'key'		=> 'ID',

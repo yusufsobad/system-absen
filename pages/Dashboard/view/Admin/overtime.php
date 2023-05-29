@@ -338,6 +338,17 @@ class overtime_absen extends _page{
 			}
 		}
 
+		// Short by Karyawan
+		$employee = $internship = [];
+		foreach ($data['user'] as $key => $val) {
+			if($val['status'] == 7){
+				$internship[] = $val;
+			}else{
+				$employee[] = $val;
+			}
+		}
+
+		$data['user'] = array_merge($employee,$internship);
 		return $data;
 	}
 
