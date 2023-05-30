@@ -622,10 +622,10 @@ class lembur_supervisor extends _page{
 					format_time_id($val['finish_time']),
 					true
 				),
-				'Status'	=> array(
-					'center',
-					'7%',
-					$status,
+				'Overtime'	=> array(
+					'left',
+					'10%',
+					$otime . ' Jam',
 					true
 				),
 				'Ganti Jam'	=> array(
@@ -638,12 +638,6 @@ class lembur_supervisor extends _page{
 					'left',
 					'20%',
 					$val['notes'],
-					true
-				),
-				'Overtime'	=> array(
-					'left',
-					'10%',
-					$otime . ' Jam',
 					true
 				),
 				'Edit'	=> array(
