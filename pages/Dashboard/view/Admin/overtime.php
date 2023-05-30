@@ -357,7 +357,7 @@ class overtime_absen extends _page{
 		$range = $data['number_day'] + 1;
 
 		$style_head = 'border:1px solid #666;color:#000;text-align:center;';
-		$style_body = 'border:1px solid #999;color:#0070C0;';
+		$style_body = 'border:1px solid #999;color:#333;'; //#0070C0
 		$style_body_over = 'border:1px solid #999;color:#000;';
 
 		$bag_def = 'background: #B4C6E7;';
@@ -397,6 +397,44 @@ class overtime_absen extends _page{
 					<?php
 						$no = 0;
 						foreach ($data['user'] as $key => $val) {
+							$no += 1;
+							$ototal = $ctotal = 0;
+
+							foreach ($val['date'] as $ky => $vl) {
+								$ctotal += $vl['calculation'];
+							}
+
+							$non_over = $ctotal > 0 ? '' : 'background:#2f34c1;';
+							$name = empty($val['_nickname']) ? $val['name'] : $val['_nickname'];
+
+							$no_induk = $val['status'] == 7 ||  $val['end_status'] == 7 ? internship_absen::_conv_no_induk($val['no_induk'],$val['inserted'],$val['divisi']) : $val['no_induk'];
+
+							// Overtime
+
+							echo '<tr>';
+							echo '<td style="'.$style_body.$non_over.'text-align:center;">'.$no.'</td>';
+							echo '<td style="'.$style_body.$non_over.'">'.$no_induk.'</td>';
+							echo '<td style="'.$style_body.$non_over.'">'.$name.'</td>';
+
+							foreach ($val['date'] as $ky => $vl) {
+								$calc = empty($vl['calculation']) ? '' : $vl['calculation'];
+
+								echo '<td style="'.$style_body.$non_over.'text-align:center;">'.$calc.'</td>';
+							}
+
+							echo '<td style="'.$style_body_over.$non_over.'text-align:center;">'.$ctotal.'</td>';
+							echo '</tr>';
+						}
+					?>
+					<tr>
+						<td colspan="<?= $range + 3 ;?>">&nbsp;</td>
+					</tr>
+					<tr>
+						<td colspan="<?= $range + 3 ;?>">&nbsp;</td>
+					</tr>
+					<?php
+						$no = 0;
+						foreach ($data['intern'] as $key => $val) {
 							$no += 1;
 							$ototal = $ctotal = 0;
 
