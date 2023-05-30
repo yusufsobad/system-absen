@@ -660,7 +660,6 @@ class lembur_supervisor extends _page{
 			}else{
 				unset($data['table'][$key]['td']['Status']);
 				unset($data['table'][$key]['td']['Keterangan']);
-				unset($data['table'][$key]['td']['Overtime']);
 			}
 		}
 
