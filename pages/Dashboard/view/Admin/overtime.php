@@ -302,7 +302,7 @@ class overtime_absen extends _page{
 
 		$users = array_keys($temp_user);
 		$users = implode(',', $users);
-		$users = sobad_user::get_all(array('ID','name','no_induk','status','end_status','divisi','inserted','_nickname'),"AND `abs-user`.ID IN ($users)");
+		$users = sobad_user::get_all(array('ID','name','no_induk','status','end_status','divisi','inserted','_nickname'),"AND `abs-user`.status>'0'");
 
 		for($i=$before;$i<$finishD;$i++){
 			$now = date('Y-m-d',strtotime($i.' days',$default));
@@ -348,7 +348,8 @@ class overtime_absen extends _page{
 			}
 		}
 
-		$data['user'] = array_merge($employee,$internship);
+		$data['user'] = $employee;
+		$data['intern'] = $internship;
 		return $data;
 	}
 
@@ -367,21 +368,20 @@ class overtime_absen extends _page{
 			<table>
 				<thead>
 					<tr>
-						<th colspan="4" style="text-align: left;">Rekap Lembur Karyawan</th>
+						<th colspan="3" style="text-align: left;">Rekap Lembur Karyawan</th>
 						<th colspan="<?= $range ;?>"></th>
 					</tr>
 					<tr>
-						<th colspan="4" style="text-align: left;">Periode : <?= $date ;?></th>
+						<th colspan="3" style="text-align: left;">Periode : <?= $date ;?></th>
 						<th colspan="<?= $range ;?>"></th>
 					</tr>
 					<tr>
-						<th colspan="<?= $range + 4 ;?>"></th>
+						<th colspan="<?= $range + 3 ;?>"></th>
 					</tr>
 					<tr>
 						<th style="width:30px;<?= $style_head . $bag_def ;?>">No</th>
 						<th style="width:50px;<?= $style_head . $bag_def ;?>text-align: left;">NIP</th>
-						<th style="width:200px;<?= $style_head . $bag_def ;?>">Nama</th>
-						<th style="width:100px;<?= $style_head . $bag_def ;?>">-</th>
+						<th style="width:300px;<?= $style_head . $bag_def ;?>">Nama</th>
 
 						<?php
 							// Looping Range Date
@@ -400,6 +400,11 @@ class overtime_absen extends _page{
 							$no += 1;
 							$ototal = $ctotal = 0;
 
+							foreach ($val['date'] as $ky => $vl) {
+								$ctotal += $vl['calculation'];
+							}
+
+							$non_over = $ctotal > 0 ? '' : 'background:#2f34c1;';
 							$name = empty($val['_nickname']) ? $val['name'] : $val['_nickname'];
 
 							$no_induk = $val['status'] == 7 ||  $val['end_status'] == 7 ? internship_absen::_conv_no_induk($val['no_induk'],$val['inserted'],$val['divisi']) : $val['no_induk'];
@@ -407,37 +412,17 @@ class overtime_absen extends _page{
 							// Overtime
 
 							echo '<tr>';
-							echo '<td style="'.$style_body.'text-align:center;">'.$no.'</td>';
-							echo '<td style="'.$style_body.'">'.$no_induk.'</td>';
-							echo '<td style="'.$style_body.'">'.$name.'</td>';
-							echo '<td style="'.$style_body.'">Overtime</td>';
+							echo '<td style="'.$style_body.$non_over.'text-align:center;">'.$no.'</td>';
+							echo '<td style="'.$style_body.$non_over.'">'.$no_induk.'</td>';
+							echo '<td style="'.$style_body.$non_over.'">'.$name.'</td>';
 
 							foreach ($val['date'] as $ky => $vl) {
-								$ototal += $vl['overtime'];
-								$over = empty($vl['overtime']) ? '' : $vl['overtime'];
-
-								echo '<td style="'.$style_body_over.'text-align:center;">'.$over.'</td>';
-							}
-
-							echo '<td style="'.$style_body_over.'text-align:center;">'.$ototal.'</td>';
-							echo '</tr>';
-
-							// Calculation Overtime
-
-							echo '<tr>';
-							echo '<td style="'.$style_body.'text-align:center;"> </td>';
-							echo '<td style="'.$style_body.'"> </td>';
-							echo '<td style="'.$style_body.'"> </td>';
-							echo '<td style="'.$style_body.'">Calculation </td>';
-							
-							foreach ($val['date'] as $ky => $vl) {
-								$ctotal += $vl['calculation'];
 								$calc = empty($vl['calculation']) ? '' : $vl['calculation'];
 
-								echo '<td style="'.$style_body.'text-align:center;">'.$calc.'</td>';
+								echo '<td style="'.$style_body.$non_over.'text-align:center;">'.$calc.'</td>';
 							}
 
-							echo '<td style="'.$style_body_over.'text-align:center;background:#B4C6E7;">'.$ctotal.'</td>';
+							echo '<td style="'.$style_body_over.$non_over.'text-align:center;">'.$ctotal.'</td>';
 							echo '</tr>';
 						}
 					?>

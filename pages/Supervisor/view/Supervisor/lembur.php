@@ -588,6 +588,8 @@ class lembur_supervisor extends _page{
 
 			$no_induk = $val['status_user'] == 7 ||  $val['end_status_user'] == 7 ? internship_absen::_conv_no_induk($val['no_induk_user'],$val['inserted_user'],$val['divisi_user']) : $val['no_induk_user'];
 
+			$otime = _conv_time($val['start_time'],$val['finish_time'],3);
+
 			$data['table'][$key]['tr'] = array('');
 			$data['table'][$key]['td'] = array(
 				'No'		=> array(
@@ -638,6 +640,12 @@ class lembur_supervisor extends _page{
 					$val['notes'],
 					true
 				),
+				'Overtime'	=> array(
+					'left',
+					'10%',
+					$otime . ' Jam',
+					true
+				),
 				'Edit'	=> array(
 					'center',
 					'10%',
@@ -658,6 +666,7 @@ class lembur_supervisor extends _page{
 			}else{
 				unset($data['table'][$key]['td']['Status']);
 				unset($data['table'][$key]['td']['Keterangan']);
+				unset($data['table'][$key]['td']['Overtime']);
 			}
 		}
 
