@@ -229,7 +229,7 @@ class lembur_supervisor extends _page{
 		$div = $div[0]['divisi'];
 
 		$idx[] = $div;
-		$data = sobad_module::_gets_tree_division($div);
+		$data = sobad_module::_group_tree_division($div);
 		foreach ($data as $key => $val) {
 			$idx[] = $val['ID'];
 		}
