@@ -3,6 +3,8 @@
 class sobad_module extends _class{
 	public static $table = 'abs-module';
 
+	public static $tree = array();
+
 	public static function blueprint(){
 		$args = array(
 			'type'		=> 'module',
@@ -83,9 +85,19 @@ class sobad_module extends _class{
 			$id = $val['ID'];
 			$args[$id] = $val;
 			$args[$id]['child'] = self::_gets_tree_division($id);
+
+			self::$tree[] = $val;
 		}
 
 		return $args;
+	}
+
+	public static function _group_tree_division($id = 0){
+		self::_gets_tree_division($id);
+		$data = self::$tree;
+
+		self::$tree = [];
+		return $data;
 	}
 
 	public static function _get_group($id=0,$status=0,$type='group'){
