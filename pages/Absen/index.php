@@ -90,13 +90,13 @@ class absen_sobad{
 					}
 				}
 
-				if(stsnow){
-					if(time=="20:0"){
-						stsnow = false;
-						var data = "ajax=_checkAlpha&object=report_absen&data=0";
-						sobad_ajax('#my',data,'html',false,'','');
-					}
-				}
+				// if(stsnow){
+				// 	if(time=="20:0"){
+				// 		stsnow = false;
+				// 		var data = "ajax=_checkAlpha&object=report_absen&data=0";
+				// 		sobad_ajax('#my',data,'html',false,'','');
+				// 	}
+				// }
 
 				if(stsabsen){
 					if(time=="17:30"){
